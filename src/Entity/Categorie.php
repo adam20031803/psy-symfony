@@ -22,7 +22,7 @@ class Categorie
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true, options: ['default' => null])]
     private ?string $icon = null;
 
     #[ORM\OneToMany(mappedBy: 'categorie', targetEntity: Post::class)]

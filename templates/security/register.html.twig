@@ -1,0 +1,451 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un compte — PsyApp{% endblock %}
+
+{% block stylesheets %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #0d0d1a;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 16px;
+        overflow-x: hidden;
+    }
+
+    .bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+    }
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 {
+        width: 420px; height: 420px;
+        background: radial-gradient(circle, rgba(108,99,255,0.35), transparent 70%);
+        top: -100px; left: -60px;
+        animation-delay: 0s;
+    }
+    .orb-2 {
+        width: 350px; height: 350px;
+        background: radial-gradient(circle, rgba(0,210,200,0.25), transparent 70%);
+        bottom: -80px; right: -60px;
+        animation-delay: -3s;
+    }
+    .orb-3 {
+        width: 260px; height: 260px;
+        background: radial-gradient(circle, rgba(255,100,160,0.2), transparent 70%);
+        top: 40%; left: 60%;
+        animation-delay: -5s;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%       { transform: translateY(-28px) scale(1.05); }
+    }
+
+    .card {
+        position: relative;
+        z-index: 1;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 44px 44px 36px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 28px;
+    }
+    .logo-icon {
+        width: 42px; height: 42px;
+        background: linear-gradient(135deg, #6c63ff, #00d2c8);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px;
+    }
+    .logo-text {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.5px;
+    }
+    .logo-text span { color: #6c63ff; }
+
+    h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 4px;
+        letter-spacing: -0.5px;
+    }
+    .subtitle {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 28px;
+    }
+
+    .alert-error {
+        background: rgba(255,80,80,0.12);
+        border: 1px solid rgba(255,80,80,0.3);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: #ff7070;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Two-column grid for compact fields */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px 16px;
+    }
+    .field-full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; }
+
+    label {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 500;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    input {
+        width: 100%;
+        padding: 13px 14px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 0.92rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+        border-color: #6c63ff;
+        background: rgba(108,99,255,0.08);
+        box-shadow: 0 0 0 4px rgba(108,99,255,0.15);
+    }
+    input::placeholder { color: rgba(255,255,255,0.22); }
+
+    select {
+        width: 100%;
+        padding: 13px 14px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #fff;
+        font-size: 0.92rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff66' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    }
+    select:focus {
+        border-color: #6c63ff;
+        background-color: rgba(108,99,255,0.08);
+        box-shadow: 0 0 0 4px rgba(108,99,255,0.15);
+    }
+    select option { background: #1a1a2e; color: #fff; }
+
+    .role-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .role-card {
+        position: relative;
+    }
+    .role-card input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+    }
+    .role-card label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 10px;
+        background: rgba(255,255,255,0.04);
+        border: 1.5px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: rgba(255,255,255,0.6);
+    }
+    .role-card label .role-emoji { font-size: 1.5rem; }
+    .role-card input[type="radio"]:checked + label {
+        border-color: #6c63ff;
+        background: rgba(108,99,255,0.14);
+        color: #fff;
+        box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+    }
+    .role-card label:hover {
+        border-color: rgba(108,99,255,0.5);
+        background: rgba(108,99,255,0.07);
+        color: #fff;
+    }
+
+    .password-strength {
+        margin-top: 6px;
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(255,255,255,0.08);
+        overflow: hidden;
+    }
+    .strength-bar {
+        height: 100%;
+        border-radius: 2px;
+        width: 0%;
+        transition: width 0.3s, background 0.3s;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #6c63ff, #00d2c8);
+        border: none;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        margin-top: 22px;
+        transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+        box-shadow: 0 6px 24px rgba(108,99,255,0.4);
+        letter-spacing: 0.2px;
+    }
+    .btn-register:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 32px rgba(108,99,255,0.5);
+    }
+    .btn-register:active { transform: translateY(0); }
+
+    .footer-link {
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.4);
+        margin-top: 20px;
+    }
+    .footer-link a {
+        color: #6c63ff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+    .footer-link a:hover { color: #00d2c8; }
+
+    /* Password match indicator */
+    .match-hint {
+        font-size: 0.75rem;
+        margin-top: 5px;
+        height: 14px;
+        transition: color 0.2s;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div class="card">
+    <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <div class="logo-text">Psy<span>App</span></div>
+    </div>
+
+    <h1>Créer un compte</h1>
+    <p class="subtitle">Rejoignez PsyApp et prenez soin de votre bien-être</p>
+
+    {% if error %}
+        <div class="alert-error">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ path('app_register') }}" id="register-form">
+        <div class="form-grid">
+
+            <div class="field field-full">
+                <label for="prenom">Prénom *</label>
+                <input type="text"
+                       id="prenom"
+                       name="prenom"
+                       value="{{ formData.prenom ?? '' }}"
+                       placeholder="Votre prénom"
+                       autocomplete="given-name"
+                       required>
+            </div>
+
+            <div class="field">
+                <label for="age">Âge</label>
+                <input type="number"
+                       id="age"
+                       name="age"
+                       value="{{ formData.age ?? '' }}"
+                       placeholder="25"
+                       min="1"
+                       max="120">
+            </div>
+
+            <div class="field">
+                <label for="telephone">Téléphone</label>
+                <input type="tel"
+                       id="telephone"
+                       name="telephone"
+                       value="{{ formData.telephone ?? '' }}"
+                       placeholder="+33 6 00 00 00 00"
+                       autocomplete="tel">
+            </div>
+
+            <div class="field field-full">
+                <label>Rôle *</label>
+                <div class="role-cards">
+                    <div class="role-card">
+                        <input type="radio" id="role_user" name="role" value="user"
+                               {% if (formData.role ?? 'user') == 'user' %}checked{% endif %}>
+                        <label for="role_user">
+                            <span class="role-emoji">👤</span>
+                            Utilisateur
+                        </label>
+                    </div>
+                    <div class="role-card">
+                        <input type="radio" id="role_coach" name="role" value="coach"
+                               {% if (formData.role ?? '') == 'coach' %}checked{% endif %}>
+                        <label for="role_coach">
+                            <span class="role-emoji">🏋️</span>
+                            Coach
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field field-full">
+                <label for="email">Email *</label>
+                <input type="email"
+                       id="email"
+                       name="email"
+                       value="{{ formData.email ?? '' }}"
+                       placeholder="vous@exemple.com"
+                       autocomplete="email"
+                       required>
+            </div>
+
+            <div class="field field-full">
+                <label for="password">Mot de passe *</label>
+                <input type="password"
+                       id="password"
+                       name="password"
+                       placeholder="Minimum 6 caractères"
+                       autocomplete="new-password"
+                       required>
+                <div class="password-strength">
+                    <div class="strength-bar" id="strength-bar"></div>
+                </div>
+            </div>
+
+            <div class="field field-full">
+                <label for="confirm_password">Confirmer le mot de passe *</label>
+                <input type="password"
+                       id="confirm_password"
+                       name="confirm_password"
+                       placeholder="Répétez le mot de passe"
+                       autocomplete="new-password"
+                       required>
+                <div class="match-hint" id="match-hint"></div>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn-register" id="register-submit">Créer mon compte</button>
+    </form>
+
+    <div class="footer-link">
+        Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+    </div>
+</div>
+
+<script>
+// Password strength indicator
+document.getElementById('password').addEventListener('input', function () {
+    const val = this.value;
+    const bar = document.getElementById('strength-bar');
+    let strength = 0;
+    if (val.length >= 6) strength++;
+    if (val.length >= 10) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+    const colors = ['', '#ff4d4d', '#ff944d', '#ffd24d', '#6c63ff', '#00d2c8'];
+    const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+    bar.style.width = widths[strength];
+    bar.style.background = colors[strength];
+
+    checkMatch();
+});
+
+// Password match indicator
+document.getElementById('confirm_password').addEventListener('input', checkMatch);
+document.getElementById('password').addEventListener('input', checkMatch);
+
+function checkMatch() {
+    const p = document.getElementById('password').value;
+    const c = document.getElementById('confirm_password').value;
+    const hint = document.getElementById('match-hint');
+    if (!c) { hint.textContent = ''; return; }
+    if (p === c) {
+        hint.textContent = '✓ Les mots de passe correspondent';
+        hint.style.color = '#00d2c8';
+    } else {
+        hint.textContent = '✗ Les mots de passe ne correspondent pas';
+        hint.style.color = '#ff7070';
+    }
+}
+</script>
+{% endblock %}

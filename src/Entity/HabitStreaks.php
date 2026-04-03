@@ -28,7 +28,7 @@ class HabitStreaks
     #[ORM\Column(options: ['default' => 0])]
     private ?int $longestStreak = 0;
 
-    #[ORM\Column(type: 'date', nullable: true)]
+    #[ORM\Column(type: 'date', nullable: true, options: ['default' => null])]
     private ?\DateTimeInterface $lastCompleted = null;
 
     public function getId(): ?int { return $this->id; }

@@ -26,13 +26,13 @@ class Reclamation
     #[ORM\Column(type: 'text')]
     private ?string $description = null;
 
-    #[ORM\Column(length: 50, options: ['default' => 'ouvert'])]
-    private ?string $statut = 'ouvert'; // ouvert | en_cours | resolu | ferme
+    #[ORM\Column(length: 50, nullable: false, options: ['default' => 'ouvert'])]
+    private string $statut = 'ouvert'; // ouvert | en_cours | resolu | ferme
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true, options: ['default' => null])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'reclamation', targetEntity: ReclamationEvent::class, orphanRemoval: true)]

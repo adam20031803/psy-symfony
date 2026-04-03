@@ -30,7 +30,7 @@ class Post
     #[ORM\Column(type: 'text')]
     private ?string $contenu = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
     private ?string $image = null;
 
     #[ORM\Column(options: ['default' => false])]
@@ -39,7 +39,7 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true, options: ['default' => null])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Commentaire::class, orphanRemoval: true)]

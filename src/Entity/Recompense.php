@@ -23,7 +23,7 @@ class Recompense
     #[ORM\Column]
     private ?int $points = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
     private ?string $image = null;
 
     public function getId(): ?int { return $this->id; }

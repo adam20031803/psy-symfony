@@ -22,8 +22,8 @@ class TeamMember
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column(length: 50, options: ['default' => 'member'])]
-    private ?string $role = 'member'; // member | captain | coach
+    #[ORM\Column(length: 50, nullable: false, options: ['default' => 'member'])]
+    private string $role = 'member'; // member | captain | coach
 
     #[ORM\Column]
     private ?\DateTimeImmutable $joinedAt = null;

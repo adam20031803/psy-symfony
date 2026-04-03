@@ -6,10 +6,12 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -28,10 +30,16 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(length: 20, options: ['default' => 'user'])]
-    private ?string $role = 'user'; // user | coach | admin
+    #[ORM\Column(nullable: true)]
+    private ?int $age = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $telephone = null;
+
+    #[ORM\Column(length: 20, nullable: false, options: ['default' => 'user'])]
+    private string $role = 'user'; // user | coach | admin
+
+    #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
     private ?string $photo = null;
 
     #[ORM\Column]
@@ -78,6 +86,23 @@ class User
         $this->notificationLogs = new ArrayCollection();
     }
 
+    // --- Symfony UserInterface methods ---
+
+    public function getUserIdentifier(): string { return (string) $this->email; }
+
+    public function getRoles(): array
+    {
+        return match ($this->role) {
+            'admin' => ['ROLE_ADMIN', 'ROLE_USER'],
+            'coach' => ['ROLE_COACH', 'ROLE_USER'],
+            default => ['ROLE_USER'],
+        };
+    }
+
+    public function eraseCredentials(): void {}
+
+    // --- Getters & Setters ---
+
     public function getId(): ?int { return $this->id; }
 
     public function getNom(): ?string { return $this->nom; }
@@ -91,6 +116,12 @@ class User
 
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): static { $this->password = $password; return $this; }
+
+    public function getAge(): ?int { return $this->age; }
+    public function setAge(?int $age): static { $this->age = $age; return $this; }
+
+    public function getTelephone(): ?string { return $this->telephone; }
+    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
 
     public function getRole(): ?string { return $this->role; }
     public function setRole(string $role): static { $this->role = $role; return $this; }

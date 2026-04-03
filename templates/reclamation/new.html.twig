@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Réclamation — PsyApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0d0f1a;
+            --surface: #141627;
+            --card:    #1a1d30;
+            --border:  rgba(255,255,255,0.07);
+            --accent:  #6c63ff;
+            --accent2: #00d2ff;
+            --success: #22d3a5;
+            --danger:  #f87171;
+            --text:    #e2e8f0;
+            --muted:   #64748b;
+            --radius:  16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.08) 0%, transparent 70%);
+        }
+
+        /* ── Navbar ── */
+        nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(20,22,39,.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; text-decoration: none; color: var(--text); }
+        .nav-logo .icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        .nav-logo span { color: var(--accent2); }
+        .nav-actions { display: flex; align-items: center; gap: 14px; }
+        .nav-user {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 999px; padding: 6px 16px 6px 6px;
+        }
+        .nav-avatar {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, var(--accent), #ec4899);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.75rem;
+        }
+        .nav-name { font-size: 0.83rem; font-weight: 500; }
+        .btn-nav {
+            text-decoration: none; color: var(--muted);
+            font-size: 0.82rem; font-weight: 500;
+            padding: 7px 14px; border-radius: 8px;
+            border: 1px solid var(--border); transition: all .2s;
+        }
+        .btn-nav:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
+
+        /* ── Page ── */
+        .page {
+            position: relative; z-index: 1;
+            max-width: 720px; margin: 0 auto;
+            padding: 48px 32px 80px;
+        }
+
+        /* ── Breadcrumb ── */
+        .breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; color: var(--muted); margin-bottom: 28px;
+        }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        .breadcrumb span { opacity: .4; }
+
+        /* ── Header ── */
+        .page-header { margin-bottom: 32px; }
+        .page-header h1 { font-size: 1.7rem; font-weight: 700; margin-bottom: 8px; }
+        .page-header h1 span {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .page-header p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; }
+
+        /* ── Alert ── */
+        .alert {
+            border-radius: 12px; padding: 14px 18px;
+            font-size: 0.85rem; margin-bottom: 24px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .alert-error  { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--danger); }
+        .alert-success { background: rgba(34,211,165,.1); border: 1px solid rgba(34,211,165,.3); color: var(--success); }
+
+        /* ── Card Form ── */
+        .form-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
+        }
+
+        .field { margin-bottom: 22px; }
+        .field label {
+            display: block; font-size: 0.78rem; font-weight: 600;
+            color: var(--muted); margin-bottom: 8px;
+            text-transform: uppercase; letter-spacing: .06em;
+        }
+        .field input, .field textarea, .field select {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.92rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s, background .2s;
+        }
+        .field textarea { resize: vertical; min-height: 150px; line-height: 1.6; }
+        .field input:focus, .field textarea:focus {
+            border-color: var(--accent);
+            background: rgba(108,99,255,.07);
+            box-shadow: 0 0 0 4px rgba(108,99,255,.15);
+        }
+        .field input::placeholder, .field textarea::placeholder { color: rgba(255,255,255,.22); }
+        .field .hint { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+        /* character counter */
+        .char-count { font-size: 0.73rem; color: var(--muted); text-align: right; margin-top: 4px; }
+        .char-count.warn { color: var(--danger); }
+
+        /* ── Info box ── */
+        .info-box {
+            background: rgba(108,99,255,.07);
+            border: 1px solid rgba(108,99,255,.2);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            font-size: 0.82rem;
+            color: rgba(255,255,255,.6);
+            line-height: 1.6;
+        }
+        .info-box strong { color: var(--accent); }
+
+        /* ── Actions ── */
+        .form-actions { display: flex; gap: 14px; align-items: center; margin-top: 10px; }
+        .btn-submit {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none; border-radius: 12px;
+            color: #fff; font-size: 0.95rem; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: opacity .2s, transform .15s, box-shadow .2s;
+            box-shadow: 0 6px 24px rgba(108,99,255,.35);
+        }
+        .btn-submit:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 10px 32px rgba(108,99,255,.45); }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-cancel {
+            padding: 14px 24px;
+            background: rgba(255,255,255,.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--muted); font-size: 0.9rem; font-weight: 500;
+            text-decoration: none; cursor: pointer;
+            transition: all .2s; font-family: 'Inter', sans-serif;
+        }
+        .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+    <a href="{{ path('app_dashboard') }}" class="nav-logo">
+        <div class="icon">🧠</div>
+        <div><strong>Psy</strong><span>App</span></div>
+    </a>
+    <div class="nav-actions">
+        <div class="nav-user">
+            <div class="nav-avatar">{{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}</div>
+            <span class="nav-name">{{ user.prenom }}</span>
+        </div>
+        <a href="{{ path('app_logout') }}" class="btn-nav">🚪 Déconnexion</a>
+    </div>
+</nav>
+
+<div class="page">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{{ path('app_dashboard') }}">🏠 Accueil</a>
+        <span>›</span>
+        <a href="{{ path('app_reclamation_index') }}">Mes réclamations</a>
+        <span>›</span>
+        Nouvelle réclamation
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1>📬 <span>Nouvelle</span> réclamation</h1>
+        <p>Signalez un problème ou faites une demande. Notre équipe vous répondra dans les meilleurs délais.</p>
+    </div>
+
+    <!-- Flash messages -->
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">✅ {{ message }}</div>
+    {% endfor %}
+
+    <!-- Error -->
+    {% if error %}
+        <div class="alert alert-error">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <!-- Info -->
+    <div class="info-box">
+        ℹ️ Votre réclamation sera traitée par notre équipe. Vous pouvez suivre son statut dans
+        <strong><a href="{{ path('app_reclamation_index') }}" style="color:var(--accent)">Mes réclamations</a></strong>.
+        Délai de traitement moyen : <strong>48h ouvrées</strong>.
+    </div>
+
+    <!-- Form -->
+    <div class="form-card">
+        <form method="post" action="{{ path('app_reclamation_new') }}" id="reclamation-form">
+
+            <div class="field">
+                <label for="sujet">Sujet de la réclamation *</label>
+                <input type="text"
+                       id="sujet"
+                       name="sujet"
+                       placeholder="Ex: Problème de connexion, erreur sur mon profil…"
+                       maxlength="255"
+                       required
+                       autocomplete="off">
+                <div class="char-count" id="sujet-count">0 / 255</div>
+            </div>
+
+            <div class="field">
+                <label for="description">Description détaillée *</label>
+                <textarea id="description"
+                          name="description"
+                          placeholder="Décrivez votre problème en détail : quand s'est-il produit, quelles étapes vous avez suivies, et quel résultat vous attendiez…"
+                          required></textarea>
+                <div class="hint">Plus votre description est précise, plus nous pourrons vous aider efficacement.</div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ path('app_reclamation_index') }}" class="btn-cancel">Annuler</a>
+                <button type="submit" class="btn-submit" id="submit-btn">
+                    📨 Envoyer la réclamation
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<script>
+// Character counter for sujet
+const sujetInput = document.getElementById('sujet');
+const sujetCount = document.getElementById('sujet-count');
+sujetInput.addEventListener('input', () => {
+    const len = sujetInput.value.length;
+    sujetCount.textContent = len + ' / 255';
+    sujetCount.classList.toggle('warn', len > 230);
+});
+
+// Prevent double-submit
+document.getElementById('reclamation-form').addEventListener('submit', function() {
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Envoi en cours…';
+});
+</script>
+</body>
+</html>

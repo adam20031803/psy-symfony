@@ -21,13 +21,13 @@ class MentalEntries
     #[ORM\Column(type: 'text')]
     private ?string $contenu = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(length: 50, nullable: true, options: ['default' => null])]
     private ?string $humeur = null; // triste | stresse | neutre | bien | excellent
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'datetime', nullable: true, options: ['default' => null])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()

@@ -25,8 +25,8 @@ class WorkoutPlan
     #[ORM\Column(type: 'date')]
     private ?\DateTimeInterface $datePlanifie = null;
 
-    #[ORM\Column(length: 50, options: ['default' => 'planifie'])]
-    private ?string $statut = 'planifie'; // planifie | complete | annule
+    #[ORM\Column(length: 50, nullable: false, options: ['default' => 'planifie'])]
+    private string $statut = 'planifie'; // planifie | complete | annule
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;

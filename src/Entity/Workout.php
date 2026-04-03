@@ -29,7 +29,7 @@ class Workout
     #[ORM\Column(length: 50)]
     private ?string $niveau = null; // debutant | intermediaire | avance
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
     private ?string $image = null;
 
     #[ORM\Column]

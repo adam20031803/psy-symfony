@@ -36,8 +36,8 @@ class Challenge
     #[ORM\JoinColumn(nullable: false)]
     private ?User $createdBy = null;
 
-    #[ORM\Column(length: 50, options: ['default' => 'actif'])]
-    private ?string $statut = 'actif'; // actif | termine | annule
+    #[ORM\Column(length: 50, nullable: false, options: ['default' => 'actif'])]
+    private string $statut = 'actif'; // actif | termine | annule
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
