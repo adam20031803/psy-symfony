@@ -48,6 +48,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => true])]
     private ?bool $isActive = true;
 
+    #[ORM\Column(length: 100, unique: true, nullable: true)]
+    private ?string $passwordResetToken = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $passwordResetRequestedAt = null;
+
     // Collections
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true)]
     private Collection $posts;
@@ -134,6 +140,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isActive(): ?bool { return $this->isActive; }
     public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
+
+    public function getPasswordResetToken(): ?string { return $this->passwordResetToken; }
+    public function setPasswordResetToken(?string $passwordResetToken): static
+    {
+        $this->passwordResetToken = $passwordResetToken;
+        return $this;
+    }
+
+    public function getPasswordResetRequestedAt(): ?\DateTimeImmutable { return $this->passwordResetRequestedAt; }
+    public function setPasswordResetRequestedAt(?\DateTimeImmutable $passwordResetRequestedAt): static
+    {
+        $this->passwordResetRequestedAt = $passwordResetRequestedAt;
+        return $this;
+    }
 
     public function getPosts(): Collection { return $this->posts; }
     public function addPost(Post $post): static

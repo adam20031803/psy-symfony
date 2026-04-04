@@ -5,6 +5,10 @@ framework:
     http_method_override: false
     handle_all_throwables: true
 
+    router:
+        # Lien absolu dans les emails (mot de passe oublié) quand la requête HTTP ne fournit pas le host
+        default_uri: '%env(DEFAULT_URI)%'
+
     # Enables session support. Note that the session will ONLY be started if you read or write from it.
     # Remove or comment this section to explicitly disable session support.
     session:

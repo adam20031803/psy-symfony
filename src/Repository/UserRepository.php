@@ -28,4 +28,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
+
+    public function findOneByPasswordResetToken(string $token): ?User
+    {
+        return $this->findOneBy(['passwordResetToken' => $token]);
+    }
 }
