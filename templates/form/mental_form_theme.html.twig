@@ -1,0 +1,15 @@
+{# Erreurs : affichées via le bloc parent (Bootstrap) + form_errors() dans bootstrap_field.
+   is-invalid sur le widget seulement après soumission (submitted && not valid). #}
+{% extends 'bootstrap_5_layout.html.twig' %}
+
+{% block form_help %}{% endblock %}
+
+{% block widget_attributes %}
+    {%- if submitted and not valid -%}
+        {% set attr = attr|merge({class: (attr.class|default('') ~ ' is-invalid')|trim}) %}
+    {%- endif -%}
+    id="{{ id }}" name="{{ full_name }}"
+    {%- if disabled %} disabled="disabled"{% endif -%}
+    {%- if required %} required="required"{% endif -%}
+    {{ block('attributes') }}
+{% endblock %}
