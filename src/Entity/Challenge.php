@@ -6,6 +6,7 @@ use App\Repository\ChallengeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ChallengeRepository::class)]
 #[ORM\Table(name: 'challenge')]
@@ -17,19 +18,52 @@ class Challenge
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^\d/',
+        match: false,
+        message: 'Le titre ne peut pas commencer par un chiffre.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^\d+$/',
+        match: false,
+        message: 'Le titre ne peut pas être composé uniquement de chiffres.'
+    )]
     private ?string $titre = null;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: 'La description est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères.'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: 'La date de début est obligatoire.')]
+    #[Assert\GreaterThanOrEqual(
+        value: "today",
+        message: "La date de début doit être aujourd'hui ou ultérieure."
+    )]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: 'La date de fin est obligatoire.')]
+    #[Assert\GreaterThan(
+        propertyPath: 'dateDebut',
+        message: 'La date de fin doit être postérieure à la date de début.'
+    )]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\ManyToOne(inversedBy: 'challenges')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Assert\NotNull(message: 'La catégorie est obligatoire.')]
     private ?Categorie $categorie = null;
 
     #[ORM\ManyToOne]
@@ -37,10 +71,20 @@ class Challenge
     private ?User $createdBy = null;
 
     #[ORM\Column(length: 50, nullable: false, options: ['default' => 'actif'])]
+    #[Assert\Choice(
+        choices: ['actif', 'termine', 'annule'],
+        message: 'Le statut doit être actif, termine ou annule.'
+    )]
     private string $statut = 'actif'; // actif | termine | annule
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $mediaUrl = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $mediaType = null; // image | video
 
     #[ORM\OneToMany(mappedBy: 'challenge', targetEntity: ChallengeChat::class, orphanRemoval: true)]
     private Collection $chats;
@@ -84,6 +128,12 @@ class Challenge
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+
+    public function getMediaUrl(): ?string { return $this->mediaUrl; }
+    public function setMediaUrl(?string $mediaUrl): static { $this->mediaUrl = $mediaUrl; return $this; }
+
+    public function getMediaType(): ?string { return $this->mediaType; }
+    public function setMediaType(?string $mediaType): static { $this->mediaType = $mediaType; return $this; }
 
     public function getChats(): Collection { return $this->chats; }
     public function getCoaches(): Collection { return $this->coaches; }

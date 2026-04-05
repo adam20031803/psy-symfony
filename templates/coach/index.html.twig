@@ -1,0 +1,334 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Coach Manager Pro{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/manager.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
+{% endblock %}
+
+{% block body_class %}manager-body bg-coach{% endblock %}
+
+{% block body %}
+    {% for type, messages in app.flashes %}
+        <div class="flash flash-{{ type }}" style="position:fixed;top:20px;right:20px;z-index:9999;padding:15px 25px;border-radius:10px;background:{% if type=='success' %}rgba(46,204,113,0.9){% else %}rgba(52,152,219,0.9){% endif %};color:white;font-weight:bold;box-shadow:0 5px 20px rgba(0,0,0,0.3);animation:slideIn 0.4s ease;">
+            {% for msg in messages %}{{ msg }}{% endfor %}
+        </div>
+    {% endfor %}
+
+    <header class="d-flex flex-column gap-0">
+        <div class="top-header justify-between d-flex align-center">
+            <div class="d-flex align-center gap-15">
+                <div class="header-circle coach-circle animate-pulse"></div>
+                <div>
+                    <h1 class="brand-title text-glow">COACH MANAGER PRO</h1>
+                    <p class="brand-subtitle" style="color:#cbb4d4;">Gestion des Experts</p>
+                </div>
+            </div>
+            <form method="GET" action="{{ path('app_coach_index') }}" class="d-flex align-center gap-15 card-glass" style="padding:12px 20px; border-radius:12px;">
+                <div class="d-flex align-center gap-10 flex-grow-1">
+                    <span style="font-size:18px;">🔍</span>
+                    <input type="text" name="search" value="{{ filters.search ?? '' }}" class="search-input" placeholder="Rechercher un coach..." style="background:transparent; border:none; color:white; width:100%; outline:none; font-size:14px;">
+                </div>
+                
+                <div class="vr" style="width:1px; background:rgba(255,255,255,0.1); height:24px;"></div>
+                
+                <div class="d-flex align-center gap-10">
+                    <span style="font-size:14px; color:rgba(255,255,255,0.6);">STATUT:</span>
+                    <select name="statut" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 12px; color:white; cursor:pointer; font-size:13px; outline:none;">
+                        <option value="">Tous</option>
+                        <option value="1" {% if filters.statut == '1' %}selected{% endif %}>Actif</option>
+                        <option value="0" {% if filters.statut == '0' %}selected{% endif %}>Inactif</option>
+                    </select>
+                </div>
+
+                <div class="d-flex align-center gap-10">
+                    <span style="font-size:14px; color:rgba(255,255,255,0.6);">TRIER:</span>
+                    <select name="sort" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 12px; color:white; cursor:pointer; font-size:13px; outline:none;">
+                        <option value="nom_asc" {% if filters.sort == 'nom_asc' %}selected{% endif %}>Nom (A-Z)</option>
+                        <option value="nom_desc" {% if filters.sort == 'nom_desc' %}selected{% endif %}>Nom (Z-A)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-purple" style="border-radius:8px; padding:8px 16px;">FILTRER</button>
+                <a href="{{ path('app_coach_index') }}" class="btn btn-grey" style="padding:8px; border-radius:8px;">✕</a>
+            </form>
+        </div>
+        <div class="action-bar gap-20 card-glass" style="margin:10px 20px;padding:15px; border-radius:12px;">
+            <a href="{{ path('app_challenge_index') }}" class="btn btn-blue-purple">🏆 CHALLENGE MANAGER</a>
+            <a href="{{ path('app_recompense_index') }}" class="btn btn-pink">🎁 RÉCOMPENSES</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- COLONNE GAUCHE - Liste -->
+        <div class="d-flex flex-column gap-20">
+            <div class="stats-grid">
+                <div class="stat-card border-purple card-glass">
+                    <div class="stat-icon text-purple">👨‍🏫</div>
+                    <div class="stat-title">TOTAL</div>
+                    <div class="stat-value text-white text-glow">{{ stats.total }}</div>
+                    <div class="stat-subtitle">Coaches</div>
+                </div>
+                <div class="stat-card border-green card-glass">
+                    <div class="stat-icon text-green-alt">✅</div>
+                    <div class="stat-title">ACTIFS</div>
+                    <div class="stat-value text-green text-glow">{{ stats.actifs }}</div>
+                    <div class="stat-subtitle">Disponibles</div>
+                </div>
+                <div class="stat-card border-yellow card-glass">
+                    <div class="stat-icon text-yellow">💼</div>
+                    <div class="stat-title">INACTIFS</div>
+                    <div class="stat-value text-yellow text-glow">{{ stats.total - stats.actifs }}</div>
+                    <div class="stat-subtitle">Indisponibles</div>
+                </div>
+            </div>
+
+            <div class="list-wrapper card-glass" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
+                <div class="list-header-box bg-header-coach d-flex align-center justify-center p-15">
+                    <span style="font-size:22px;">👨‍🏫</span>
+                    <h3 class="form-card-title text-white m-0 text-glow" style="margin-left:10px;">LISTE DES COACHES</h3>
+                </div>
+                <div style="overflow-y:auto;max-height:500px;padding:15px;">
+                    {% if coaches is empty %}
+                    <div class="list-placeholder d-flex flex-column align-center gap-15" style="padding:40px;">
+                        <span style="font-size:48px;">📭</span>
+                        <span style="color:white;font-weight:bold;">Aucun coach trouvé</span>
+                        <span style="color:rgba(255,255,255,0.6);font-size:13px;">Créez votre premier coach →</span>
+                    </div>
+                    {% else %}
+                    <div class="d-flex flex-column gap-12">
+                        {% for coach in coaches %}
+                        <div class="coach-row card-glass p-15"
+                             style="cursor:pointer;transition:all 0.3s ease;"
+                             data-id="{{ coach.id }}"
+                             data-nom="{{ coach.nom|e('html_attr') }}"
+                             data-prenom="{{ coach.prenom|e('html_attr') }}"
+                             data-email="{{ coach.email|e('html_attr') }}"
+                             data-age="{{ coach.age ?? '' }}"
+                             data-telephone="{{ coach.telephone ?? '' }}"
+                             data-cv="{{ coach.cv ?? '' }}"
+                             data-photo="{{ coach.photo ?? '' }}"
+                             data-actif="{{ coach.isActive ? '1' : '0' }}"
+                             data-token="{{ csrf_token('delete' ~ coach.id) }}">
+
+                            <div class="d-flex justify-between align-center" style="margin-bottom:8px;">
+                                <div class="d-flex align-center gap-10">
+                                    {% if coach.photo %}
+                                        <img src="{{ asset(coach.photo) }}" alt="Photo" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #b224ef;">
+                                    {% else %}
+                                        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#b224ef,#7579ff);display:flex;align-items:center;justify-content:center;font-size:18px;">
+                                            👤
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h4 class="text-white m-0 text-glow" style="font-size:15px;">{{ coach.nom }} {{ coach.prenom }}</h4>
+                                        <small style="color:#cbb4d4;">✉️ {{ coach.email }}</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column align-end">
+                                    <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:bold;margin-bottom:5px;
+                                        {% if coach.isActive %}background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid #2ecc71;
+                                        {% else %}background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid #e74c3c;{% endif %}">
+                                        {{ coach.isActive ? '✅ ACTIF' : '❌ INACTIF' }}
+                                    </span>
+                                    {% if coach.cv %}
+                                        <a href="{{ coach.cv }}" target="_blank" class="text-glow" style="font-size:11px;color:#a8c0ff;text-decoration:none;">📄 Voir CV</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-15" style="font-size:11px;color:rgba(255,255,255,0.6);">
+                                {% if coach.age %}
+                                <span>🎂 <strong style="color:#cbb4d4;">{{ coach.age }} ans</strong></span>
+                                {% endif %}
+                                {% if coach.telephone %}
+                                <span>📞 <strong style="color:#cbb4d4;">{{ coach.telephone }}</strong></span>
+                                {% endif %}
+                                <span>👑 Rôle: <strong style="color:#b224ef;">COACH</strong></span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="list-footer" style="padding:10px;text-align:center;color:rgba(255,255,255,0.5);font-size:12px;">
+                    👆 Cliquez sur un coach pour remplir le formulaire
+                </div>
+            </div>
+        </div>
+
+        <!-- COLONNE DROITE - Formulaire -->
+        <div class="d-flex flex-column gap-20">
+            <div class="form-card d-flex flex-column gap-15 card-glass" style="padding:25px;">
+                <div class="d-flex align-center gap-12 mb-5">
+                    <div class="form-header-circle bg-form-coach"></div>
+                    <h3 class="form-card-title text-glow m-0">ÉDITION COACH</h3>
+                </div>
+                <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">Les coaches sont des utilisateurs avec rôle "coach"</p>
+
+                <form id="coachForm" method="POST" action="{{ path('app_coach_new') }}" class="d-flex flex-column gap-12" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="coachId" value="">
+
+                    <div class="grid-2 gap-12">
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#cbb4d4;">NOM *</label>
+                            <input type="text" name="nom" id="nomField" class="form-control p-10" placeholder="Nom du coach" required>
+                        </div>
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#cbb4d4;">PRÉNOM *</label>
+                            <input type="text" name="prenom" id="prenomField" class="form-control p-10" placeholder="Prénom" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group d-flex flex-column gap-5">
+                        <label class="form-group-title" style="color:#cbb4d4;">✉️ EMAIL *</label>
+                        <input type="email" name="email" id="emailField" class="form-control p-10" placeholder="coach@example.com" required>
+                    </div>
+
+                    <div class="grid-2 gap-12">
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#cbb4d4;">🎂 ÂGE *</label>
+                            <input type="number" name="age" id="ageField" class="form-control p-10" placeholder="Ex: 35" min="1" max="100" required>
+                        </div>
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#cbb4d4;">📞 TÉLÉPHONE (8 chiffres) *</label>
+                            <input type="text" name="telephone" id="telephoneField" class="form-control p-10" placeholder="Ex: 22113344" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2 gap-12">
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#a8c0ff;">📄 CV (PDF/Image) *</label>
+                            <div id="cvDisplay" class="mb-5" style="display:none; padding:8px; background:rgba(0,210,255,0.1); border-radius:8px; border:1px dashed rgba(0,210,255,0.3);">
+                                <span style="font-size:11px; color:rgba(255,255,255,0.8);">📄 Fichier actuel : </span>
+                                <a href="#" id="cvLink" target="_blank" style="font-size:11px; color:#00d2ff; font-weight:bold; text-decoration:none;">Voir le fichier</a>
+                            </div>
+                            <input type="file" name="cv" id="cvField" class="form-control p-10" accept=".pdf,image/*">
+                        </div>
+                        <div class="form-group d-flex flex-column gap-5">
+                            <label class="form-group-title" style="color:#ffb199;">📸 PHOTO DE PROFIL</label>
+                            <div id="photoDisplay" class="mb-5" style="display:none; padding:8px; background:rgba(255,177,153,0.1); border-radius:8px; border:1px dashed rgba(255,177,153,0.3);">
+                                <span style="font-size:11px; color:rgba(255,255,255,0.8);">📸 Photo actuelle : </span>
+                                <a href="#" id="photoLink" target="_blank" style="font-size:11px; color:#ffb199; font-weight:bold; text-decoration:none;">Voir la photo</a>
+                            </div>
+                            <input type="file" name="photo" id="photoField" class="form-control p-10" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="status-box d-flex align-center gap-10 card-glass p-10">
+                        <span style="font-size:20px;">⚡</span>
+                        <div class="d-flex flex-column flex-grow-1">
+                            <span class="text-white" style="font-weight:bold;">Disponibilité</span>
+                            <span style="color:rgba(255,255,255,0.5);font-size:11px;">Cocher si le coach est disponible</span>
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;color:#2ecc71;font-weight:bold;cursor:pointer;">
+                            <input type="checkbox" name="actif" id="actifField" style="width:20px;height:20px;cursor:pointer;" checked>
+                            Actif
+                        </label>
+                    </div>
+
+                    <div class="grid-2 gap-12" style="margin-top:5px;">
+                        <button type="submit" id="btnAdd" class="btn btn-purple p-12" style="border-radius:8px;">➕ AJOUTER</button>
+                        <button type="button" id="btnEdit" class="btn btn-blue-purple p-12" style="border-radius:8px;">✏️ MODIFIER</button>
+                        <button type="button" id="btnDelete" class="btn btn-orange-red p-12" style="border-radius:8px;">🗑️ SUPPRIMER</button>
+                        <button type="button" id="btnReset" class="btn p-12" style="background:rgba(255,255,255,0.1);color:white;border-radius:8px;">🔄 VIDER</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="advice-card advice-coach card-glass d-flex flex-column gap-10" style="padding:20px;">
+                <div class="d-flex align-center gap-10">
+                    <span style="font-size:22px;">💡</span>
+                    <span class="advice-title text-glow">CONSEIL PRO</span>
+                </div>
+                <p class="advice-subtitle">Un coach avec une description détaillée est 60% plus susceptible d'être choisi. Incluez l'email pour permettre aux participants de le contacter.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer text-white">
+        © 2024 Coach Manager Pro — Symfony Edition | Experts en Motivation
+    </footer>
+
+    <style>
+        @keyframes slideIn { from { transform:translateX(120%);opacity:0; } to { transform:translateX(0);opacity:1; } }
+        .p-10{padding:10px;} .p-12{padding:12px;} .gap-12{gap:12px;} .m-0{margin:0;} .mb-5{margin-bottom:5px;}
+        .filter-select option {
+            background-color: #1e1b4b; /* Dark purple/blue to match theme */
+            color: #ffffff;
+            font-weight: 500;
+        }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('coachForm');
+        const idField = document.getElementById('coachId');
+        const cvDisplay = document.getElementById('cvDisplay');
+        const cvLink = document.getElementById('cvLink');
+        const cvField = document.getElementById('cvField');
+        const photoDisplay = document.getElementById('photoDisplay');
+        const photoLink = document.getElementById('photoLink');
+        const photoField = document.getElementById('photoField');
+
+        document.querySelectorAll('.coach-row').forEach(row => {
+            row.addEventListener('click', () => {
+                idField.value = row.dataset.id;
+                document.getElementById('nomField').value       = row.dataset.nom;
+                document.getElementById('prenomField').value    = row.dataset.prenom;
+                document.getElementById('emailField').value     = row.dataset.email;
+                document.getElementById('ageField').value       = row.dataset.age;
+                document.getElementById('telephoneField').value = row.dataset.telephone;
+                document.getElementById('actifField').checked   = row.dataset.actif === '1';
+                
+                if (row.dataset.cv) {
+                    cvDisplay.style.display = 'block';
+                    cvLink.href = "/uploads/cv/" + row.dataset.cv.split('/').pop();
+                    cvField.required = false;
+                } else {
+                    cvDisplay.style.display = 'none';
+                    cvField.required = true;
+                }
+
+                if (row.dataset.photo) {
+                    photoDisplay.style.display = 'block';
+                    photoLink.href = row.dataset.photo;
+                } else {
+                    photoDisplay.style.display = 'none';
+                }
+
+                document.querySelectorAll('.coach-row').forEach(r => r.style.borderColor = 'rgba(255,255,255,0.08)');
+                row.style.borderColor = '#b224ef';
+            });
+        });
+
+        document.getElementById('btnEdit').addEventListener('click', () => {
+            if (!idField.value) { alert('Sélectionnez un coach dans la liste.'); return; }
+            form.action = '/coach/' + idField.value + '/edit';
+            form.submit();
+        });
+
+        document.getElementById('btnDelete').addEventListener('click', () => {
+            if (!idField.value) { alert('Sélectionnez un coach dans la liste.'); return; }
+            if (!confirm('Supprimer ce coach ?')) return;
+            form.action = '/coach/' + idField.value + '/delete';
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden'; csrf.name = '_token';
+            const row = document.querySelector(`.coach-row[data-id="${idField.value}"]`);
+            if (row) csrf.value = row.dataset.token;
+            form.appendChild(csrf);
+            form.submit();
+        });
+
+        document.getElementById('btnReset').addEventListener('click', () => {
+            form.reset(); idField.value = '';
+            cvDisplay.style.display = 'none';
+            photoDisplay.style.display = 'none';
+            cvField.required = true;
+            form.action = '{{ path("app_coach_new") }}';
+            document.querySelectorAll('.coach-row').forEach(r => r.style.borderColor = 'rgba(255,255,255,0.08)');
+        });
+    });
+    </script>
+{% endblock %}

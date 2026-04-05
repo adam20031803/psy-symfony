@@ -305,11 +305,14 @@
     <a href="{{ path('app_admin') }}" class="nav-item active">
         <span class="nav-icon">👥</span> Utilisateurs
     </a>
-    <a href="#section-reclamations" class="nav-item">
+    <a href="{{ path('app_admin') }}#section-reclamations" class="nav-item">
         <span class="nav-icon">📬</span> Réclamations
-        {% if stats.rec_ouvert > 0 %}
+        {% if stats.rec_ouvert is defined and stats.rec_ouvert > 0 %}
             <span style="margin-left:auto;background:rgba(245,158,11,.2);color:var(--warning);font-size:0.7rem;font-weight:700;padding:2px 7px;border-radius:999px;">{{ stats.rec_ouvert }}</span>
         {% endif %}
+    </a>
+    <a href="{{ path('app_admin_motivation') }}" class="nav-item">
+        <span class="nav-icon">🚀</span> Motivation
     </a>
 
     <div class="sidebar-spacer"></div>

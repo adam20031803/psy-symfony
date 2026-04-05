@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CoachMotivationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CoachMotivationRepository::class)]
 #[ORM\Table(name: 'coach_motivation')]
@@ -16,9 +17,17 @@ class CoachMotivation
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'Le coach est obligatoire.')]
     private ?User $coach = null;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: 'Le message de motivation est obligatoire.')]
+    #[Assert\Length(
+        min: 5,
+        max: 2000,
+        minMessage: 'Le message doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le message ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $message = null;
 
     #[ORM\Column]

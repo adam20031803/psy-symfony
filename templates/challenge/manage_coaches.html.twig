@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+{% block title %}Coaches du Challenge — {{ challenge.titre }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/manager.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
+{% endblock %}
+{% block body_class %}manager-body bg-coach{% endblock %}
+{% block body %}
+<div style="padding:30px;max-width:900px;margin:0 auto;">
+    <div class="d-flex align-center gap-15" style="margin-bottom:25px;">
+        <a href="{{ path('app_challenge_index') }}" class="btn btn-blue-purple" style="border-radius:8px;">← Retour</a>
+        <div>
+            <h1 class="brand-title text-glow" style="font-size:20px;">👨‍🏫 Coaches associés</h1>
+            <p style="color:rgba(255,255,255,0.6);margin:0;font-size:13px;">Challenge: <strong style="color:#a8c0ff;">{{ challenge.titre }}</strong></p>
+        </div>
+    </div>
+
+    <div class="card-glass" style="padding:20px;border-radius:16px;">
+        {% if challenge.coaches is empty %}
+        <div class="list-placeholder d-flex flex-column align-center gap-15" style="padding:40px;">
+            <span style="font-size:48px;">📭</span>
+            <span style="color:white;font-weight:bold;">Aucun coach assigné à ce challenge</span>
+        </div>
+        {% else %}
+        <div class="d-flex flex-column gap-12">
+            {% for cc in challenge.coaches %}
+            <div class="card-glass p-15" style="border-radius:12px;">
+                <div class="d-flex align-center gap-15">
+                    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#b224ef,#7579ff);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">👤</div>
+                    <div class="flex-grow-1">
+                        <h4 class="text-glow m-0" style="font-size:16px;color:white;">{{ cc.coach.nom }} {{ cc.coach.prenom }}</h4>
+                        <p style="color:#cbb4d4;margin:3px 0;font-size:13px;">✉️ {{ cc.coach.email }}</p>
+                        {% if cc.coach.telephone %}<p style="color:rgba(255,255,255,0.5);margin:0;font-size:12px;">📞 {{ cc.coach.telephone }}</p>{% endif %}
+                    </div>
+                    <span style="padding:5px 15px;border-radius:20px;font-size:11px;font-weight:bold;{% if cc.coach.isActive %}background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid #2ecc71;{% else %}background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid #e74c3c;{% endif %}">
+                        {{ cc.coach.isActive ? '✅ ACTIF' : '❌ INACTIF' }}
+                    </span>
+                    <div style="font-size:11px;color:rgba(255,255,255,0.4);">Assigné le {{ cc.assignedAt|date('d/m/Y') }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
