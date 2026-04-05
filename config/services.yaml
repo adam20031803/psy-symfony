@@ -6,6 +6,7 @@
 parameters:
     # Si non vide, les mails « mot de passe oublié » sont envoyés uniquement à cette adresse (test / démo).
     env(MAILER_FORCE_TO): ''
+    app.mailer_from: '%env(MAILER_FROM)%'
 
 services:
     # default configuration for services in *this* file

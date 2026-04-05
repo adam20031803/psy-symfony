@@ -1,0 +1,125 @@
+/* =========================================
+   PREMIUM GLASSMORPHISM & NEON DESIGN
+========================================= */
+
+/* Application of a beautiful dark cosmic background to the pages */
+body.bg-challenge, body.bg-coach, body.bg-recompense {
+    background: radial-gradient(circle at top left, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+    background-attachment: fixed !important;
+    color: #e0e0e0;
+}
+
+/* Glassmorphism Cards */
+.card-glass {
+    background: rgba(255, 255, 255, 0.03) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 16px !important;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.card-glass:hover {
+    transform: translateY(-8px) scale(1.02) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 15px 40px rgba(52, 152, 219, 0.3), inset 0 0 15px rgba(255,255,255,0.05) !important;
+    z-index: 10;
+}
+
+/* Glowing text & badges */
+.text-glow {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7), 0 0 20px rgba(255, 255, 255, 0.5) !important;
+    color: #fff !important;
+}
+
+.badge-neon-green {
+    background: rgba(46, 204, 113, 0.1) !important;
+    color: #2ecc71 !important;
+    border: 1px solid #2ecc71 !important;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.4) !important;
+}
+
+.badge-neon-red {
+    background: rgba(231, 76, 60, 0.1) !important;
+    color: #e74c3c !important;
+    border: 1px solid #e74c3c !important;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.4) !important;
+}
+
+/* Inputs styling upgrades */
+.form-control {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+.form-control:focus {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: #3498db !important;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.5) !important;
+    outline: none !important;
+}
+
+/* Stunning Buttons */
+.btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    z-index: 1;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 0; height: 100%;
+    background: rgba(255,255,255,0.2);
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.btn:hover::before {
+    width: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+}
+
+.btn-blue-purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; border:none !important; color: white !important;}
+.btn-pink { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; border:none !important; color: white !important;}
+.btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%) !important; border:none !important; color: white !important;}
+.btn-orange-red { background: linear-gradient(135deg, #f83600 0%, #f9d423 100%) !important; border:none !important; color: white !important;}
+
+/* Pulse Animation */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+.animate-pulse {
+    animation: pulseGlow 2s infinite;
+}
+
+/* Custom Scrollbar to hide ugly browser scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.02);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.4);
+}

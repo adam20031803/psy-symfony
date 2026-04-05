@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+{% block title %}Récompenses du Challenge — {{ challenge.titre }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/manager.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
+{% endblock %}
+{% block body_class %}manager-body bg-recompense{% endblock %}
+{% block body %}
+<div style="padding:30px;max-width:900px;margin:0 auto;">
+    <div class="d-flex align-center gap-15" style="margin-bottom:25px;">
+        <a href="{{ path('app_challenge_index') }}" class="btn btn-blue-purple" style="border-radius:8px;">← Retour</a>
+        <div>
+            <h1 class="brand-title text-glow" style="font-size:20px;">🎁 Récompenses associées</h1>
+            <p style="color:rgba(255,255,255,0.6);margin:0;font-size:13px;">Challenge: <strong style="color:#ffd89b;">{{ challenge.titre }}</strong></p>
+        </div>
+    </div>
+
+    <div class="card-glass" style="padding:20px;border-radius:16px;">
+        {% if challenge.recompenses is empty %}
+        <div class="list-placeholder d-flex flex-column align-center gap-15" style="padding:40px;">
+            <span style="font-size:48px;">📭</span>
+            <span style="color:white;font-weight:bold;">Aucune récompense associée à ce challenge</span>
+        </div>
+        {% else %}
+        <div class="d-flex flex-column gap-12">
+            {% for cr in challenge.recompenses %}
+            <div class="card-glass p-15" style="border-radius:12px;">
+                <div class="d-flex align-center gap-15">
+                    <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#ff0844,#ffb199);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏆</div>
+                    <div class="flex-grow-1">
+                        <h4 class="text-glow m-0" style="font-size:16px;color:white;">{{ cr.recompense.nom }}</h4>
+                        <p style="color:rgba(255,255,255,0.7);margin:3px 0;font-size:13px;">{{ cr.recompense.description|length > 80 ? cr.recompense.description|slice(0,80) ~ '...' : cr.recompense.description }}</p>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div style="padding:6px 16px;border-radius:20px;background:rgba(255,226,89,0.15);color:#ffe259;border:1px solid rgba(255,226,89,0.4);font-weight:bold;font-size:14px;">
+                            ⭐ {{ cr.recompense.points }} pts
+                        </div>
+                        {% if cr.recompense.image %}
+                        <small style="color:rgba(255,255,255,0.4);font-size:11px;">🖼️ {{ cr.recompense.image }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

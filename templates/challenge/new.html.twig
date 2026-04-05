@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Challenge Psychologie — PsyApp{% endblock %}
+
+{% block stylesheets %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0b0e1a; color: #f8fafc; min-height: 100vh; padding: 40px 20px; }
+        .creation-container { max-width: 650px; margin: 0 auto; }
+        .creation-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 40px; backdrop-filter: blur(15px); box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+        .header { text-align: center; margin-bottom: 35px; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; color: white; margin-bottom: 5px; }
+        .header p { color: #94a3b8; font-size: 0.9rem; }
+        
+        .form-group { margin-bottom: 22px; }
+        label { display: block; font-size: 0.8rem; font-weight: 600; color: #a8c0ff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        input, textarea, select { 
+            width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 12px; padding: 12px 16px; color: white; font-size: 0.95rem; transition: 0.3s; 
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #7c3aed; background: rgba(255, 255, 255, 0.07); }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-submit { 
+            width: 100%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; border: none; 
+            padding: 15px; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; margin-top: 15px;
+        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3); }
+        
+        #other-cat-group { display: none; margin-top: 15px; }
+        .media-preview-container { text-align: center; margin-bottom: 25px; }
+        #media-preview { max-width: 100%; max-height: 200px; border-radius: 10px; display: none; margin: 10px auto; border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="creation-container">
+    <div class="creation-card">
+        <div class="header">
+            <h1>Configuration Challenge</h1>
+            <p>Intelligence émotionnelle et développement personnel</p>
+        </div>
+
+        <form action="{{ path('app_challenge_new') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="media">Média d'illustration (Photo/Vidéo)</label>
+                <input type="file" id="media" name="media" accept="image/*,video/*" onchange="previewMedia(this)">
+                <div class="media-preview-container">
+                    <img id="media-preview">
+                    <video id="video-preview" style="display:none; max-width:100%; border-radius:10px;" controls></video>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="titre">Titre du Challenge</label>
+                <input type="text" id="titre" name="titre" placeholder="Ex: Master Concentration (30j)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description & Objectifs</label>
+                <textarea id="description" name="description" rows="3" placeholder="Quels sont les impacts attendus ?"></textarea>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="dateDebut">Date de Début</label>
+                    <input type="date" id="dateDebut" name="dateDebut" required>
+                </div>
+                <div class="form-group">
+                    <label for="dateFin">Date de Fin</label>
+                    <input type="date" id="dateFin" name="dateFin" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="categorie">Thématique</label>
+                <select id="categorie" name="categorie" onchange="toggleOther(this)">
+                    <option value="" disabled selected>Sélectionnez une thématique</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.nom }}</option>
+                    {% endfor %}
+                    <option value="autre">+ Autre thématique...</option>
+                </select>
+                
+                <div id="other-cat-group">
+                    <input type="text" name="new_categorie" placeholder="Saisissez la nouvelle thématique...">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Propulser le Challenge 🚀</button>
+            <a href="{{ path('app_admin_motivation') }}" style="display:block; text-align:center; margin-top:20px; color:#64748b; text-decoration:none; font-size:0.9rem;">Retour au Dashboard</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    function previewMedia(input) {
+        const preview = document.getElementById('media-preview');
+        const videoPreview = document.getElementById('video-preview');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            if (file.type.startsWith('video/')) {
+                const url = URL.createObjectURL(file);
+                videoPreview.src = url;
+                videoPreview.style.display = 'block';
+                preview.style.display = 'none';
+            } else {
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    videoPreview.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+
+    function toggleOther(select) {
+        const group = document.getElementById('other-cat-group');
+        group.style.display = select.value === 'autre' ? 'block' : 'none';
+    }
+</script>
+{% endblock %}

@@ -7,6 +7,10 @@ use App\Entity\User;
 use App\Repository\ReclamationRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Challenge;
+use App\Entity\Recompense;
+use App\Repository\ChallengeRepository;
+use App\Repository\RecompenseRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -103,6 +107,35 @@ class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin');
+    }
+    #[Route('/motivation', name: 'app_admin_motivation')]
+    public function motivationDashboard(
+        ChallengeRepository $challengeRepo,
+        UserRepository $userRepo,
+        RecompenseRepository $recompenseRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $challenges  = $challengeRepo->findAll();
+        $coaches     = $userRepo->findBy(['role' => 'coach']);
+        $recompenses = $recompenseRepo->findAll();
+
+        $stats = [
+            'ch_total'    => count($challenges),
+            'ch_active'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'actif')),
+            'ch_done'     => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'termine')),
+            'co_total'    => count($coaches),
+            'co_active'   => count(array_filter($coaches, fn(User $u) => $u->isActive())),
+            'rec_total'   => count($recompenses),
+            'rec_points'  => array_reduce($recompenses, fn($carry, Recompense $r) => $carry + $r->getPoints(), 0),
+            'rec_ouvert'  => $em->getRepository(\App\Entity\Reclamation::class)->count(['statut' => 'ouvert']),
+        ];
+
+        return $this->render('admin/motivation.html.twig', [
+            'stats'       => $stats,
+            'challenges'  => $challenges,
+            'coaches'     => $coaches,
+            'recompenses' => $recompenses,
+        ]);
     }
 }
 

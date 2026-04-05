@@ -1,0 +1,35 @@
+[notice] Migrating up to DoctrineMigrations\Version20260404135706
+[error] Migration DoctrineMigrations\Version20260403143126 failed during Execution. Error: "An exception occurred while executing a query: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'app_settings' already exists"
+[critical] Error thrown while running command "doctrine:migrations:migrate -n". Message: "An exception occurred while executing a query: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'app_settings' already exists"
+
+In ExceptionConverter.php line 49:
+                         
+  An exception occurred  
+   while executing a qu  
+  ery: SQLSTATE[42S01]:  
+   Base table or view a  
+  lready exists: 1050 T  
+  able 'app_settings' a  
+  lready exists          
+                         
+
+In Exception.php line 24:
+                         
+  SQLSTATE[42S01]: Base  
+   table or view alread  
+  y exists: 1050 Table   
+  'app_settings' alread  
+  y exists               
+                         
+
+In Connection.php line 57:
+                         
+  SQLSTATE[42S01]: Base  
+   table or view alread  
+  y exists: 1050 Table   
+  'app_settings' alread  
+  y exists               
+                         
+
+doctrine:migrations:migrate [--write-sql [WRITE-SQL]] [--dry-run] [--query-time] [--allow-no-migration] [--all-or-nothing [ALL-OR-NOTHING]] [--no-all-or-nothing] [--configuration CONFIGURATION] [--em EM] [--conn CONN] [--] [<version>]
+

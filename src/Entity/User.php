@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -18,22 +19,43 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Le CV est obligatoire pour un coach.', groups: ['coach'])]
+    private ?string $cv = null;
+
+    public function getCv(): ?string { return $this->cv; }
+    public function setCv(?string $cv): static { $this->cv = $cv; return $this; }
+
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'adresse email '{{ value }}' n'est pas un email valide.")]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\Positive(message: "L'âge doit être strictement supérieur à 0.")]
     private ?int $age = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Regex(
+        pattern: '/^[0-9]{8}$/',
+        message: 'Le numéro de téléphone doit être composé exactement de 8 chiffres.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^0{8}$/',
+        match: false,
+        message: 'Le numéro de téléphone ne peut pas être composé uniquement de zéros.'
+    )]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 20, nullable: false, options: ['default' => 'user'])]

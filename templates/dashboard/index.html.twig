@@ -5,23 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Espace — PsyApp</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:       #0d0f1a;
-            --surface:  #141627;
-            --card:     #1a1d30;
-            --border:   rgba(255,255,255,0.07);
+            --bg:       #0a0c1a;
+            --surface:  #111328;
+            --card:     #181b30;
+            --sidebar:  #0e1025;
+            --border:   rgba(255,255,255,0.06);
             --accent:   #6c63ff;
             --accent2:  #00d2ff;
             --success:  #22d3a5;
             --warning:  #f59e0b;
             --pink:     #ec4899;
+            --orange:   #f97316;
             --text:     #e2e8f0;
             --muted:    #64748b;
             --radius:   16px;
+            --sidebar-w: 280px;
         }
 
         body {
@@ -29,6 +32,8 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ── Background glow ── */
@@ -37,22 +42,23 @@
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.12) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.08) 0%, transparent 70%);
+                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%);
             pointer-events: none;
             z-index: 0;
         }
 
         /* ── Navbar ── */
-        nav {
+        .top-nav {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(20,22,39,.85);
-            backdrop-filter: blur(14px);
+            background: rgba(14,16,37,.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border-bottom: 1px solid var(--border);
-            padding: 0 40px;
-            height: 64px;
+            padding: 0 32px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -62,16 +68,16 @@
             align-items: center;
             gap: 10px;
             font-weight: 700;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
         }
         .nav-logo .icon {
-            width: 36px; height: 36px;
+            width: 34px; height: 34px;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 10px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         .nav-logo span { color: var(--accent2); }
         .nav-logo strong { color: var(--text); }
@@ -83,97 +89,254 @@
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 999px;
-            padding: 6px 16px 6px 6px;
+            padding: 5px 14px 5px 5px;
         }
         .nav-avatar {
-            width: 30px; height: 30px;
+            width: 28px; height: 28px;
             background: linear-gradient(135deg, var(--accent), var(--pink));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
-        .nav-name { font-size: 0.83rem; font-weight: 500; }
+        .nav-name { font-size: 0.8rem; font-weight: 500; }
         .btn-logout {
             text-decoration: none;
             color: var(--muted);
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 500;
-            padding: 7px 14px;
+            padding: 6px 12px;
             border-radius: 8px;
             border: 1px solid var(--border);
             transition: all .2s;
         }
         .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
 
-        /* ── Page ── */
-        .page {
+        /* ── Layout ── */
+        .app-layout {
+            display: flex;
+            flex: 1;
             position: relative;
             z-index: 1;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 48px 32px 80px;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: calc(100vh - 60px);
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 24px;
+            margin-bottom: 10px;
+            margin-top: 8px;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 0 12px;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all .25s cubic-bezier(.4,0,.2,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-link:hover {
+            background: rgba(108,99,255,.08);
+            color: var(--text);
+            transform: translateX(4px);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08));
+            color: #fff;
+            font-weight: 600;
+            border: 1px solid rgba(108,99,255,.2);
+            box-shadow: 0 4px 16px rgba(108,99,255,.12);
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: linear-gradient(180deg, var(--accent), var(--accent2));
+            border-radius: 0 4px 4px 0;
+        }
+        .sidebar-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            transition: transform .25s;
+        }
+        .sidebar-link:hover .sidebar-icon {
+            transform: scale(1.1);
+        }
+        .si-purple   { background: rgba(108,99,255,.12); }
+        .si-teal     { background: rgba(0,210,255,.10); }
+        .si-green    { background: rgba(34,211,165,.10); }
+        .si-pink     { background: rgba(236,72,153,.10); }
+        .si-orange   { background: rgba(249,115,22,.10); }
+        .si-blue     { background: rgba(59,130,246,.10); }
+        .si-yellow   { background: rgba(245,158,11,.10); }
+
+        .sidebar-link-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .sidebar-link-title {
+            font-size: 0.84rem;
+            line-height: 1.3;
+        }
+        .sidebar-link-sub {
+            font-size: 0.68rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        .sidebar-link:hover .sidebar-link-sub,
+        .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
+
+        .sidebar-badge {
+            margin-left: auto;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(108,99,255,.18);
+            color: var(--accent);
+            letter-spacing: .02em;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 24px;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px 20px 0;
+        }
+        .sidebar-pro-card {
+            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08));
+            border: 1px solid rgba(108,99,255,.18);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+        }
+        .sidebar-pro-card .pro-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .sidebar-pro-card h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sidebar-pro-card p {
+            font-size: 0.7rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            flex: 1;
+            padding: 36px 40px 80px;
+            max-width: 900px;
         }
 
         /* ── Hero greeting ── */
         .hero {
-            background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08));
-            border: 1px solid rgba(108,99,255,.25);
+            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.06));
+            border: 1px solid rgba(108,99,255,.18);
             border-radius: var(--radius);
-            padding: 36px 40px;
-            margin-bottom: 40px;
+            padding: 32px 36px;
+            margin-bottom: 36px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 24px;
         }
-        .hero-text h1 { font-size: 1.8rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+        .hero-text h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
         .hero-text h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero-text p { color: var(--muted); font-size: 0.9rem; }
-        .hero-emoji { font-size: 5rem; line-height: 1; user-select: none; }
+        .hero-text p { color: var(--muted); font-size: 0.85rem; }
+        .hero-emoji { font-size: 4.5rem; line-height: 1; user-select: none; }
 
         /* ── Section ── */
         .section-title {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             letter-spacing: .1em;
             text-transform: uppercase;
             color: var(--muted);
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         /* ── Feature grid ── */
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 18px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 36px;
         }
         .feature-card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 22px;
             text-decoration: none;
             color: var(--text);
             transition: transform .2s, box-shadow .2s, border-color .2s;
             cursor: pointer;
         }
         .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0,0,0,.35);
-            border-color: rgba(108,99,255,.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,.3);
+            border-color: rgba(108,99,255,.25);
         }
         .feature-icon {
-            width: 48px; height: 48px;
-            border-radius: 13px;
+            width: 44px; height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
-            margin-bottom: 16px;
+            font-size: 1.3rem;
+            margin-bottom: 14px;
         }
         .fi-purple { background: rgba(108,99,255,.15); }
         .fi-teal   { background: rgba(0,210,255,.12); }
@@ -181,29 +344,29 @@
         .fi-pink   { background: rgba(236,72,153,.12); }
         .fi-orange { background: rgba(245,158,11,.12); }
         .fi-blue   { background: rgba(59,130,246,.12); }
-        .feature-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
-        .feature-card p  { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+        .feature-card h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+        .feature-card p  { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
 
         /* ── Mood bar ── */
         .mood-section {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 28px 30px;
+            padding: 24px 26px;
         }
-        .mood-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
-        .mood-section p  { font-size: 0.82rem; color: var(--muted); margin-bottom: 22px; }
-        .mood-row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .mood-section h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 5px; }
+        .mood-section p  { font-size: 0.8rem; color: var(--muted); margin-bottom: 18px; }
+        .mood-row { display: flex; gap: 12px; flex-wrap: wrap; }
         .mood-btn {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px 20px;
+            padding: 12px 18px;
             text-align: center;
             cursor: pointer;
             transition: all .2s;
             flex: 1;
-            min-width: 80px;
+            min-width: 72px;
             font-family: inherit;
             color: var(--text);
         }
@@ -212,86 +375,97 @@
             background: rgba(108,99,255,.12);
             transform: scale(1.05);
         }
-        .mood-btn .emoji { font-size: 1.8rem; display: block; margin-bottom: 6px; }
-        .mood-btn span   { font-size: 0.72rem; color: var(--muted); }
+        .mood-btn .emoji { font-size: 1.6rem; display: block; margin-bottom: 5px; }
+        .mood-btn span   { font-size: 0.68rem; color: var(--muted); }
         .mood-submit {
-            margin-top: 18px;
+            margin-top: 14px;
             background: linear-gradient(90deg, var(--accent), var(--accent2));
             color: #fff;
             border: none;
             border-radius: 10px;
-            padding: 10px 28px;
+            padding: 9px 24px;
             font-family: inherit;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             transition: opacity .2s;
         }
         .mood-submit:hover { opacity: .85; }
 
-        /* ── Réclamations section ── */
-        .rec-section {
-            margin-top: 36px;
-        }
+        /* ── Réclamations ── */
+        .rec-section { margin-top: 32px; }
         .rec-section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .rec-section-header .section-title { margin-bottom: 0; }
         .btn-rec-new {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 8px 16px;
+            padding: 7px 14px;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             border: none; border-radius: 10px;
-            color: #fff; font-size: 0.78rem; font-weight: 600;
+            color: #fff; font-size: 0.75rem; font-weight: 600;
             text-decoration: none; cursor: pointer;
             transition: opacity .2s;
-            box-shadow: 0 4px 14px rgba(108,99,255,.3);
+            box-shadow: 0 3px 12px rgba(108,99,255,.25);
         }
         .btn-rec-new:hover { opacity: .88; }
         .rec-empty {
             background: var(--card); border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 32px; text-align: center;
-            color: var(--muted); font-size: 0.85rem;
+            padding: 28px; text-align: center;
+            color: var(--muted); font-size: 0.82rem;
         }
-        .rec-empty span { font-size: 2rem; display: block; margin-bottom: 10px; }
-        .rec-list { display: flex; flex-direction: column; gap: 10px; }
+        .rec-empty span { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+        .rec-list { display: flex; flex-direction: column; gap: 8px; }
         .rec-item {
             background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 16px 20px;
+            border-radius: 12px; padding: 14px 18px;
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             transition: border-color .2s;
         }
-        .rec-item:hover { border-color: rgba(108,99,255,.3); }
+        .rec-item:hover { border-color: rgba(108,99,255,.25); }
         .rec-info { flex: 1; min-width: 0; }
-        .rec-sujet { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rec-date  { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+        .rec-sujet { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rec-date  { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
         .badge {
             display: inline-flex; align-items: center; gap: 4px;
-            font-size: 0.7rem; font-weight: 600;
-            padding: 4px 10px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
+            font-size: 0.67rem; font-weight: 600;
+            padding: 3px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
         }
         .badge-ouvert   { background: rgba(245,158,11,.15);  color: var(--warning); border: 1px solid rgba(245,158,11,.3); }
         .badge-en_cours { background: rgba(0,210,255,.12);   color: var(--accent2); border: 1px solid rgba(0,210,255,.3); }
         .badge-resolu   { background: rgba(34,211,165,.12);  color: var(--success); border: 1px solid rgba(34,211,165,.3); }
         .badge-ferme    { background: rgba(100,116,139,.12); color: var(--muted);   border: 1px solid rgba(100,116,139,.3); }
-        .rec-voir-plus {
-            text-align: center; margin-top: 14px;
-        }
+        .rec-voir-plus { text-align: center; margin-top: 12px; }
         .rec-voir-plus a {
-            font-size: 0.8rem; color: var(--accent); text-decoration: none;
+            font-size: 0.77rem; color: var(--accent); text-decoration: none;
             font-weight: 500; transition: color .2s;
         }
         .rec-voir-plus a:hover { color: var(--accent2); }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .main-content { padding: 24px 16px 60px; }
+        }
+
+        /* ── Pulse animation ── */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,.15); }
+            50% { box-shadow: 0 0 18px 4px rgba(108,99,255,.12); }
+        }
+        .sidebar-link.active {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
 
 <!-- ── Navbar ── -->
-<nav>
+<nav class="top-nav">
     <div class="nav-logo">
         <div class="icon">🧠</div>
         <div><strong>Psy</strong><span>App</span></div>
@@ -299,124 +473,205 @@
     <div class="nav-actions">
         <div class="nav-user">
             <div class="nav-avatar">{{ user.prenom|slice(0,1)|upper }}{{ user.nom|slice(0,1)|upper }}</div>
-            <span class="nav-name">{{ user.prenom }}</span>
+            <span class="nav-name">{{ user.prenom }} {{ user.nom }}</span>
         </div>
         <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
     </div>
 </nav>
 
-<div class="page">
+<div class="app-layout">
 
-    <!-- Hero -->
-    <div class="hero">
-        <div class="hero-text">
-            <h1>Bonjour, <span>{{ user.prenom }}</span> 👋</h1>
-            <p>Comment vous sentez-vous aujourd'hui ? Votre bien-être mental est notre priorité.</p>
-        </div>
-        <div class="hero-emoji">🌿</div>
-    </div>
-
-    <!-- Features -->
-    <div class="section-title">Mes espaces</div>
-    <div class="feature-grid">
-        <div class="feature-card">
-            <div class="feature-icon fi-purple">📓</div>
-            <h3>Journal Mental</h3>
-            <p>Consignez vos pensées et suivez votre évolution au fil du temps.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon fi-teal">😌</div>
-            <h3>Humeur du Jour</h3>
-            <p>Enregistrez votre humeur quotidienne et visualisez vos tendances.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon fi-green">✅</div>
-            <h3>Mes Habitudes</h3>
-            <p>Créez des habitudes positives et suivez vos progrès chaque jour.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon fi-pink">💬</div>
-            <h3>Communauté</h3>
-            <p>Partagez avec la communauté et trouvez du soutien bienveillant.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon fi-orange">🏋️</div>
-            <h3>Mes Workouts</h3>
-            <p>Plans d'entraînement adaptés pour le bien-être corps et esprit.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon fi-blue">📊</div>
-            <h3>Mes Statistiques</h3>
-            <p>Visualisez votre progression globale et vos accomplissements.</p>
-        </div>
-        <a href="{{ path('app_reclamation_index') }}" class="feature-card">
-            <div class="feature-icon fi-orange">📬</div>
-            <h3>Mes Réclamations</h3>
-            <p>Signalez un problème ou suivez l'état de vos demandes en cours.</p>
-        </a>
-    </div>
-
-    <!-- Mood check-in -->
-    <div class="mood-section">
-        <h2>Check-in du moment</h2>
-        <p>Comment vous sentez-vous en ce moment ?</p>
-        <div class="mood-row">
-            <button class="mood-btn" onclick="selectMood(this)">
-                <em class="emoji">😄</em><span>Excellent</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this)">
-                <em class="emoji">🙂</em><span>Bien</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this)">
-                <em class="emoji">😐</em><span>Neutre</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this)">
-                <em class="emoji">😔</em><span>Pas top</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this)">
-                <em class="emoji">😞</em><span>Difficile</span>
-            </button>
-        </div>
-        <button class="mood-submit">Enregistrer mon humeur</button>
-    </div>
-
-    <!-- ── Mes Réclamations ── -->
-    <div class="rec-section">
-        <div class="rec-section-header">
-            <div class="section-title">📬 Mes réclamations récentes</div>
-            <a href="{{ path('app_reclamation_new') }}" class="btn-rec-new">➕ Nouvelle réclamation</a>
+    <!-- ══════ SIDEBAR ══════ -->
+    <aside class="sidebar">
+        <div class="sidebar-section-label">🏠 Tableau de bord</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_dashboard') }}" class="sidebar-link active">
+                <div class="sidebar-icon si-blue">📊</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Dashboard</span>
+                    <span class="sidebar-link-sub">Vue d'ensemble</span>
+                </div>
+            </a>
         </div>
 
-        {% if reclamations|length == 0 %}
-            <div class="rec-empty">
-                <span>📭</span>
-                Vous n'avez aucune réclamation pour l'instant.
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-label">⚙️ Gestion</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_challenge_index') }}" class="sidebar-link">
+                <div class="sidebar-icon si-purple">🔥</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Motivation</span>
+                    <span class="sidebar-link-sub">Challenges & objectifs</span>
+                </div>
+                <span class="sidebar-badge">PRO</span>
+            </a>
+
+            <a href="#" class="sidebar-link">
+                <div class="sidebar-icon si-green">🔄</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Habitudes</span>
+                    <span class="sidebar-link-sub">Suivi quotidien</span>
+                </div>
+            </a>
+
+            <a href="#" class="sidebar-link">
+                <div class="sidebar-icon si-orange">🏋️</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Fitness</span>
+                    <span class="sidebar-link-sub">Workouts & plans</span>
+                </div>
+            </a>
+
+            <a href="#" class="sidebar-link">
+                <div class="sidebar-icon si-pink">💬</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Posts</span>
+                    <span class="sidebar-link-sub">Communauté & partage</span>
+                </div>
+            </a>
+
+            <a href="#" class="sidebar-link">
+                <div class="sidebar-icon si-teal">🧠</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Mentalité</span>
+                    <span class="sidebar-link-sub">Journal & bien-être</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-label">📋 Support</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_reclamation_index') }}" class="sidebar-link">
+                <div class="sidebar-icon si-yellow">📬</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Réclamations</span>
+                    <span class="sidebar-link-sub">Mes demandes</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Sidebar Pro Card -->
+        <div class="sidebar-footer">
+            <div class="sidebar-pro-card">
+                <span class="pro-emoji">🌟</span>
+                <h4>PsyApp Pro</h4>
+                <p>Votre bien-être mental est notre priorité quotidienne.</p>
             </div>
-        {% else %}
-            <div class="rec-list">
-                {% for rec in reclamations %}
-                    <div class="rec-item">
-                        <div class="rec-info">
-                            <div class="rec-sujet">{{ rec.sujet }}</div>
-                            <div class="rec-date">📅 {{ rec.createdAt|date('d/m/Y à H:i') }}</div>
+        </div>
+    </aside>
+
+    <!-- ══════ MAIN CONTENT ══════ -->
+    <div class="main-content">
+
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-text">
+                <h1>Bonjour, <span>{{ user.prenom }}</span> 👋</h1>
+                <p>Comment vous sentez-vous aujourd'hui ? Votre bien-être mental est notre priorité.</p>
+            </div>
+            <div class="hero-emoji">🌿</div>
+        </div>
+
+        <!-- Features -->
+        <div class="section-title">Mes espaces</div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon fi-purple">📓</div>
+                <h3>Journal Mental</h3>
+                <p>Consignez vos pensées et suivez votre évolution au fil du temps.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-teal">😌</div>
+                <h3>Humeur du Jour</h3>
+                <p>Enregistrez votre humeur quotidienne et visualisez vos tendances.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-green">✅</div>
+                <h3>Mes Habitudes</h3>
+                <p>Créez des habitudes positives et suivez vos progrès chaque jour.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-pink">💬</div>
+                <h3>Communauté</h3>
+                <p>Partagez avec la communauté et trouvez du soutien bienveillant.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon fi-orange">🏋️</div>
+                <h3>Mes Workouts</h3>
+                <p>Plans d'entraînement adaptés pour le bien-être corps et esprit.</p>
+            </div>
+            <a href="{{ path('app_reclamation_index') }}" class="feature-card">
+                <div class="feature-icon fi-blue">📬</div>
+                <h3>Mes Réclamations</h3>
+                <p>Signalez un problème ou suivez l'état de vos demandes en cours.</p>
+            </a>
+        </div>
+
+        <!-- Mood check-in -->
+        <div class="mood-section">
+            <h2>Check-in du moment</h2>
+            <p>Comment vous sentez-vous en ce moment ?</p>
+            <div class="mood-row">
+                <button class="mood-btn" onclick="selectMood(this)">
+                    <em class="emoji">😄</em><span>Excellent</span>
+                </button>
+                <button class="mood-btn" onclick="selectMood(this)">
+                    <em class="emoji">🙂</em><span>Bien</span>
+                </button>
+                <button class="mood-btn" onclick="selectMood(this)">
+                    <em class="emoji">😐</em><span>Neutre</span>
+                </button>
+                <button class="mood-btn" onclick="selectMood(this)">
+                    <em class="emoji">😔</em><span>Pas top</span>
+                </button>
+                <button class="mood-btn" onclick="selectMood(this)">
+                    <em class="emoji">😞</em><span>Difficile</span>
+                </button>
+            </div>
+            <button class="mood-submit">Enregistrer mon humeur</button>
+        </div>
+
+        <!-- ── Mes Réclamations ── -->
+        <div class="rec-section">
+            <div class="rec-section-header">
+                <div class="section-title">📬 Mes réclamations récentes</div>
+                <a href="{{ path('app_reclamation_new') }}" class="btn-rec-new">➕ Nouvelle réclamation</a>
+            </div>
+
+            {% if reclamations|length == 0 %}
+                <div class="rec-empty">
+                    <span>📭</span>
+                    Vous n'avez aucune réclamation pour l'instant.
+                </div>
+            {% else %}
+                <div class="rec-list">
+                    {% for rec in reclamations %}
+                        <div class="rec-item">
+                            <div class="rec-info">
+                                <div class="rec-sujet">{{ rec.sujet }}</div>
+                                <div class="rec-date">📅 {{ rec.createdAt|date('d/m/Y à H:i') }}</div>
+                            </div>
+                            {% set s = rec.statut %}
+                            <span class="badge badge-{{ s }}">
+                                {% if s == 'ouvert' %}⏳ Ouvert
+                                {% elseif s == 'en_cours' %}🔄 En cours
+                                {% elseif s == 'resolu' %}✅ Résolu
+                                {% else %}🔒 Fermé
+                                {% endif %}
+                            </span>
                         </div>
-                        {% set s = rec.statut %}
-                        <span class="badge badge-{{ s }}">
-                            {% if s == 'ouvert' %}⏳ Ouvert
-                            {% elseif s == 'en_cours' %}🔄 En cours
-                            {% elseif s == 'resolu' %}✅ Résolu
-                            {% else %}🔒 Fermé
-                            {% endif %}
-                        </span>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="rec-voir-plus">
-                <a href="{{ path('app_reclamation_index') }}">Voir toutes mes réclamations →</a>
-            </div>
-        {% endif %}
-    </div>
+                    {% endfor %}
+                </div>
+                <div class="rec-voir-plus">
+                    <a href="{{ path('app_reclamation_index') }}">Voir toutes mes réclamations →</a>
+                </div>
+            {% endif %}
+        </div>
 
+    </div>
 </div>
 
 <script>
