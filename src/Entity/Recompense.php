@@ -23,6 +23,15 @@ class Recompense
         minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
         maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
     )]
+    #[Assert\Regex(
+        pattern: '/^[^0-9]/',
+        message: 'Le nom ne doit pas commencer par un chiffre.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[0-9]+$/',
+        match: false,
+        message: 'Le nom ne peut pas être composé uniquement de chiffres.'
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'text')]
