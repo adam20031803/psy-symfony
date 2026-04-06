@@ -1,0 +1,419 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Daily Check-in — PsyApp{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .checkin-page { font-family: inherit; max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; color: #e2e8f0; }
+        .checkin-page h1 { font-size: 1.75rem; margin: 0 0 8px; background: linear-gradient(90deg, #6c63ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .checkin-sub { color: #94a3b8; font-size: 0.95rem; margin-bottom: 24px; }
+        .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #181b30; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; }
+        .stat-card .v { font-size: 1.75rem; font-weight: 700; color: #fff; }
+        .stat-card .l { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+        .actions-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; text-decoration: none; border: none; cursor: pointer; transition: opacity 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #6c63ff, #00d2ff); color: #fff; }
+        .btn-secondary { background: #1e293b; color: #e2e8f0; border: 1px solid rgba(255,255,255,0.1); }
+        .btn:hover { opacity: 0.92; }
+        .filter-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 24px; padding: 16px; background: #111328; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); }
+        .filter-bar label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px; }
+        .filter-bar input[type="text"], .filter-bar select { background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; padding: 10px 12px; border-radius: 8px; min-width: 220px; }
+        /* ── Radar bien-être ── */
+        .wellness-radar-card {
+            position: relative;
+            margin-bottom: 32px;
+            max-width: 640px;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(108,99,255,0.45), rgba(0,210,255,0.25), rgba(108,99,255,0.15));
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.06) inset,
+                0 24px 48px -12px rgba(0,0,0,0.45),
+                0 0 80px -20px rgba(108,99,255,0.25);
+        }
+        .wellness-radar-card__inner {
+            border-radius: 19px;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108,99,255,0.12) 0%, transparent 55%),
+                linear-gradient(180deg, #15182e 0%, #111328 100%);
+            overflow: hidden;
+        }
+        .wellness-radar-card__header {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 22px 24px 0;
+        }
+        .wellness-radar-card__icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            background: linear-gradient(135deg, rgba(108,99,255,0.25), rgba(0,210,255,0.12));
+            border: 1px solid rgba(108,99,255,0.25);
+            flex-shrink: 0;
+        }
+        .wellness-radar-card__title-wrap { flex: 1; min-width: 0; }
+        .wellness-radar-card__title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(90deg, #e2e8f0, #a5b4fc 50%, #7dd3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .wellness-radar-card__meta {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin: 0;
+        }
+        .wellness-radar-card__badge {
+            flex-shrink: 0;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(108,99,255,0.35), rgba(0,210,255,0.15));
+            border: 1px solid rgba(108,99,255,0.35);
+            color: #c4b5fd;
+        }
+        .wellness-radar-card__hint {
+            margin: 12px 24px 0;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            color: #94a3b8;
+        }
+        .wellness-radar-card__body {
+            padding: 8px 12px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .wellness-radar-card__canvas-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 12px;
+        }
+        .wellness-radar-card__canvas-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 8%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(108,99,255,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .wellness-radar-card__canvas-wrap canvas {
+            position: relative;
+            z-index: 1;
+        }
+        .wellness-metric-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px 20px 22px;
+            max-width: 100%;
+        }
+        .metric-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.75rem;
+        }
+        .metric-pill__label { color: #94a3b8; max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .metric-pill__val {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #e2e8f0;
+            min-width: 2ch;
+        }
+        .metric-pill__val span { font-size: 0.65rem; font-weight: 600; color: #64748b; margin-left: 2px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+        details.checkin-card { background: #181b30; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden; }
+        details.checkin-card summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        details.checkin-card summary::-webkit-details-marker { display: none; }
+        .card-head { flex: 1; }
+        .card-date { font-size: 0.8rem; color: #94a3b8; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: #fff; margin-top: 4px; }
+        .card-preview { font-size: 0.85rem; color: #94a3b8; margin-top: 8px; line-height: 1.4; }
+        .card-metrics { display: flex; gap: 12px; margin-top: 10px; font-size: 0.8rem; color: #cbd5e1; }
+        .card-body { padding: 0 18px 18px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .card-body dl { display: grid; gap: 10px; margin: 0; font-size: 0.88rem; }
+        .card-body dt { color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+        .card-body dd { margin: 0; color: #e2e8f0; }
+        .card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+        .card-actions a { font-size: 0.85rem; color: #a5b4fc; }
+        .empty { text-align: center; padding: 48px 20px; color: #94a3b8; background: #111328; border-radius: 14px; border: 1px dashed rgba(255,255,255,0.1); }
+        .flash { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; background: rgba(34,211,165,0.15); border: 1px solid rgba(34,211,165,0.35); color: #a7f3d0; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="checkin-page">
+    <h1>Daily Check-in</h1>
+    <p class="checkin-sub">Auto-évaluation quotidienne : sliders, sommeil et réflexions — sans analyse IA.</p>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash" role="alert">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="v">{{ stats.total }}</div>
+            <div class="l">Check-ins au total</div>
+        </div>
+        <div class="stat-card">
+            <div class="v">{{ stats.avg_mood_7 is not null ? stats.avg_mood_7|number_format(1) : '—' }}</div>
+            <div class="l">Humeur moy. (7 jours)</div>
+        </div>
+        <div class="stat-card">
+            <div class="v">{{ stats.avg_productivity_7 is not null ? stats.avg_productivity_7|number_format(1) : '—' }}</div>
+            <div class="l">Productivité moy. (7 jours)</div>
+        </div>
+        <div class="stat-card">
+            <div class="v">{{ stats.today_done ? '✓' : '—' }}</div>
+            <div class="l">Check-in aujourd’hui</div>
+        </div>
+    </div>
+
+    <div class="actions-row">
+        <a href="{{ path('app_daily_checkin_analysis') }}" class="btn btn-secondary">📊 Analyse (30 jours)</a>
+        <a href="{{ path('app_daily_checkin_suggestions') }}" class="btn btn-secondary">💡 Suggestions</a>
+        <a href="{{ path('app_daily_checkin_new') }}" class="btn btn-primary">➕ Nouveau check-in</a>
+        <a href="{{ path('app_daily_checkin_export_pdf') }}?q={{ filter_q|url_encode }}&amp;period={{ filter_period|url_encode }}" class="btn btn-secondary">📄 Export PDF (liste)</a>
+    </div>
+
+    <form method="get" action="{{ path('app_daily_checkin_index') }}" class="filter-bar" id="checkin-filter-form">
+        <div>
+            <label for="q">Recherche (réflexions)</label>
+            <input type="text" name="q" id="q" value="{{ filter_q }}" placeholder="gratitude, victoires, défis…" autocomplete="off">
+        </div>
+        <div>
+            <label for="period">Période</label>
+            <select name="period" id="period">
+                <option value="all" {{ filter_period == 'all' ? 'selected' : '' }}>Tout</option>
+                <option value="today" {{ filter_period == 'today' ? 'selected' : '' }}>Aujourd’hui</option>
+                <option value="week" {{ filter_period == 'week' ? 'selected' : '' }}>7 jours</option>
+                <option value="month" {{ filter_period == 'month' ? 'selected' : '' }}>30 jours</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">Filtrer</button>
+    </form>
+
+    <section class="wellness-radar-card" aria-labelledby="wellness-radar-title">
+        <div class="wellness-radar-card__inner">
+            <div class="wellness-radar-card__header">
+                <div class="wellness-radar-card__icon" aria-hidden="true">📡</div>
+                <div class="wellness-radar-card__title-wrap">
+                    <h2 id="wellness-radar-title" class="wellness-radar-card__title">Radar bien-être</h2>
+                    <p class="wellness-radar-card__meta">Moyenne · 30 derniers jours</p>
+                </div>
+                <span class="wellness-radar-card__badge">Échelle /10</span>
+            </div>
+            <p class="wellness-radar-card__hint">Synthèse à partir de vos indicateurs (humeur, énergie, productivité, calme dérivé du stress, qualité du sommeil) — pas d’analyse IA.</p>
+            <div class="wellness-radar-card__body">
+                <div class="wellness-radar-card__canvas-wrap">
+                    <canvas id="wellnessRadar" aria-label="Graphique radar bien-être"></canvas>
+                </div>
+                <div class="wellness-metric-pills" id="wellnessMetricPills"></div>
+            </div>
+        </div>
+    </section>
+
+    {% if daily_checkins is empty %}
+        <div class="empty">Aucun check-in pour ces critères. <a href="{{ path('app_daily_checkin_new') }}" style="color:#a5b4fc;">Créer un check-in</a></div>
+    {% else %}
+        <div class="cards-grid">
+            {% for c in daily_checkins %}
+                <details class="checkin-card">
+                    <summary>
+                        <div class="card-head">
+                            <div class="card-date">{{ c.checkinDate ? c.checkinDate|date('d/m/Y') : '' }}</div>
+                            <div class="card-title">
+                                {% set m = c.moodRating ?? 5 %}
+                                {% if m >= 9 %}😄{% elseif m >= 7 %}🙂{% elseif m >= 5 %}😐{% else %}😔{% endif %}
+                                Humeur {{ m }}/10
+                            </div>
+                            <div class="card-metrics">
+                                <span>⚡ Énergie {{ c.energyLevel ?? '—' }}/10</span>
+                                <span>📈 Prod. {{ c.productivityLevel ?? '—' }}/10</span>
+                            </div>
+                            <p class="card-preview">
+                                {% if c.biggestWins %}
+                                    <strong>Victoire :</strong> {{ c.biggestWins|length > 100 ? c.biggestWins|slice(0, 100) ~ '…' : c.biggestWins }}
+                                {% else %}
+                                    <em>Pas de victoire notée.</em>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </summary>
+                    <div class="card-body">
+                        <dl>
+                            <dt>Sommeil</dt>
+                            <dd>{{ c.sleepHours ?? '—' }} h · qualité {{ c.sleepQuality ?? '—' }}/10</dd>
+                            <dt>Stress</dt>
+                            <dd>{{ c.stressLevel ?? '—' }}/10</dd>
+                            <dt>Bien passé</dt>
+                            <dd>{{ c.whatWentWell|default('—')|nl2br }}</dd>
+                            <dt>Amélioration</dt>
+                            <dd>{{ c.whatCouldImprove|default('—')|nl2br }}</dd>
+                            <dt>Gratitude</dt>
+                            <dd>{{ c.gratitude|default('—')|nl2br }}</dd>
+                            <dt>Défis</dt>
+                            <dd>{{ c.mainChallenges|default('—')|nl2br }}</dd>
+                            <dt>Victoires</dt>
+                            <dd>{{ c.biggestWins|default('—')|nl2br }}</dd>
+                            <dt>Notes</dt>
+                            <dd>{{ c.additionalNotes|default('—')|nl2br }}</dd>
+                        </dl>
+                        <div class="card-actions">
+                            <a href="{{ path('app_daily_checkin_show', { id: c.id }) }}">Détail</a>
+                            <a href="{{ path('app_daily_checkin_edit', { id: c.id }) }}">Modifier</a>
+                            <a href="{{ path('app_daily_checkin_export_pdf_one', { id: c.id }) }}">PDF</a>
+                        </div>
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    const radar = {{ radar|json_encode|raw }};
+    const ctx = document.getElementById('wellnessRadar');
+    const pills = document.getElementById('wellnessMetricPills');
+
+    if (pills && radar.labels && radar.values) {
+        pills.innerHTML = radar.labels.map(function(label, i) {
+            var v = radar.values[i];
+            var n = typeof v === 'number' ? v.toFixed(1) : '—';
+            return '<span class="metric-pill"><span class="metric-pill__label" title="' + String(label).replace(/"/g, '&quot;') + '">' + label + '</span><span class="metric-pill__val">' + n + '<span>/10</span></span></span>';
+        }).join('');
+    }
+
+    if (ctx && typeof Chart !== 'undefined') {
+        var grid = 'rgba(148, 163, 184, 0.12)';
+        var tick = '#94a3b8';
+        var chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: radar.labels,
+                datasets: [{
+                    label: 'Moyenne',
+                    data: radar.values,
+                    fill: true,
+                    backgroundColor: function(c) {
+                        var chart = c.chart;
+                        var a = chart.chartArea;
+                        if (!a) return 'rgba(108, 99, 255, 0.22)';
+                        var g = chart.ctx.createRadialGradient(a.left + a.width / 2, a.top + a.height / 2, 0, a.left + a.width / 2, a.top + a.height / 2, Math.max(a.width, a.height) / 2);
+                        g.addColorStop(0, 'rgba(0, 210, 255, 0.28)');
+                        g.addColorStop(0.45, 'rgba(108, 99, 255, 0.18)');
+                        g.addColorStop(1, 'rgba(108, 99, 255, 0.02)');
+                        return g;
+                    },
+                    borderColor: 'rgba(129, 140, 248, 0.95)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: '#00d2ff',
+                    pointBorderColor: '#0f172a',
+                    pointBorderWidth: 2,
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#6c63ff',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.05,
+                layout: { padding: { top: 8, right: 12, bottom: 8, left: 12 } },
+                animation: {
+                    duration: 900,
+                    easing: 'easeInOutQuad'
+                },
+                interaction: { intersect: false },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        beginAtZero: true,
+                        angleLines: { color: grid, lineWidth: 1 },
+                        grid: { color: grid, circular: true, lineWidth: 1 },
+                        pointLabels: {
+                            color: '#cbd5e1',
+                            font: { family: "'Inter', sans-serif", size: 11, weight: '500' },
+                            padding: 10
+                        },
+                        ticks: {
+                            stepSize: 2,
+                            showLabelBackdrop: false,
+                            color: tick,
+                            font: { size: 9 },
+                            backdropColor: 'transparent'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.94)',
+                        titleColor: '#e2e8f0',
+                        bodyColor: '#cbd5e1',
+                        borderColor: 'rgba(108, 99, 255, 0.35)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(ctx) {
+                                return ' ' + (ctx.parsed.r != null ? Number(ctx.parsed.r).toFixed(1) : '—') + ' / 10';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const form = document.getElementById('checkin-filter-form');
+    const q = document.getElementById('q');
+    let t = null;
+    if (q && form) {
+        q.addEventListener('input', function() {
+            clearTimeout(t);
+            t = setTimeout(function() { form.submit(); }, 400);
+        });
+    }
+    const period = document.getElementById('period');
+    if (period && form) {
+        period.addEventListener('change', function() { form.submit(); });
+    }
+})();
+</script>
+{% endblock %}

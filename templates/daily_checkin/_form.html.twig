@@ -1,0 +1,54 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'checkin-form'}}) }}
+    <style>
+        .checkin-form, .checkin-form input, .checkin-form textarea, .checkin-form select, .checkin-form button { font-family: inherit; }
+        .checkin-form .form-row-sliders { display: grid; gap: 18px; margin-bottom: 20px; }
+        .checkin-form .slider-field label { display: block; font-weight: 600; color: #cbd5e1; margin-bottom: 8px; font-size: 0.9rem; }
+        .checkin-form .checkin-range { width: 100%; accent-color: #6c63ff; }
+        .checkin-form .range-value { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+        .checkin-form .form-control { width: 100%; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; padding: 10px 12px; border-radius: 8px; }
+        .checkin-form textarea.form-control { min-height: 80px; resize: vertical; }
+    </style>
+
+    <div class="form-row-sliders">
+        <div class="slider-field">{{ form_row(form.checkinDate) }}</div>
+        {% for fname in ['moodRating', 'energyLevel', 'productivityLevel', 'stressLevel', 'sleepQuality'] %}
+            <div class="slider-field">
+                {{ form_label(attribute(form, fname)) }}
+                {{ form_widget(attribute(form, fname), {'attr': {'class': 'checkin-range'}}) }}
+                {{ form_errors(attribute(form, fname)) }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="slider-field" style="margin-bottom:20px;">
+        {{ form_row(form.sleepHours) }}
+    </div>
+
+    {% for fname in ['whatWentWell', 'whatCouldImprove', 'gratitude', 'mainChallenges', 'biggestWins', 'additionalNotes'] %}
+        <div style="margin-bottom:16px;">
+            {{ form_label(attribute(form, fname)) }}
+            {{ form_widget(attribute(form, fname), {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(attribute(form, fname)) }}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn" style="width:100%;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#6c63ff,#00d2ff);color:#fff;font-weight:600;cursor:pointer;margin-top:8px;">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}
+
+<script>
+(function() {
+    document.querySelectorAll('input.checkin-range').forEach(function(input) {
+        const wrap = input.closest('.slider-field');
+        if (!wrap) return;
+        let out = wrap.querySelector('.range-value');
+        if (!out) {
+            out = document.createElement('div');
+            out.className = 'range-value';
+            input.parentNode.insertBefore(out, input.nextSibling);
+        }
+        function sync() { out.textContent = 'Valeur : ' + input.value + ' / 10'; }
+        input.addEventListener('input', sync);
+        sync();
+    });
+})();
+</script>

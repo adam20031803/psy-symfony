@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}store index{% endblock %}
+
+{% block body %}
+    <h1>store index</h1>
+
+    <a href="{{ path('app_store_new') }}">Create new</a>
+    <table class="table">
+        <tbody>
+        {% for item in stores %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>
+                    <a href="{{ path('app_store_show', {'id': item.id}) }}">show</a>
+                    <a href="{{ path('app_store_edit', {'id': item.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+<a href="{{ path('app_dashboard') }}">Back to Dashboard</a>
+{% endblock %}

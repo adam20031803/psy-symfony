@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Analyse check-ins — PsyApp{% endblock %}
+
+{% block body %}
+<div style="font-family:inherit;max-width:800px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
+    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;">← Retour</a>
+    <h1 style="margin:20px 0 12px;font-size:1.6rem;">Analyse sur 30 jours</h1>
+    <p style="color:#94a3b8;margin-bottom:24px;">Synthèse basée sur vos données (pas d’IA) : moyennes, motifs simples et corrélations.</p>
+
+    {% if count == 0 %}
+        <p>Pas assez de données. Ajoutez des check-ins pour voir une analyse.</p>
+    {% else %}
+        <p><strong>{{ count }}</strong> entrée(s) sur la période analysée.</p>
+        {% if averages %}
+            <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Moyennes</h2>
+            <ul style="line-height:1.8;color:#e2e8f0;">
+                <li>Humeur : {{ averages.mood }}</li>
+                <li>Énergie : {{ averages.energy }}</li>
+                <li>Productivité : {{ averages.productivity }}</li>
+                <li>Stress : {{ averages.stress }}</li>
+                <li>Qualité sommeil : {{ averages.sleepQuality }}</li>
+                <li>Heures de sommeil : {{ averages.sleepHours }} h</li>
+            </ul>
+        {% endif %}
+
+        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Corrélations (Pearson, si assez de points)</h2>
+        <ul style="line-height:1.8;color:#e2e8f0;">
+            <li>Sommeil (h) vs humeur : {{ correlations.sleep_hours_vs_mood is not null ? correlations.sleep_hours_vs_mood : 'n/a' }}</li>
+            <li>Stress vs énergie : {{ correlations.stress_vs_energy is not null ? correlations.stress_vs_energy : 'n/a' }}</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Motifs</h2>
+        {% for line in patterns %}
+            <p style="color:#cbd5e1;line-height:1.6;">{{ line }}</p>
+        {% endfor %}
+
+        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Recommandations (5 max.)</h2>
+        <ol style="line-height:1.7;color:#e2e8f0;">
+            {% for r in recommendations %}
+                <li>{{ r }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+</div>
+{% endblock %}

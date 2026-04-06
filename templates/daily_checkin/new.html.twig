@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau check-in — PsyApp{% endblock %}
+
+{% block body %}
+<div style="font-family:inherit;max-width:720px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
+    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;font-size:0.9rem;">← Retour</a>
+    <h1 style="margin:20px 0 8px;font-size:1.6rem;">Nouveau check-in</h1>
+    <p style="color:#94a3b8;margin-bottom:24px;">Un seul check-in par jour : si vous avez déjà enregistré aujourd’hui, vous serez redirigé vers l’édition.</p>
+    {{ include('daily_checkin/_form.html.twig', { button_label: 'Enregistrer le check-in' }) }}
+</div>
+{% endblock %}

@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_daily_checkin_delete', {'id': daily_checkin.id}) }}" onsubmit="return confirm('Supprimer ce check-in définitivement ?');" style="margin:0;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ daily_checkin.id) }}">
+    <button type="submit" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#fca5a5;cursor:pointer;font-size:0.85rem;">Supprimer</button>
+</form>

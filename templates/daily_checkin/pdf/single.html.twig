@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; line-height: 1.45; }
+        h1 { font-size: 16px; }
+        .meta { color: #444; margin-bottom: 12px; }
+        .block { margin-bottom: 12px; }
+        .label { font-weight: bold; color: #333; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Check-in du {{ c.checkinDate ? c.checkinDate|date('d/m/Y') : '' }}</h1>
+    <p class="meta">Exporté le {{ exported_at|date('d/m/Y H:i') }}</p>
+    <p>Notes : humeur {{ c.moodRating }}/10, énergie {{ c.energyLevel }}/10, productivité {{ c.productivityLevel }}/10, stress {{ c.stressLevel }}/10, qualité sommeil {{ c.sleepQuality }}/10, {{ c.sleepHours }} h</p>
+
+    <div class="block"><div class="label">Bien passé</div>{{ c.whatWentWell|default('—')|nl2br }}</div>
+    <div class="block"><div class="label">Amélioration</div>{{ c.whatCouldImprove|default('—')|nl2br }}</div>
+    <div class="block"><div class="label">Gratitude</div>{{ c.gratitude|default('—')|nl2br }}</div>
+    <div class="block"><div class="label">Défis</div>{{ c.mainChallenges|default('—')|nl2br }}</div>
+    <div class="block"><div class="label">Victoires</div>{{ c.biggestWins|default('—')|nl2br }}</div>
+    <div class="block"><div class="label">Notes</div>{{ c.additionalNotes|default('—')|nl2br }}</div>
+</body>
+</html>

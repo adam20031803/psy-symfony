@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Check-in — PsyApp{% endblock %}
+
+{% block body %}
+<div style="font-family:inherit;max-width:720px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
+    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;font-size:0.9rem;">← Liste</a>
+    <h1 style="margin:20px 0 8px;font-size:1.6rem;">{{ daily_checkin.checkinDate ? daily_checkin.checkinDate|date('d/m/Y') : 'Check-in' }}</h1>
+    <p style="color:#94a3b8;margin-bottom:20px;">
+        Humeur {{ daily_checkin.moodRating }}/10 · Énergie {{ daily_checkin.energyLevel }}/10 · Productivité {{ daily_checkin.productivityLevel }}/10 · Stress {{ daily_checkin.stressLevel }}/10 · Sommeil {{ daily_checkin.sleepQuality }}/10 · {{ daily_checkin.sleepHours }} h
+    </p>
+    <dl style="display:grid;gap:14px;font-size:0.95rem;">
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Bien passé</dt>
+        <dd style="margin:0;">{{ daily_checkin.whatWentWell|default('—')|nl2br }}</dd>
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Amélioration</dt>
+        <dd style="margin:0;">{{ daily_checkin.whatCouldImprove|default('—')|nl2br }}</dd>
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Gratitude</dt>
+        <dd style="margin:0;">{{ daily_checkin.gratitude|default('—')|nl2br }}</dd>
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Défis</dt>
+        <dd style="margin:0;">{{ daily_checkin.mainChallenges|default('—')|nl2br }}</dd>
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Victoires</dt>
+        <dd style="margin:0;">{{ daily_checkin.biggestWins|default('—')|nl2br }}</dd>
+        <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Notes</dt>
+        <dd style="margin:0;">{{ daily_checkin.additionalNotes|default('—')|nl2br }}</dd>
+    </dl>
+    <div style="margin-top:24px;display:flex;flex-wrap:wrap;gap:12px;">
+        <a href="{{ path('app_daily_checkin_edit', { id: daily_checkin.id }) }}" style="padding:10px 18px;border-radius:10px;background:linear-gradient(135deg,#6c63ff,#00d2ff);color:#fff;text-decoration:none;font-weight:600;">Modifier</a>
+        <a href="{{ path('app_daily_checkin_export_pdf_one', { id: daily_checkin.id }) }}" style="padding:10px 18px;border-radius:10px;background:#1e293b;color:#e2e8f0;border:1px solid rgba(255,255,255,0.1);text-decoration:none;">PDF</a>
+    </div>
+</div>
+{% endblock %}
