@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Suggestions — PsyApp{% endblock %}
+
+{% block body %}
+<div style="font-family:inherit;max-width:720px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
+    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;">← Retour</a>
+    <h1 style="margin:20px 0 12px;font-size:1.6rem;">Suggestions d’amélioration</h1>
+    <p style="color:#94a3b8;margin-bottom:24px;">Conseils dérivés de vos moyennes récentes et d’un défi quotidien aléatoire (sans IA).</p>
+    <ul style="line-height:1.75;padding-left:1.2rem;">
+        {% for tip in tips %}
+            <li style="margin-bottom:10px;">{{ tip }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

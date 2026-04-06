@@ -1,0 +1,974 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Habitudes — PsyApp{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #0a0c1a;
+            --surface:  #111328;
+            --card:     #181b30;
+            --border:   rgba(255,255,255,0.06);
+            --accent:   #6c63ff;
+            --accent2:  #00d2ff;
+            --success:  #22d3a5;
+            --danger:   #ef4444;
+            --warning:  #f59e0b;
+            --text:     #e2e8f0;
+            --muted:    #64748b;
+            --radius:   16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--card);
+        }
+
+        .btn-success {
+            background: rgba(34,211,165,0.18);
+            border: 1px solid rgba(34,211,165,0.5);
+            color: #7df0cd;
+        }
+
+        .btn-success:hover {
+            background: rgba(34,211,165,0.26);
+        }
+
+        .btn-checkin {
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid rgba(0, 210, 255, 0.45);
+            color: #7dd3fc;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-checkin:hover {
+            background: rgba(0, 210, 255, 0.18);
+            transform: translateY(-2px);
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        /* Stats Dashboard */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search and Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .category-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Habitudes Grid */
+        .habitudes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .hab-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .hab-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-color: rgba(108,99,255,0.3);
+        }
+
+        .hab-status {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--muted);
+        }
+
+        .hab-status.active {
+            background: linear-gradient(180deg, var(--success), var(--accent2));
+        }
+
+        .hab-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .hab-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .hab-category {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            padding: 4px 8px;
+            background: rgba(108,99,255,0.15);
+            color: #b1aeff;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .hab-desc {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .hab-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stat-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hab-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Context Menu */
+        .context-menu-trigger {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .context-menu-trigger:hover {
+            background: var(--accent);
+        }
+
+        .context-menu {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 15px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px;
+            min-width: 180px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .context-menu-item:hover {
+            background: var(--surface);
+        }
+
+        .context-menu-item.danger {
+            color: var(--danger);
+        }
+
+        /* Detail Panel Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        /* Weekly Tracker */
+        .weekly-tracker {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .week-day {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .week-day.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .week-day.missed {
+            background: var(--danger);
+            color: white;
+        }
+
+        .week-day.future {
+            background: var(--surface);
+            color: var(--muted);
+        }
+
+        .week-day.today {
+            border: 2px solid var(--accent);
+        }
+
+        /* Week History */
+        .week-history {
+            margin: 20px 0;
+        }
+
+        .week-history-item {
+            margin-bottom: 15px;
+        }
+
+        .week-history-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--surface);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.3s;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin: 15px 0 10px;
+        }
+        
+        .empty-state p {
+            color: var(--muted);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span style="font-size: 2.2rem;">🔄</span> 
+            Mes Habitudes
+        </h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <a href="{{ path('app_dashboard') }}" class="btn-secondary">🔙 Dashboard</a>
+            <a href="{{ path('app_daily_checkin_index') }}" class="btn-checkin">🧠 Check-in quotidien</a>
+            <a href="{{ path('app_habitude_new') }}" class="btn-primary">➕ Nouvelle Habitude</a>
+        </div>
+    </div>
+
+    <!-- Global Statistics Dashboard -->
+    <div class="stats-dashboard">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{{ globalStats.total }}</div>
+            <div class="stat-label">Total Habits</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="completed-today">0</div>
+            <div class="stat-label">Completed Today</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">{{ globalStats.globalStreak }}</div>
+            <div class="stat-label">Global Streak</div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="filter-bar">
+        <input type="text" id="search-input" class="search-input" placeholder="🔍 Rechercher par titre ou description...">
+        <div class="category-filters">
+            <button class="category-btn active" data-category="Toutes">Toutes</button>
+            <button class="category-btn" data-category="Santé">Santé</button>
+            <button class="category-btn" data-category="Mental">Mental</button>
+            <button class="category-btn" data-category="Productivité">Productivité</button>
+            <button class="category-btn" data-category="Finance">Finance</button>
+            <button class="category-btn" data-category="Social">Social</button>
+            <button class="category-btn" data-category="Créativité">Créativité</button>
+            <button class="category-btn" data-category="Carrière">Carrière</button>
+            <button class="category-btn" data-category="Spiritualité">Spiritualité</button>
+        </div>
+    </div>
+
+    <div class="habitudes-grid" id="habitudes-grid">
+        {% for habitude in habitudes %}
+            <div class="hab-card" data-id="{{ habitude.id }}" data-category="{{ habitude.category }}" data-delete-token="{{ csrf_token('delete' ~ habitude.id) }}">
+                <div class="hab-status {{ habitude.active ? 'active' : '' }}"></div>
+                
+                <button class="context-menu-trigger" onclick="event.stopPropagation(); toggleContextMenu({{ habitude.id }})">⋮</button>
+                <div class="context-menu" id="context-menu-{{ habitude.id }}">
+                    <div class="context-menu-item" onclick="event.stopPropagation(); confirmComplete({{ habitude.id }})">✅ Marquer comme fait</div>
+                    <div class="context-menu-item" onclick="event.stopPropagation(); toggleActive({{ habitude.id }})">{{ habitude.active ? '⏸️ Désactiver' : '▶️ Activer' }}</div>
+                    <div class="context-menu-item" onclick="event.stopPropagation(); showDetail({{ habitude.id }})">👁️ Voir détails</div>
+                    <div class="context-menu-item" onclick="event.stopPropagation(); window.location.href='{{ path('app_habitude_edit', {'id': habitude.id}) }}'">✏️ Éditer</div>
+                    <div class="context-menu-item danger" onclick="event.stopPropagation(); deleteHabitude({{ habitude.id }})">🗑️ Supprimer</div>
+                </div>
+                
+                <div class="hab-header">
+                    <div>
+                        <div class="hab-category">{{ habitude.category }}</div>
+                        <h2 class="hab-title">{{ habitude.title }}</h2>
+                    </div>
+                </div>
+
+                <p class="hab-desc">
+                    {{ habitude.description ? (habitude.description|length > 80 ? habitude.description|slice(0, 80) ~ '...' : habitude.description) : 'Aucune description fournie.' }}
+                </p>
+
+                <div class="hab-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Série actuelle</span>
+                        <span class="stat-val">🔥 {{ habitude.currentStreak }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Meilleure série</span>
+                        <span class="stat-val">🏆 {{ habitude.longestStreak }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total</span>
+                        <span class="stat-val">✅ {{ habitude.totalCompletions }}</span>
+                    </div>
+                </div>
+
+                <div class="hab-actions">
+                    <button type="button" class="btn-success btn-small" onclick="event.stopPropagation(); confirmComplete({{ habitude.id }})">✅ Je l'ai faite</button>
+                    <a href="{{ path('app_habitude_show', {'id': habitude.id}) }}" class="btn-secondary btn-small">👁️ Voir Détails</a>
+                    <a href="{{ path('app_habitude_edit', {'id': habitude.id}) }}" class="btn-primary btn-small" style="background: rgba(108,99,255,0.2); color: #b1aeff;">✏️ Editer</a>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size: 4rem; margin-bottom: 20px; line-height: 1;">🌱</div>
+                <h3>Aucune habitude pour le moment</h3>
+                <p>Commencez à structurer votre routine en ajoutant votre première bonne habitude.</p>
+                <a href="{{ path('app_habitude_new') }}" class="btn-primary" style="padding: 12px 24px; font-size: 1rem;">
+                    Créer ma première habitude
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Detail Panel Modal -->
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div>
+                <div class="hab-category" id="modal-category"></div>
+                <h2 id="modal-title" style="font-size: 1.8rem; margin-top: 10px;"></h2>
+            </div>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+
+        <p id="modal-description" style="color: var(--muted); margin-bottom: 25px; line-height: 1.6;"></p>
+
+        <div class="stats-dashboard" style="margin-bottom: 25px;">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="modal-streak">0</div>
+                <div class="stat-label">Série Actuelle</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value" id="modal-record">0</div>
+                <div class="stat-label">Record</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-value" id="modal-monthly">0%</div>
+                <div class="stat-label">Ce Mois</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 15px;">📅 Cette Semaine</h3>
+        <div class="weekly-tracker" id="weekly-tracker"></div>
+
+        <h3 style="margin: 25px 0 15px;">📊 Historique (4 Semaines)</h3>
+        <div class="week-history" id="week-history"></div>
+
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button class="btn-primary" onclick="markCompleteFromModal()" style="flex: 1;">✅ Confirmer : je l'ai faite</button>
+            <button class="btn-secondary" onclick="editFromModal()" style="flex: 1;">✏️ Éditer</button>
+            <button class="btn-secondary" onclick="deleteFromModal()" style="flex: 1; color: var(--danger);">🗑️ Supprimer</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    let currentHabitudeId = null;
+    let searchTimeout = null;
+    let activeCategory = 'Toutes';
+
+    function normalizeText(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // Search with debounce
+    document.getElementById('search-input').addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            filterHabitudes();
+        }, 300);
+    });
+
+    // Category filter buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            activeCategory = this.dataset.category;
+            filterHabitudes();
+        });
+    });
+
+    // Filter habits based on search and category
+    function filterHabitudes() {
+        const searchText = normalizeText(document.getElementById('search-input').value);
+        const cards = document.querySelectorAll('.hab-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const title = normalizeText(card.querySelector('.hab-title').textContent);
+            const desc = normalizeText(card.querySelector('.hab-desc').textContent);
+            const category = normalizeText(card.dataset.category);
+            const selectedCategory = normalizeText(activeCategory);
+
+            const matchesSearch = !searchText || title.includes(searchText) || desc.includes(searchText);
+            const matchesCategory = selectedCategory === normalizeText('Toutes') || category === selectedCategory;
+
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Show empty state if no results
+        const grid = document.getElementById('habitudes-grid');
+        const emptyState = grid.querySelector('.empty-state');
+        if (visibleCount === 0 && !emptyState) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.innerHTML = `
+                <div style="font-size: 4rem; margin-bottom: 20px; line-height: 1;">🔍</div>
+                <h3>Aucun résultat</h3>
+                <p>Essayez de modifier vos filtres ou votre recherche.</p>
+            `;
+            grid.appendChild(emptyDiv);
+        } else if (visibleCount > 0 && emptyState) {
+            emptyState.remove();
+        }
+    }
+
+    // Toggle context menu
+    function toggleContextMenu(id) {
+        const menu = document.getElementById(`context-menu-${id}`);
+        const allMenus = document.querySelectorAll('.context-menu');
+        
+        allMenus.forEach(m => {
+            if (m !== menu) m.classList.remove('show');
+        });
+        
+        menu.classList.toggle('show');
+    }
+
+    // Close context menus when clicking outside
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.context-menu').forEach(m => m.classList.remove('show'));
+    });
+
+    // Mark habit as complete
+    function confirmComplete(id) {
+        if (!confirm("Confirmer que vous avez complété cette habitude aujourd'hui ?")) {
+            return;
+        }
+        markComplete(id);
+    }
+
+    // Mark habit as complete
+    async function markComplete(id) {
+        try {
+            const response = await fetch(`/habitude/${id}/complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('✅ Habitude complétée!');
+                location.reload();
+            } else {
+                alert('⚠️ ' + result.message);
+            }
+        } catch (error) {
+            alert('❌ Erreur lors de la complétion');
+        }
+    }
+
+    // Toggle active status
+    async function toggleActive(id) {
+        try {
+            const response = await fetch(`/habitude/${id}/toggle-active`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload();
+            }
+        } catch (error) {
+            alert('❌ Erreur lors du changement de statut');
+        }
+    }
+
+    // Show detail modal
+    async function showDetail(id) {
+        currentHabitudeId = id;
+        const card = document.querySelector(`.hab-card[data-id="${id}"]`);
+        
+        document.getElementById('modal-category').textContent = card.dataset.category;
+        document.getElementById('modal-title').textContent = card.querySelector('.hab-title').textContent;
+        document.getElementById('modal-description').textContent = card.querySelector('.hab-desc').textContent;
+
+        // Fetch stats
+        try {
+            const response = await fetch(`/habitude/api/stats/${id}`);
+            const stats = await response.json();
+
+            document.getElementById('modal-streak').textContent = stats.currentStreak;
+            document.getElementById('modal-record').textContent = stats.longestStreak;
+            document.getElementById('modal-monthly').textContent = stats.monthlyPercentage + '%';
+
+            // Render weekly tracker
+            const weeklyTracker = document.getElementById('weekly-tracker');
+            weeklyTracker.innerHTML = '';
+            
+            stats.weekDays.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'week-day';
+                
+                if (day.completed) {
+                    dayDiv.classList.add('completed');
+                } else if (day.isToday) {
+                    dayDiv.classList.add('future', 'today');
+                } else {
+                    dayDiv.classList.add('missed');
+                }
+                
+                dayDiv.innerHTML = `
+                    <div>${day.day}</div>
+                    <div style="font-size: 0.65rem; margin-top: 4px;">${new Date(day.date).getDate()}</div>
+                `;
+                
+                weeklyTracker.appendChild(dayDiv);
+            });
+
+            // Render week history
+            const weekHistory = document.getElementById('week-history');
+            weekHistory.innerHTML = '';
+            
+            stats.weekHistory.forEach(week => {
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'week-history-item';
+                weekDiv.innerHTML = `
+                    <div class="week-history-label">
+                        <span>Semaine ${week.week}</span>
+                        <span>${week.completed}/7 jours (${week.percentage}%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${week.percentage}%"></div>
+                    </div>
+                `;
+                weekHistory.appendChild(weekDiv);
+            });
+
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+
+        document.getElementById('detail-modal').classList.add('show');
+    }
+
+    // Close modal
+    function closeModal() {
+        document.getElementById('detail-modal').classList.remove('show');
+        currentHabitudeId = null;
+    }
+
+    // Close modal on overlay click
+    document.getElementById('detail-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Mark complete from modal
+    function markCompleteFromModal() {
+        if (currentHabitudeId) {
+            confirmComplete(currentHabitudeId);
+        }
+    }
+
+    // Edit from modal
+    function editFromModal() {
+        if (currentHabitudeId) {
+            window.location.href = `/habitude/${currentHabitudeId}/edit`;
+        }
+    }
+
+    // Delete from modal
+    function deleteFromModal() {
+        if (currentHabitudeId && confirm('Êtes-vous sûr de vouloir supprimer cette habitude?')) {
+            const card = document.querySelector(`.hab-card[data-id="${currentHabitudeId}"]`);
+            const deleteToken = card ? card.dataset.deleteToken : '';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/habitude/${currentHabitudeId}`;
+            
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_token';
+            tokenInput.value = deleteToken;
+            
+            form.appendChild(tokenInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Delete habit with confirmation
+    function deleteHabitude(id) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette habitude?')) {
+            const card = document.querySelector(`.hab-card[data-id="${id}"]`);
+            const deleteToken = card ? card.dataset.deleteToken : '';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/habitude/${id}`;
+            
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_token';
+            tokenInput.value = deleteToken;
+            
+            form.appendChild(tokenInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    // Card click shows detail
+    document.querySelectorAll('.hab-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.context-menu-trigger') && !e.target.closest('.context-menu')) {
+                const id = this.dataset.id;
+                showDetail(id);
+            }
+        });
+    });
+
+    // Load completed today count
+    async function loadCompletedToday() {
+        // This would require a backend endpoint, for now we'll calculate from the data
+        const cards = document.querySelectorAll('.hab-card');
+        let completedCount = 0;
+        // You can enhance this with an API call if needed
+        document.getElementById('completed-today').textContent = completedCount;
+    }
+
+    // Initialize
+    loadCompletedToday();
+</script>
+{% endblock %}

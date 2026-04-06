@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier check-in — PsyApp{% endblock %}
+
+{% block body %}
+<div style="font-family:inherit;max-width:720px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;font-size:0.9rem;">← Retour</a>
+        {{ include('daily_checkin/_delete_form.html.twig') }}
+    </div>
+    <h1 style="margin:0 0 8px;font-size:1.6rem;">Modifier le check-in</h1>
+    <p style="color:#94a3b8;margin-bottom:24px;">{{ daily_checkin.checkinDate ? daily_checkin.checkinDate|date('d/m/Y') : '' }}</p>
+    {{ include('daily_checkin/_form.html.twig', { button_label: 'Mettre à jour' }) }}
+</div>
+{% endblock %}

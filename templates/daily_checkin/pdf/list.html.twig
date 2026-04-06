@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; }
+        h1 { font-size: 18px; margin-bottom: 8px; }
+        .meta { color: #444; margin-bottom: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+        th { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <p class="meta">Exporté le {{ exported_at|date('d/m/Y H:i') }} — {{ daily_checkins|length }} entrée(s)</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Humeur</th>
+                <th>Énergie</th>
+                <th>Prod.</th>
+                <th>Stress</th>
+                <th>Sommeil (h)</th>
+                <th>Aperçu victoire</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in daily_checkins %}
+                <tr>
+                    <td>{{ c.checkinDate ? c.checkinDate|date('Y-m-d') : '' }}</td>
+                    <td>{{ c.moodRating }}</td>
+                    <td>{{ c.energyLevel }}</td>
+                    <td>{{ c.productivityLevel }}</td>
+                    <td>{{ c.stressLevel }}</td>
+                    <td>{{ c.sleepHours }}</td>
+                    <td>{{ c.biggestWins|default('')|slice(0, 120) }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

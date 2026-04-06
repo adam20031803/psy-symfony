@@ -1,0 +1,49 @@
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    
+    <div class="form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Méditation quotidienne'}}) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.title) }}</div>
+    </div>
+
+    <div class="form-group">
+        {{ form_label(form.category) }}
+        {{ form_widget(form.category, {'attr': {'class': 'form-control', 'placeholder': 'Ex: Bien-être, Santé, Productivité'}}) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.category) }}</div>
+    </div>
+    
+    <div class="form-group">
+        {{ form_label(form.frequencyType) }}
+        {{ form_widget(form.frequencyType, {'attr': {'class': 'form-control', 'min': 1, 'max': 7}}) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.frequencyType) }}</div>
+        <small style="color: var(--muted); font-size: 0.75rem; margin-top: 4px; display: block;">Combien de fois par semaine souhaitez-vous pratiquer cette habitude? (1-7)</small>
+    </div>
+    
+    <div class="form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Pourquoi cette habitude est-elle importante ?'}}) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.description) }}</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="form-group">
+            {{ form_label(form.startDate) }}
+            {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+            <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.startDate) }}</div>
+        </div>
+        <div class="form-group">
+            {{ form_label(form.endDate) }}
+            {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+            <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.endDate) }}</div>
+        </div>
+    </div>
+
+    <div class="form-group form-check" style="margin-bottom: 30px;">
+        {{ form_widget(form.active) }}
+        {{ form_label(form.active) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.active) }}</div>
+    </div>
+
+    <button class="btn-submit">{{ button_label|default('Enregistrer mon habitude') }}</button>
+    {{ form_rest(form) }}
+{{ form_end(form) }}

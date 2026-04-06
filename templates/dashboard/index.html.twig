@@ -294,7 +294,23 @@
         }
         .hero-text h1 { font-size: 1.65rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
         .hero-text h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero-text p { color: var(--muted); font-size: 0.85rem; }
+        .hero-text p { color: var(--muted); font-size: 0.85rem; margin-bottom: 0; }
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            padding: 12px 22px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff !important;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            box-shadow: 0 4px 18px rgba(108,99,255,.28);
+            transition: opacity .2s, transform .2s;
+        }
+        .hero-cta:hover { opacity: .93; transform: translateY(-2px); }
         .hero-emoji { font-size: 4.5rem; line-height: 1; user-select: none; }
 
         /* ── Section ── */
@@ -507,7 +523,7 @@
                 <span class="sidebar-badge">PRO</span>
             </a>
 
-            <a href="#" class="sidebar-link">
+            <a href="{{ path('app_habitude_index') }}" class="sidebar-link">
                 <div class="sidebar-icon si-green">🔄</div>
                 <div class="sidebar-link-text">
                     <span class="sidebar-link-title">Habitudes</span>
@@ -515,11 +531,11 @@
                 </div>
             </a>
 
-            <a href="#" class="sidebar-link">
-                <div class="sidebar-icon si-orange">🏋️</div>
+            <a href="{{ path('app_store_index') }}" class="sidebar-link">
+                <div class="sidebar-icon si-orange">🏪</div>
                 <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Fitness</span>
-                    <span class="sidebar-link-sub">Workouts & plans</span>
+                    <span class="sidebar-link-title">Stores</span>
+                    <span class="sidebar-link-sub">Parcourir les boutiques</span>
                 </div>
             </a>
 
@@ -528,14 +544,6 @@
                 <div class="sidebar-link-text">
                     <span class="sidebar-link-title">Posts</span>
                     <span class="sidebar-link-sub">Communauté &amp; partage</span>
-                </div>
-            </a>
-
-            <a href="#" class="sidebar-link">
-                <div class="sidebar-icon si-teal">🧠</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Mentalité</span>
-                    <span class="sidebar-link-sub">Journal & bien-être</span>
                 </div>
             </a>
         </div>

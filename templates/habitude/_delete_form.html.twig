@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_habitude_delete', {'id': habitude.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette habitude ?');" style="margin: 0;">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ habitude.id) }}">
+    <button class="btn" style="background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s;">🗑️ Supprimer</button>
+</form>
