@@ -298,12 +298,12 @@
 <aside class="sidebar">
     <div class="sidebar-logo">
         <div class="icon">🧠</div>
-        <div><strong>Psy</strong><span>App</span></div>
+        <div><strong>Psy</strong><span>App</span> <small style="font-size: 0.6rem; opacity: 0.5; display: block; margin-top: -5px; font-weight: 500;">ADMIN PRO</small></div>
     </div>
 
     <div class="nav-label">Principal</div>
     <a href="{{ path('app_admin') }}" class="nav-item active">
-        <span class="nav-icon">👥</span> Utilisateurs
+        <span class="nav-icon">👤</span> Utilisateurs
     </a>
     <a href="{{ path('app_admin') }}#section-reclamations" class="nav-item">
         <span class="nav-icon">📬</span> Réclamations
@@ -312,12 +312,18 @@
         {% endif %}
     </a>
     <a href="{{ path('app_admin_motivation') }}" class="nav-item">
-        <span class="nav-icon">🚀</span> Motivation
+        <span class="nav-icon">🚀</span> Motivation Hub
+    </a>
+    <a href="{{ path('app_admin_posts') }}" class="nav-item">
+        <span class="nav-icon">💬</span> Posts Forum
     </a>
 
     <div class="sidebar-spacer"></div>
 
-    <div class="nav-label">Compte</div>
+    <div class="nav-label">Système</div>
+    <a href="{{ path('post_index') }}" class="nav-item">
+        <span class="nav-icon">🏠</span> Retour au Site
+    </a>
     <a href="{{ path('app_logout') }}" class="nav-item danger">
         <span class="nav-icon">🚪</span> Déconnexion
     </a>

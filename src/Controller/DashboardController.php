@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\PostRepository;
+use App\Repository\ChallengeRepository;
+use App\Repository\PostLikeRepository;
 use App\Repository\ReclamationRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,20 +15,41 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class DashboardController extends AbstractController
 {
     #[Route('/dashboard', name: 'app_dashboard')]
-    public function index(ReclamationRepository $reclamationRepo): Response
-    {
+    public function index(
+        ReclamationRepository $reclamationRepo,
+        PostRepository $postRepo,
+        ChallengeRepository $challengeRepo,
+        PostLikeRepository $postLikeRepo
+    ): Response {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
+        // 5 dernières réclamations
         $reclamations = $reclamationRepo->findBy(
             ['user' => $user],
             ['createdAt' => 'DESC'],
-            5  // afficher les 5 dernières sur le dashboard
+            5
         );
 
+        // 3 derniers posts du forum
+        $recentPosts = $postRepo->findBy([], ['createdAt' => 'DESC'], 3);
+
+        // 2 challenges actifs
+        $activeChallenges = $challengeRepo->findBy(['statut' => 'actif'], ['dateDebut' => 'DESC'], 2);
+
+        // Statistiques utilisateur
+        $userStats = [
+            'posts_count' => $postRepo->count(['user' => $user]),
+            'likes_received' => $postLikeRepo->countTotalLikesOnUserPosts($user),
+            'challenges_count' => count($activeChallenges), // On pourrait faire mieux avec une relation de participation
+        ];
+
         return $this->render('dashboard/index.html.twig', [
-            'user'         => $user,
-            'reclamations' => $reclamations,
+            'user'             => $user,
+            'reclamations'     => $reclamations,
+            'recentPosts'      => $recentPosts,
+            'activeChallenges' => $activeChallenges,
+            'userStats'        => $userStats,
         ]);
     }
 }

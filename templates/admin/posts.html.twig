@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Posts — PsyApp Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #0d0f1a;
+            --surface:   #141627;
+            --card:      #1a1d30;
+            --border:    rgba(255,255,255,0.07);
+            --accent:    #ec4899; /* Pink emphasis for Posts */
+            --accent2:   #8b5cf6; /* Purple secondary */
+            --danger:    #ff4d6d;
+            --success:   #22d3a5;
+            --warning:   #f59e0b;
+            --text:      #e2e8f0;
+            --muted:     #64748b;
+            --radius:    14px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            position: sticky;
+            top: 0;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px 32px;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        .sidebar-logo .icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #6c63ff, #00d2ff);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .sidebar-logo span { color: #00d2ff; }
+        .sidebar-logo strong { color: var(--text); }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 24px 8px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 24px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all .2s;
+        }
+        .nav-item:hover, .nav-item.active {
+            color: var(--text);
+            background: rgba(236, 72, 153, .08);
+            border-left-color: var(--accent);
+        }
+        .nav-item.danger:hover { color: var(--danger); border-left-color: var(--danger); background: rgba(255,77,109,.06); }
+        .nav-icon { font-size: 1rem; width: 18px; text-align: center; }
+        .sidebar-spacer { flex: 1; }
+
+        /* ── Main ── */
+        .main { flex: 1; padding: 32px 36px; overflow-x: auto; }
+
+        /* ── Header ── */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+        .page-header p { color: var(--muted); font-size: 0.85rem; margin-top: 3px; }
+        .admin-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ── Flash messages ── */
+        .flash { padding: 12px 18px; border-radius: var(--radius); margin-bottom: 20px; font-size: 0.85rem; }
+        .flash-success { background: rgba(34,211,165,.12); border: 1px solid rgba(34,211,165,.3); color: var(--success); }
+        .flash-danger  { background: rgba(255,77,109,.12);  border: 1px solid rgba(255,77,109,.3);  color: var(--danger);  }
+
+        /* ── Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+        }
+        .stat-icon.pink   { background: rgba(236,72,153,.15); }
+        .stat-icon.purple { background: rgba(139,92,246,.15); }
+        .stat-icon.blue   { background: rgba(59,130,246,.15); }
+        .stat-icon.green  { background: rgba(34,211,165,.15); }
+        .stat-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+
+        /* ── Section title ── */
+        .section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 36px 0 16px;
+        }
+        .section-header h2 { font-size: 1.1rem; font-weight: 700; }
+        .section-header p  { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+        /* ── Table ── */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .table-header h2 { font-size: 1rem; font-weight: 600; }
+        .search-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 14px;
+            color: var(--text);
+            font-size: 0.83rem;
+            font-family: inherit;
+            width: 200px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .search-box:focus { border-color: var(--accent); }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            padding: 12px 20px;
+            text-align: left;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,.02); }
+        tbody td { padding: 14px 20px; font-size: 0.85rem; vertical-align: middle; }
+
+        .desc-cell {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--muted);
+            font-size: 0.8rem;
+        }
+
+        .avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.7rem;
+            flex-shrink: 0;
+            color: #fff;
+        }
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .user-name { font-weight: 500; font-size: 0.8rem; }
+        .user-email { font-size: 0.7rem; color: var(--muted); }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-cat   { background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.25); }
+        .badge-anon  { background: rgba(148,163,184,.15); color: var(--muted); }
+
+        /* Stats in table */
+        .td-stats { display: flex; gap: 8px; font-size: 0.75rem; color: var(--muted); align-items: center; }
+        .td-stats span { display: flex; align-items: center; gap: 3px; }
+
+        /* Actions */
+        .actions { display: flex; gap: 6px; align-items: center; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px;
+            border-radius: 7px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            transition: opacity .2s, transform .15s;
+        }
+        .btn:hover { opacity: .85; transform: translateY(-1px); }
+        .btn-see     { background: rgba(59,130,246,.15); color: #60a5fa; }
+        .btn-delete  { background: rgba(255,77,109,.15); color: var(--danger); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="icon">🧠</div>
+        <div><strong>Psy</strong><span>App</span> <small style="font-size: 0.6rem; opacity: 0.5; display: block; margin-top: -5px; font-weight: 500;">ADMIN PRO</small></div>
+    </div>
+
+    <div class="nav-label">Principal</div>
+    <a href="{{ path('app_admin') }}" class="nav-item">
+        <span class="nav-icon">👤</span> Utilisateurs
+    </a>
+    <a href="{{ path('app_admin') }}#section-reclamations" class="nav-item">
+        <span class="nav-icon">📬</span> Réclamations
+    </a>
+    <a href="{{ path('app_admin_motivation') }}" class="nav-item">
+        <span class="nav-icon">🚀</span> Motivation Hub
+    </a>
+    <a href="{{ path('app_admin_posts') }}" class="nav-item active">
+        <span class="nav-icon">💬</span> Posts Forum
+    </a>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="nav-label">Système</div>
+    <a href="{{ path('post_index') }}" class="nav-item">
+        <span class="nav-icon">🏠</span> Retour au Site
+    </a>
+    <a href="{{ path('app_logout') }}" class="nav-item danger">
+        <span class="nav-icon">🚪</span> Déconnexion
+    </a>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>Gestion du Forum & Posts</h1>
+            <p>Supervisez les échanges, les posts et modérez la communauté</p>
+        </div>
+        <span class="admin-badge">⚡ ADMIN</span>
+    </div>
+
+    <!-- Flash messages -->
+    {% for msg in app.flashes('success') %}
+        <div class="flash flash-success">✅ {{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('danger') %}
+        <div class="flash flash-danger">❌ {{ msg }}</div>
+    {% endfor %}
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon pink">📝</div>
+            <div>
+                <div class="stat-label">Total Posts</div>
+                <div class="stat-value">{{ stats.total_posts }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">💬</div>
+            <div>
+                <div class="stat-label">Commentaires</div>
+                <div class="stat-value">{{ stats.total_comments }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">👍</div>
+            <div>
+                <div class="stat-label">Total Likes</div>
+                <div class="stat-value">{{ stats.total_likes }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">🕵️</div>
+            <div>
+                <div class="stat-label">Posts Anonymes</div>
+                <div class="stat-value">{{ stats.anonymous }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Posts -->
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Liste des Posts</h2>
+            <input class="search-box" type="text" id="searchInput" placeholder="🔍 Rechercher un post…" onkeyup="filterTable()">
+        </div>
+        <table id="postsTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Auteur</th>
+                    <th>Titre / Contenu</th>
+                    <th>Catégorie</th>
+                    <th>Interactions</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for post in posts %}
+                <tr>
+                    <td style="color:var(--muted)">{{ post.id }}</td>
+
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar" style="{% if post.isAnonymous %}background:var(--surface);border:1px solid var(--border){% endif %}">
+                                {% if post.isAnonymous %}🕵️{% else %}{{ post.user.prenom|slice(0,1)|upper }}{{ post.user.nom|slice(0,1)|upper }}{% endif %}
+                            </div>
+                            <div>
+                                <div class="user-name">{% if post.isAnonymous %}Anonyme{% else %}{{ post.user.prenom }} {{ post.user.nom }}{% endif %}</div>
+                                {% if not post.isAnonymous %}<div class="user-email">{{ post.user.email }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div style="font-weight:600; margin-bottom: 2px;">{{ post.titre|slice(0,40) }}{% if post.titre|length > 40 %}…{% endif %}</div>
+                        <div class="desc-cell">{{ post.contenu|striptags }}</div>
+                    </td>
+
+                    <td>
+                        {% if post.categorie %}
+                            <span class="badge badge-cat">{{ post.categorie.icon }} {{ post.categorie.nom }}</span>
+                        {% else %}
+                            <span style="color:var(--muted); font-size:0.75rem;">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <div class="td-stats">
+                            <span>👍 {{ post.countLikes }}</span>
+                            <span>👎 {{ post.countDislikes }}</span>
+                            <span>🔁 {{ post.countShares }}</span>
+                            <span>💬 {{ post.commentaires|length }}</span>
+                        </div>
+                    </td>
+
+                    <td style="color:var(--muted); font-size:0.75rem;">{{ post.createdAt|date('d/m/Y H:i') }}</td>
+
+                    <td>
+                        <div class="actions">
+                            <a href="{{ path('post_show', {id: post.id}) }}" target="_blank" class="btn btn-see">👁️ Voir</a>
+                            <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}"
+                                  onsubmit="return confirm('Attention ! Supprimer ce post supprimera également tous ses commentaires et likes. Confirmer ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_admin_post'~post.id) }}">
+                                <button class="btn btn-delete" type="submit">🗑️</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center;color:var(--muted);padding:40px">
+                        Aucun post publié pour le moment.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<script>
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#postsTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

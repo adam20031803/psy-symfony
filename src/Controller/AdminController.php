@@ -9,8 +9,12 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Challenge;
 use App\Entity\Recompense;
+use App\Entity\Post;
+use App\Entity\Commentaire;
 use App\Repository\ChallengeRepository;
 use App\Repository\RecompenseRepository;
+use App\Repository\PostRepository;
+use App\Repository\CommentaireRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +33,7 @@ class AdminController extends AbstractController
 
         $stats = [
             'total'       => count($users),
-            'admins'      => count(array_filter($users, fn(User $u) => $u->getRole() === 'admin')),
+            'admins'      => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach'], true))),
             'active'      => count(array_filter($users, fn(User $u) => $u->isActive())),
             'rec_total'   => count($reclamations),
             'rec_ouvert'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
@@ -46,7 +50,7 @@ class AdminController extends AbstractController
     #[Route('/user/{id}/toggle', name: 'app_admin_toggle_user', methods: ['POST'])]
     public function toggleUser(User $user, EntityManagerInterface $em): Response
     {
-        $user->setIsActive(!$user->isActive());
+        $user->setActive(!$user->isActive());
         $em->flush();
 
         $this->addFlash('success', sprintf(
@@ -136,6 +140,50 @@ class AdminController extends AbstractController
             'coaches'     => $coaches,
             'recompenses' => $recompenses,
         ]);
+    }
+
+    #[Route('/posts', name: 'app_admin_posts')]
+    public function postsDashboard(
+        PostRepository $postRepo,
+        CommentaireRepository $commentRepo,
+        EntityManagerInterface $em
+    ): Response {
+        $posts = $postRepo->findBy([], ['createdAt' => 'DESC']);
+        $comments = $commentRepo->findAll();
+
+        $stats = [
+            'total_posts'    => count($posts),
+            'total_comments' => count($comments),
+            'anonymous'      => count(array_filter($posts, fn(Post $p) => $p->isIsAnonymous())),
+            'total_likes'    => array_reduce($posts, fn($carry, Post $p) => $carry + $p->countLikes(), 0),
+        ];
+
+        return $this->render('admin/posts.html.twig', [
+            'stats' => $stats,
+            'posts' => $posts,
+        ]);
+    }
+
+    #[Route('/posts/{id}/delete', name: 'app_admin_post_delete', methods: ['POST'])]
+    public function deletePost(Request $request, Post $post, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete_admin_post'.$post->getId(), $request->request->get('_token'))) {
+            $em->remove($post);
+            $em->flush();
+            $this->addFlash('success', 'Le post a été supprimé par l\'administrateur.');
+        }
+        return $this->redirectToRoute('app_admin_posts');
+    }
+
+    #[Route('/comment/{id}/delete', name: 'app_admin_comment_delete', methods: ['POST'])]
+    public function deleteComment(Request $request, Commentaire $comment, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete_admin_comment'.$comment->getId(), $request->request->get('_token'))) {
+            $em->remove($comment);
+            $em->flush();
+            $this->addFlash('success', 'Le commentaire a été supprimé.');
+        }
+        return $this->redirectToRoute('app_admin_posts');
     }
 }
 

@@ -1,7 +1,8 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        App\Entity\User:
+            algorithm: bcrypt
     providers:
         app_user_provider:
             entity:
@@ -18,7 +19,7 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
-                default_target_path: /redirect-after-login
+                default_target_path: app_redirect_after_login
                 always_use_default_target_path: true
                 enable_csrf: true
 
@@ -32,9 +33,14 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/dashboard, roles: ROLE_USER }
-        - { path: ^/redirect-after-login, roles: ROLE_USER }
+        - { path: ^/admin,              roles: ROLE_ADMIN }
+        - { path: ^/posts/new,          roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts/\d+/edit,     roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts/\d+/delete,   roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts/\d+/comment,  roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts/\d+/like,     roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts/\d+/repost,   roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/posts,              roles: PUBLIC_ACCESS }
 
 when@test:
     security:
