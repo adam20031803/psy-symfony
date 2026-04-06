@@ -107,6 +107,13 @@ class RecompenseController extends AbstractController
     public function delete(Request $request, Recompense $recompense, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$recompense->getId(), $request->request->get('_token'))) {
+            // Remove all challenge_recompense links first to avoid FK constraint
+            $linkedRecords = $entityManager->getRepository(\App\Entity\ChallengeRecompense::class)
+                ->findBy(['recompense' => $recompense]);
+            foreach ($linkedRecords as $link) {
+                $entityManager->remove($link);
+            }
+
             $entityManager->remove($recompense);
             $entityManager->flush();
             $this->addFlash('success', '🗑️ Récompense supprimée!');
