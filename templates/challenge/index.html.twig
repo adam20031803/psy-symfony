@@ -3,9 +3,335 @@
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/manager.css') }}">
     <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #0a0c1a;
+            --surface:  #111328;
+            --card:     #181b30;
+            --sidebar:  #0e1025;
+            --border:   rgba(255,255,255,0.06);
+            --accent:   #6c63ff;
+            --accent2:  #00d2ff;
+            --success:  #22d3a5;
+            --warning:  #f59e0b;
+            --pink:     #ec4899;
+            --orange:   #f97316;
+            --text:     #e2e8f0;
+            --muted:    #64748b;
+            --radius:   16px;
+            --sidebar-w: 280px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── Background glow ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Navbar ── */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+            background: rgba(14,16,37,.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .nav-logo .icon {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 9px;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.95rem;
+        }
+        .nav-logo span { color: var(--accent2); }
+        .nav-logo strong { color: var(--text); }
+        .nav-actions { display: flex; align-items: center; gap: 14px; }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 14px 5px 5px;
+        }
+        .nav-avatar {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--accent), var(--pink));
+            border-radius: 50%;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem; color: white;
+        }
+        .nav-name { font-size: 0.8rem; font-weight: 500; }
+        .btn-logout {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all .2s;
+        }
+        .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
+
+        /* ── Layout ── */
+        .app-layout {
+            display: flex;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: calc(100vh - 60px);
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 24px;
+            margin-bottom: 10px;
+            margin-top: 8px;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 0 12px;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all .25s cubic-bezier(.4,0,.2,1);
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-link:hover {
+            background: rgba(108,99,255,.08);
+            color: var(--text);
+            transform: translateX(4px);
+        }
+        .sidebar-link.active {
+            background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08));
+            color: #fff;
+            font-weight: 600;
+            border: 1px solid rgba(108,99,255,.2);
+            box-shadow: 0 4px 16px rgba(108,99,255,.12);
+        }
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: linear-gradient(180deg, var(--accent), var(--accent2));
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-icon {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center; justify-content: center;
+            font-size: 1.15rem; flex-shrink: 0;
+            transition: transform .25s;
+        }
+        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
+        .si-purple   { background: rgba(108,99,255,.12); }
+        .si-teal     { background: rgba(0,210,255,.10); }
+        .si-green    { background: rgba(34,211,165,.10); }
+        .si-pink     { background: rgba(236,72,153,.10); }
+        .si-orange   { background: rgba(249,115,22,.10); }
+        .si-blue     { background: rgba(59,130,246,.10); }
+        .si-yellow   { background: rgba(245,158,11,.10); }
+
+        .sidebar-link-text { display: flex; flex-direction: column; gap: 1px; }
+        .sidebar-link-title { font-size: 0.84rem; line-height: 1.3; }
+        .sidebar-link-sub { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
+        .sidebar-link:hover .sidebar-link-sub,
+        .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
+
+        .sidebar-divider { height: 1px; background: var(--border); margin: 16px 24px; }
+        .sidebar-footer { margin-top: auto; padding: 20px; }
+        .sidebar-pro-card {
+            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08));
+            border: 1px solid rgba(108,99,255,.18);
+            border-radius: 14px; padding: 18px; text-align: center;
+        }
+
+        /* ── Main Area ── */
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            max-width: 1300px;
+            position: relative;
+        }
+
+        /* ── Specific Overrides for Challenge ── */
+        .challenge-header-custom {
+            margin-bottom: 25px;
+        }
+        .challenge-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 25px;
+        }
+
+        @media (max-width: 1100px) {
+            .challenge-container { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+        }
+    </style>
 {% endblock %}
-{% block body_class %}manager-body bg-challenge{% endblock %}
+{% block body_class %}bg-challenge{% endblock %}
 {% block body %}
+
+<!-- ── Navbar unifiée ── -->
+<nav class="top-nav">
+    <div class="nav-logo">
+        <div class="icon">🧠</div>
+        <div><strong>Psy</strong><span>App</span></div>
+    </div>
+    <div class="nav-actions">
+        {% if app.user %}
+        <div class="nav-user">
+            <div class="nav-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
+            <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
+        </div>
+        {% endif %}
+        <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
+    </div>
+</nav>
+
+<div class="app-layout">
+
+    <!-- ══════ SIDEBAR UNIFIÉE ══════ -->
+    <aside class="sidebar">
+        <div class="sidebar-section-label">🏠 Tableau de bord</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_dashboard') }}" class="sidebar-link">
+                <div class="sidebar-icon si-blue">📊</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Dashboard</span>
+                    <span class="sidebar-link-sub">Vue d'ensemble</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-label">⚙️ Gestion</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_challenge_index') }}" class="sidebar-link active">
+                <div class="sidebar-icon si-purple">🔥</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Motivation</span>
+                    <span class="sidebar-link-sub">Challenges & objectifs</span>
+                </div>
+            </a>
+
+            <a href="#" class="sidebar-link">
+                <div class="sidebar-icon si-green">🔄</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Habitudes</span>
+                    <span class="sidebar-link-sub">Suivi quotidien</span>
+                </div>
+            </a>
+
+            <a href="{{ path('post_index') }}" class="sidebar-link">
+                <div class="sidebar-icon si-pink">💬</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Forum</span>
+                    <span class="sidebar-link-sub">Communauté & partage</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section-label">📋 Support</div>
+        <div class="sidebar-nav">
+            <a href="{{ path('app_reclamation_index') }}" class="sidebar-link">
+                <div class="sidebar-icon si-yellow">📬</div>
+                <div class="sidebar-link-text">
+                    <span class="sidebar-link-title">Réclamations</span>
+                    <span class="sidebar-link-sub">Mes demandes</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-pro-card">
+                <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">🌟</span>
+                <h4 style="font-size: 0.8rem; color: white;">PsyApp Pro</h4>
+                <p style="font-size: 0.7rem; color: var(--muted);">Version Motivation étendue</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ══════ ZONE DE CONTENU ══════ -->
+    <div class="content-area">
 
 {# ============================================================ FLASH MESSAGES #}
 {% for type, messages in app.flashes %}
@@ -119,72 +445,43 @@
   </div>
 </div>
 
-{# ============================================================ HEADER #}
-<header class="d-flex flex-column gap-0">
-  <div class="top-header justify-between d-flex align-center">
-    <div class="d-flex align-center gap-15">
-      <div class="header-circle challenge-circle animate-pulse"></div>
-      <div>
-        <h1 class="brand-title text-glow">CHALLENGE MANAGER PRO</h1>
-        <p class="brand-subtitle" style="color:#a8c0ff;">Système de gestion intelligente</p>
+  <header class="challenge-header-custom d-flex flex-column gap-0">
+    <div class="top-header justify-between d-flex align-center">
+      <div class="d-flex align-center gap-15">
+        <div class="header-circle challenge-circle animate-pulse"></div>
+        <div>
+          <h1 class="brand-title text-glow">CHALLENGE MANAGER PRO</h1>
+          <p class="brand-subtitle" style="color:#a8c0ff;">Système de gestion intelligente</p>
+        </div>
       </div>
-    </div>
-    <form method="GET" action="{{ path('app_challenge_index') }}" class="d-flex align-center gap-15 card-glass" style="padding:12px 20px; border-radius:12px;">
-      <div class="d-flex align-center gap-10 flex-grow-1">
-        <span style="font-size:18px;">🔍</span>
-        <input type="text" name="search" value="{{ filters.search ?? '' }}" class="search-input" placeholder="Rechercher par titre ou description..." style="background:transparent; border:none; color:white; width:100%; outline:none; font-size:14px;">
-      </div>
-      
-      <div class="vr" style="width:1px; background:rgba(255,255,255,0.1); height:24px;"></div>
-      
-      <div class="d-flex align-center gap-10">
-        <span style="font-size:14px; color:rgba(255,255,255,0.6);">STATUT:</span>
-        <select name="statut" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 12px; color:white; cursor:pointer; font-size:13px; outline:none;">
-          <option value="">Tous</option>
+      <form method="GET" action="{{ path('app_challenge_index') }}" class="d-flex align-center gap-15 card-glass" style="padding:10px 15px; border-radius:12px;">
+        <div class="d-flex align-center gap-10 flex-grow-1">
+          <span style="font-size:16px;">🔍</span>
+          <input type="text" name="search" value="{{ filters.search ?? '' }}" class="search-input" placeholder="Recherche..." style="background:transparent; border:none; color:white; width:120px; outline:none; font-size:12px;">
+        </div>
+        
+        <select name="statut" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:4px 8px; color:white; font-size:11px; outline:none;">
+          <option value="">Statut</option>
           <option value="actif" {% if filters.statut == 'actif' %}selected{% endif %}>Actif</option>
           <option value="termine" {% if filters.statut == 'termine' %}selected{% endif %}>Terminé</option>
-          <option value="annule" {% if filters.statut == 'annule' %}selected{% endif %}>Annulé</option>
         </select>
-      </div>
 
-      <div class="d-flex align-center gap-10">
-        <span style="font-size:14px; color:rgba(255,255,255,0.6);">CATÉGORIE:</span>
-        <select name="categorie" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 12px; color:white; cursor:pointer; font-size:13px; outline:none;">
-          <option value="">Toutes</option>
-          {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if filters.categorie == cat.id %}selected{% endif %}>{{ cat.nom }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="d-flex align-center gap-10">
-        <span style="font-size:14px; color:rgba(255,255,255,0.6);">TRIER:</span>
-        <select name="sort" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 12px; color:white; cursor:pointer; font-size:13px; outline:none;">
-          <option value="date_recent" {% if filters.sort == 'date_recent' %}selected{% endif %}>Plus récent</option>
-          <option value="date_old" {% if filters.sort == 'date_old' %}selected{% endif %}>Plus ancien</option>
-          <option value="titre_asc" {% if filters.sort == 'titre_asc' %}selected{% endif %}>Titre (A-Z)</option>
-          <option value="titre_desc" {% if filters.sort == 'titre_desc' %}selected{% endif %}>Titre (Z-A)</option>
-        </select>
-      </div>
-
-      <button type="submit" class="btn btn-blue-purple" style="border-radius:8px; padding:8px 16px;">FILTRER</button>
-      <a href="{{ path('app_challenge_index') }}" class="btn btn-grey" style="padding:8px; border-radius:8px;">✕</a>
-    </form>
-  </div>
-  <div class="action-bar gap-20 card-glass d-flex align-center justify-between" style="margin:10px 20px;padding:15px; border-radius:12px;">
-    <div class="d-flex gap-15">
-      <a href="{{ path('app_coach_index') }}" class="btn btn-purple">👨‍🏫 GESTION COACHES</a>
-      <a href="{{ path('app_recompense_index') }}" class="btn btn-pink">🎁 GESTION RÉCOMPENSES</a>
+        <button type="submit" class="btn btn-blue-purple" style="border-radius:8px; padding:6px 12px; font-size:11px;">FILTRER</button>
+      </form>
     </div>
-    <div class="d-flex gap-15 align-center">
-      <div class="stats-mini p-10 d-flex gap-15" style="background:rgba(255,255,255,0.03); border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
-        <span style="color:#a8c0ff; font-size:12px;">TOTAL: <strong>{{ stats.total }}</strong></span>
-        <span style="color:#2ecc71; font-size:12px;">ACTIFS: <strong>{{ stats.actifs }}</strong></span>
+    <div class="action-bar gap-15 card-glass d-flex align-center justify-between" style="margin-top:10px; padding:12px; border-radius:12px;">
+      <div class="d-flex gap-10">
+        <a href="{{ path('app_coach_index') }}" class="btn btn-purple btn-small" style="font-size:11px;">👨‍🏫 COACHES</a>
+        <a href="{{ path('app_recompense_index') }}" class="btn btn-pink btn-small" style="font-size:11px;">🎁 RÉCOMPENSES</a>
       </div>
-      <a href="{{ path('app_challenge_export_pdf') }}" target="_blank" class="btn btn-blue">📄 EXPORT PDF</a>
+      <div class="d-flex gap-10 align-center">
+        <div class="stats-mini p-5 d-flex gap-10" style="background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
+          <span style="color:#a8c0ff; font-size:11px;">TOTAL: <strong>{{ stats.total }}</strong></span>
+        </div>
+        <a href="{{ path('app_challenge_export_pdf') }}" target="_blank" class="btn btn-blue btn-small" style="font-size:11px;">📄 PDF</a>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
 {# ============================================================ MODAL: DÉTAILS DU CHALLENGE (DBL CLICK) #}
 <div id="modalDetails" class="modal-overlay" style="display:none;">
@@ -237,8 +534,7 @@
   </div>
 </div>
 
-{# ============================================================ MAIN #}
-<main class="main-content">
+<div class="challenge-container">
 
   {# COLONNE GAUCHE — Liste #}
   <div class="d-flex flex-column gap-20">
@@ -463,18 +759,22 @@
       </p>
     </div>
   </div>
-</main>
+    </div> {# .challenge-container #}
+  </div> {# .content-area #}
+</div> {# .app-layout #}
 
-<footer class="main-footer text-white">© 2024 Challenge Manager Pro — Symfony Edition</footer>
+<footer class="main-footer text-white" style="text-align:center; padding: 20px; opacity:0.5; font-size: 0.8rem;">© 2024 PsyApp — Challenge Manager Pro</footer>
 
 {# ============================================================ STYLES MODAUX #}
 <style>
   @keyframes slideIn { from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;} }
   @keyframes fadeIn  { from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);} }
   .m-0{margin:0;} .gap-12{gap:12px;} .gap-8{gap:8px;} .p-15{padding:15px;}
+  .d-flex{display:flex;} .flex-column{flex-direction:column;} .gap-15{gap:15px;}
+  .align-center{align-items:center;} .justify-between{justify-content:space-between;}
 
   .flash-msg {
-    position:fixed;top:20px;right:20px;z-index:99999;padding:15px 25px;border-radius:10px;
+    position:fixed;top:80px;right:20px;z-index:99999;padding:15px 25px;border-radius:10px;
     font-weight:bold;box-shadow:0 5px 20px rgba(0,0,0,0.4);animation:slideIn 0.4s ease;
     color:white;max-width:400px;
   }
@@ -483,26 +783,17 @@
   .flash-info   {background:rgba(52,152,219,0.92);}
 
   .modal-overlay {
-    position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;
-    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);
+    position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:90000;
+    display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);
   }
   .modal-box {
     width:90%;max-width:600px;padding:25px;border-radius:20px;
-    animation:fadeIn 0.3s ease;max-height:80vh;overflow-y:auto;
+    animation:fadeIn 0.3s ease;max-height:85vh;overflow-y:auto;
     border:1px solid rgba(255,255,255,0.15);
   }
   .coach-card-popup {
     background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
     border-radius:12px;padding:14px;
-  }
-  .rec-card-popup {
-    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
-    border-radius:12px;padding:14px;
-  }
-  .filter-select option {
-    background-color: #1e1b4b; /* Dark purple/blue to match theme */
-    color: #ffffff;
-    font-weight: 500;
   }
 </style>
 
@@ -617,7 +908,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         recs.forEach(r => {
           const div = document.createElement('div');
-          div.className = 'rec-card-popup d-flex align-center gap-12';
+          div.className = 'rec-card-popup d-flex align-center gap-12' || 'rec-card-popup d-flex align-center gap-12';
+          div.style.background = 'rgba(255,255,255,0.05)';
+          div.style.border = '1px solid rgba(255,255,255,0.1)';
+          div.style.borderRadius = '12px';
+          div.style.padding = '14px';
           div.innerHTML = `
             <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#ff0844,#ffb199);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🏆</div>
             <div style="flex:1;">

@@ -1,204 +1,217 @@
 <?php
 
+// src/Entity/User.php
+
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Validator\Constraints as Assert;
 
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+/**
+ * Entité mappée exactement sur la table existante 'user'.
+ */
+#[ORM\Entity]
+#[ORM\Table(name: 'user')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\NotBlank(message: 'Le CV est obligatoire pour un coach.', groups: ['coach'])]
-    private ?string $cv = null;
-
-    public function getCv(): ?string { return $this->cv; }
-    public function setCv(?string $cv): static { $this->cv = $cv; return $this; }
-
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+    #[ORM\Column(type: 'string', length: 100)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 100)]
-    #[Assert\NotBlank(message: 'Le prénom est obligatoire.')]
+    #[ORM\Column(type: 'string', length: 100)]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: "L'email est obligatoire.")]
-    #[Assert\Email(message: "L'adresse email '{{ value }}' n'est pas un email valide.")]
+    #[ORM\Column(type: 'string', length: 180, unique: true)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type: 'string', length: 255)]
     private ?string $password = null;
 
-    #[ORM\Column(nullable: true)]
-    #[Assert\Positive(message: "L'âge doit être strictement supérieur à 0.")]
-    private ?int $age = null;
+    /**
+     * Le rôle est une chaîne ('user', 'coach', 'admin'), et non un tableau JSON.
+     */
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'user'])]
+    private string $role = 'user';
 
-    #[ORM\Column(length: 20, nullable: true)]
-    #[Assert\Regex(
-        pattern: '/^[0-9]{8}$/',
-        message: 'Le numéro de téléphone doit être composé exactement de 8 chiffres.'
-    )]
-    #[Assert\Regex(
-        pattern: '/^0{8}$/',
-        match: false,
-        message: 'Le numéro de téléphone ne peut pas être composé uniquement de zéros.'
-    )]
-    private ?string $telephone = null;
-
-    #[ORM\Column(length: 20, nullable: false, options: ['default' => 'user'])]
-    private string $role = 'user'; // user | coach | admin
-
-    #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $photo = null;
 
-    #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $age = null;
 
-    #[ORM\Column(options: ['default' => true])]
-    private ?bool $isActive = true;
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $telephone = null;
 
-    #[ORM\Column(length: 100, unique: true, nullable: true)]
-    private ?string $passwordResetToken = null;
+    #[ORM\Column(name: 'created_at', type: 'datetime')]
+    private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $passwordResetRequestedAt = null;
-
-    // Collections
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, orphanRemoval: true)]
-    private Collection $posts;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Commentaire::class, orphanRemoval: true)]
-    private Collection $commentaires;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Reclamation::class, orphanRemoval: true)]
-    private Collection $reclamations;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Moods::class, orphanRemoval: true)]
-    private Collection $moods;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: DailyCheckin::class, orphanRemoval: true)]
-    private Collection $dailyCheckins;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Habitude::class, orphanRemoval: true)]
-    private Collection $habitudes;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: MentalEntries::class, orphanRemoval: true)]
-    private Collection $mentalEntries;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: NotificationLog::class, orphanRemoval: true)]
-    private Collection $notificationLogs;
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->posts = new ArrayCollection();
-        $this->commentaires = new ArrayCollection();
-        $this->reclamations = new ArrayCollection();
-        $this->moods = new ArrayCollection();
-        $this->dailyCheckins = new ArrayCollection();
-        $this->habitudes = new ArrayCollection();
-        $this->mentalEntries = new ArrayCollection();
-        $this->notificationLogs = new ArrayCollection();
-    }
-
-    // --- Symfony UserInterface methods ---
-
-    public function getUserIdentifier(): string { return (string) $this->email; }
-
-    public function getRoles(): array
-    {
-        return match ($this->role) {
-            'admin' => ['ROLE_ADMIN', 'ROLE_USER'],
-            'coach' => ['ROLE_COACH', 'ROLE_USER'],
-            default => ['ROLE_USER'],
-        };
-    }
-
-    public function eraseCredentials(): void {}
+    #[ORM\Column(name: 'is_active', type: 'boolean', options: ['default' => 1])]
+    private bool $isActive = true;
 
     // --- Getters & Setters ---
 
-    public function getId(): ?int { return $this->id; }
-
-    public function getNom(): ?string { return $this->nom; }
-    public function setNom(string $nom): static { $this->nom = $nom; return $this; }
-
-    public function getPrenom(): ?string { return $this->prenom; }
-    public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
-
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(string $email): static { $this->email = $email; return $this; }
-
-    public function getPassword(): ?string { return $this->password; }
-    public function setPassword(string $password): static { $this->password = $password; return $this; }
-
-    public function getAge(): ?int { return $this->age; }
-    public function setAge(?int $age): static { $this->age = $age; return $this; }
-
-    public function getTelephone(): ?string { return $this->telephone; }
-    public function setTelephone(?string $telephone): static { $this->telephone = $telephone; return $this; }
-
-    public function getRole(): ?string { return $this->role; }
-    public function setRole(string $role): static { $this->role = $role; return $this; }
-
-    public function getPhoto(): ?string { return $this->photo; }
-    public function setPhoto(?string $photo): static { $this->photo = $photo; return $this; }
-
-    public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
-
-    public function isActive(): ?bool { return $this->isActive; }
-    public function setIsActive(bool $isActive): static { $this->isActive = $isActive; return $this; }
-
-    public function getPasswordResetToken(): ?string { return $this->passwordResetToken; }
-    public function setPasswordResetToken(?string $passwordResetToken): static
+    public function __construct()
     {
-        $this->passwordResetToken = $passwordResetToken;
+        $this->createdAt = new \DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static
+    {
+        $this->nom = $nom;
         return $this;
     }
 
-    public function getPasswordResetRequestedAt(): ?\DateTimeImmutable { return $this->passwordResetRequestedAt; }
-    public function setPasswordResetRequestedAt(?\DateTimeImmutable $passwordResetRequestedAt): static
+    public function getPrenom(): ?string
     {
-        $this->passwordResetRequestedAt = $passwordResetRequestedAt;
+        return $this->prenom;
+    }
+
+    public function setPrenom(string $prenom): static
+    {
+        $this->prenom = $prenom;
         return $this;
     }
 
-    public function getPosts(): Collection { return $this->posts; }
-    public function addPost(Post $post): static
+    public function getEmail(): ?string
     {
-        if (!$this->posts->contains($post)) {
-            $this->posts->add($post);
-            $post->setUser($this);
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = [$this->role ? 'ROLE_' . strtoupper($this->role) : 'ROLE_USER'];
+        // Les coaches héritent des droits d'administration
+        if (in_array($this->role, ['admin', 'coach'], true)) {
+            $roles[] = 'ROLE_ADMIN';
         }
-        return $this;
+        // Guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
     }
-    public function removePost(Post $post): static
+
+    public function getRole(): string
     {
-        if ($this->posts->removeElement($post)) {
-            if ($post->getUser() === $this) { $post->setUser(null); }
-        }
+        return $this->role;
+    }
+
+    public function setRole(string $role): static
+    {
+        $this->role = $role;
         return $this;
     }
 
-    public function getCommentaires(): Collection { return $this->commentaires; }
-    public function getReclamations(): Collection { return $this->reclamations; }
-    public function getMoods(): Collection { return $this->moods; }
-    public function getDailyCheckins(): Collection { return $this->dailyCheckins; }
-    public function getHabitudes(): Collection { return $this->habitudes; }
-    public function getMentalEntries(): Collection { return $this->mentalEntries; }
-    public function getNotificationLogs(): Collection { return $this->notificationLogs; }
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'coach'], true);
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    public function getPhoto(): ?string
+    {
+        return $this->photo;
+    }
+
+    public function setPhoto(?string $photo): static
+    {
+        $this->photo = $photo;
+        return $this;
+    }
+
+    public function getAge(): ?int
+    {
+        return $this->age;
+    }
+
+    public function setAge(?int $age): static
+    {
+        $this->age = $age;
+        return $this;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
+    public function setTelephone(?string $telephone): static
+    {
+        $this->telephone = $telephone;
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // Si vous stockez des données temporaires sensibles, effacez-les ici.
+    }
 }
