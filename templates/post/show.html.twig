@@ -1,10 +1,10 @@
-{# templates/post/show.html.twig #}
+﻿{# templates/post/show.html.twig #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ post.titre }} — PsyApp</title>
+    <title>{{ post.titre }} â€” Atomic You</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -18,7 +18,7 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
         body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
 
-        /* ── Navbar ── */
+        /* â”€â”€ Navbar â”€â”€ */
         .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(14,16,37,.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
         .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
         .nav-logo .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
@@ -30,10 +30,10 @@
         .btn-logout { text-decoration: none; color: var(--muted); font-size: 0.78rem; font-weight: 500; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: all .2s; }
         .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
 
-        /* ── Layout ── */
+        /* â”€â”€ Layout â”€â”€ */
         .app-layout { display: flex; flex: 1; position: relative; z-index: 1; }
 
-        /* ── Sidebar ── */
+        /* â”€â”€ Sidebar â”€â”€ */
         .sidebar { width: var(--sidebar-w); min-height: calc(100vh - 60px); background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; flex-shrink: 0; }
         .sidebar-section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 24px; margin-bottom: 10px; margin-top: 8px; }
         .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
@@ -56,17 +56,17 @@
         .sidebar-pro-card h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .sidebar-pro-card p { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
 
-        /* ── Main ── */
+        /* â”€â”€ Main â”€â”€ */
         .main-content { flex: 1; padding: 36px 40px 80px; max-width: 820px; }
         .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; transition: color .2s; }
         .back-link:hover { color: var(--accent2); }
 
-        /* ── Flash ── */
+        /* â”€â”€ Flash â”€â”€ */
         .flash { padding: 12px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; margin-bottom: 16px; }
         .flash-success { background: rgba(34,211,165,.12); border: 1px solid rgba(34,211,165,.3); color: var(--success); }
         .flash-error   { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: #ef4444; }
 
-        /* ── Post article card ── */
+        /* â”€â”€ Post article card â”€â”€ */
         .post-article { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 28px; }
         .post-article-img { width: 100%; max-height: 360px; object-fit: cover; display: block; }
         .post-article-body { padding: 32px 36px; }
@@ -81,7 +81,7 @@
 
         .post-body-text { font-size: 0.88rem; line-height: 1.8; color: #c8d3e0; white-space: pre-wrap; }
 
-        /* ── Reaction bar ── */
+        /* â”€â”€ Reaction bar â”€â”€ */
         .reaction-bar {
             display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
             margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
@@ -100,14 +100,14 @@
         .reaction-btn .count { font-size: 0.78rem; }
         .reaction-separator { width: 1px; height: 24px; background: var(--border); }
 
-        /* ── Post actions (edit/delete) ── */
+        /* â”€â”€ Post actions (edit/delete) â”€â”€ */
         .post-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
         .btn-edit-post { display: inline-flex; align-items: center; gap: 7px; background: rgba(245,158,11,.1); color: var(--warning); border: 1px solid rgba(245,158,11,.25); font-size: 0.8rem; font-weight: 600; padding: 9px 16px; border-radius: 9px; text-decoration: none; transition: all .2s; }
         .btn-edit-post:hover { background: rgba(245,158,11,.2); }
         .btn-delete-post { display: inline-flex; align-items: center; gap: 7px; background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.25); font-size: 0.8rem; font-weight: 600; padding: 9px 16px; border-radius: 9px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; }
         .btn-delete-post:hover { background: rgba(239,68,68,.2); }
 
-        /* ── Toast notification ── */
+        /* â”€â”€ Toast notification â”€â”€ */
         .toast {
             position: fixed; bottom: 28px; right: 28px; z-index: 9999;
             background: var(--card); border: 1px solid var(--border);
@@ -122,7 +122,7 @@
         .toast.toast-success { border-color: rgba(34,211,165,.3); color: var(--success); }
         .toast.toast-info    { border-color: rgba(0,210,255,.3); color: var(--accent2); }
 
-        /* ── Comments section ── */
+        /* â”€â”€ Comments section â”€â”€ */
         .comments-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; }
         .comments-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
         .comments-header h2 { font-size: 1rem; font-weight: 700; }
@@ -156,8 +156,8 @@
 <!-- Navbar -->
 <nav class="top-nav">
     <div class="nav-logo">
-        <div class="icon">🧠</div>
-        <div><strong>Psy</strong><span>App</span></div>
+        <div class="icon">ðŸ§ </div>
+        <div><strong>Atomic</strong><span>You</span></div>
     </div>
     <div class="nav-actions">
         {% if app.user %}
@@ -166,54 +166,19 @@
             <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
         </div>
         {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
+        <a href="{{ path('app_logout') }}" class="btn-logout">ðŸšª DÃ©connexion</a>
     </div>
 </nav>
 
 <div class="app-layout">
 
     <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-section-label">🏠 Tableau de bord</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_dashboard') }}" class="sidebar-link">
-                <div class="sidebar-icon si-blue">📊</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Dashboard</span><span class="sidebar-link-sub">Vue d'ensemble</span></div>
-            </a>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">⚙️ Gestion</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_challenge_index') }}" class="sidebar-link">
-                <div class="sidebar-icon si-purple">🔥</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Motivation</span><span class="sidebar-link-sub">Challenges & objectifs</span></div>
-                <span class="sidebar-badge">PRO</span>
-            </a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-green">🔄</div><div class="sidebar-link-text"><span class="sidebar-link-title">Habitudes</span><span class="sidebar-link-sub">Suivi quotidien</span></div></a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-orange">🏋️</div><div class="sidebar-link-text"><span class="sidebar-link-title">Fitness</span><span class="sidebar-link-sub">Workouts & plans</span></div></a>
-            <a href="{{ path('post_index') }}" class="sidebar-link active">
-                <div class="sidebar-icon si-pink">💬</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Posts</span><span class="sidebar-link-sub">Communauté & partage</span></div>
-            </a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-teal">🧠</div><div class="sidebar-link-text"><span class="sidebar-link-title">Mentalité</span><span class="sidebar-link-sub">Journal & bien-être</span></div></a>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">📋 Support</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_reclamation_index') }}" class="sidebar-link">
-                <div class="sidebar-icon si-yellow">📬</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Réclamations</span><span class="sidebar-link-sub">Mes demandes</span></div>
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <div class="sidebar-pro-card"><span class="pro-emoji">🌟</span><h4>PsyApp Pro</h4><p>Votre bien-être mental est notre priorité quotidienne.</p></div>
-        </div>
-    </aside>
+    {% include 'components/sidebar.html.twig' %}
 
     <!-- Main content -->
     <div class="main-content">
 
-        <a href="{{ path('post_index') }}" class="back-link">← Retour au forum</a>
+        <a href="{{ path('post_index') }}" class="back-link">â† Retour au forum</a>
 
         <!-- Flash messages -->
         {% for type, messages in app.flashes %}
@@ -239,22 +204,22 @@
 
                 <div class="post-meta-row">
                     <span class="meta-item">
-                        👤
+                        ðŸ‘¤
                         {% if post.isAnonymous %}
                             <em>Anonyme</em>
                         {% else %}
                             {{ post.user.prenom }} {{ post.user.nom }}
                         {% endif %}
                     </span>
-                    <span class="meta-item">📅 {{ post.createdAt|date('d/m/Y à H:i') }}</span>
+                    <span class="meta-item">ðŸ“… {{ post.createdAt|date('d/m/Y Ã  H:i') }}</span>
                     {% if post.updatedAt %}
-                        <span class="meta-modified">(modifié le {{ post.updatedAt|date('d/m/Y') }})</span>
+                        <span class="meta-modified">(modifiÃ© le {{ post.updatedAt|date('d/m/Y') }})</span>
                     {% endif %}
                 </div>
 
                 <div class="post-body-text">{{ post.contenu }}</div>
 
-                {# ── Barre de réactions ─────────────────────────────── #}
+                {# â”€â”€ Barre de rÃ©actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
                 <div class="reaction-bar" id="reaction-bar">
                     {% if app.user %}
                         {# Bouton LIKE #}
@@ -262,7 +227,7 @@
                             class="reaction-btn {% if userVote == 'like' %}active-like{% endif %}"
                             id="btn-like"
                             onclick="vote('like')">
-                            👍 <span class="count" id="likes-count">{{ likesCount }}</span>
+                            ðŸ‘ <span class="count" id="likes-count">{{ likesCount }}</span>
                         </button>
 
                         {# Bouton DISLIKE #}
@@ -270,7 +235,7 @@
                             class="reaction-btn {% if userVote == 'dislike' %}active-dislike{% endif %}"
                             id="btn-dislike"
                             onclick="vote('dislike')">
-                            👎 <span class="count" id="dislikes-count">{{ dislikesCount }}</span>
+                            ðŸ‘Ž <span class="count" id="dislikes-count">{{ dislikesCount }}</span>
                         </button>
 
                         <div class="reaction-separator"></div>
@@ -280,27 +245,27 @@
                             class="reaction-btn {% if hasShared %}shared{% endif %}"
                             id="btn-repost"
                             onclick="{% if not hasShared %}repost(){% endif %}"
-                            title="{% if hasShared %}Déjà reposté{% else %}Reposer ce post{% endif %}">
-                            🔁 <span class="count" id="shares-count">{{ sharesCount }}</span>
-                            <span id="repost-label">{% if hasShared %}Reposté{% else %}Repost{% endif %}</span>
+                            title="{% if hasShared %}DÃ©jÃ  repostÃ©{% else %}Reposer ce post{% endif %}">
+                            ðŸ” <span class="count" id="shares-count">{{ sharesCount }}</span>
+                            <span id="repost-label">{% if hasShared %}RepostÃ©{% else %}Repost{% endif %}</span>
                         </button>
                     {% else %}
-                        {# Affichage read-only pour les non-connectés #}
-                        <span class="reaction-btn" style="cursor:default">👍 {{ likesCount }}</span>
-                        <span class="reaction-btn" style="cursor:default">👎 {{ dislikesCount }}</span>
+                        {# Affichage read-only pour les non-connectÃ©s #}
+                        <span class="reaction-btn" style="cursor:default">ðŸ‘ {{ likesCount }}</span>
+                        <span class="reaction-btn" style="cursor:default">ðŸ‘Ž {{ dislikesCount }}</span>
                         <div class="reaction-separator"></div>
-                        <span class="reaction-btn" style="cursor:default">🔁 {{ sharesCount }}</span>
+                        <span class="reaction-btn" style="cursor:default">ðŸ” {{ sharesCount }}</span>
                     {% endif %}
                 </div>
 
-                {# ── Boutons Modifier / Supprimer (auteur uniquement) #}
+                {# â”€â”€ Boutons Modifier / Supprimer (auteur uniquement) #}
                 {% if app.user and app.user == post.user %}
                 <div class="post-actions">
-                    <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-edit-post">✏️ Modifier</a>
+                    <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-edit-post">âœï¸ Modifier</a>
                     <form method="post" action="{{ path('post_delete', {id: post.id}) }}"
-                          onsubmit="return confirm('Supprimer définitivement ce post ?')" style="display:contents">
+                          onsubmit="return confirm('Supprimer dÃ©finitivement ce post ?')" style="display:contents">
                         <input type="hidden" name="_token" value="{{ csrf_token('delete'~post.id) }}">
-                        <button type="submit" class="btn-delete-post">🗑️ Supprimer</button>
+                        <button type="submit" class="btn-delete-post">ðŸ—‘ï¸ Supprimer</button>
                     </form>
                 </div>
                 {% endif %}
@@ -312,7 +277,7 @@
         <section class="comments-section">
 
             <div class="comments-header">
-                <h2>💬 Commentaires</h2>
+                <h2>ðŸ’¬ Commentaires</h2>
                 <span class="comments-count">{{ post.commentaires|length }}</span>
             </div>
 
@@ -323,8 +288,8 @@
                     {% for commentaire in post.commentaires %}
                     <div class="comment-item">
                         <div class="comment-meta">
-                            <span class="comment-author">👤 {{ commentaire.user.prenom }} {{ commentaire.user.nom }}</span>
-                            <span class="comment-date">{{ commentaire.createdAt|date('d/m/Y à H:i') }}</span>
+                            <span class="comment-author">ðŸ‘¤ {{ commentaire.user.prenom }} {{ commentaire.user.nom }}</span>
+                            <span class="comment-date">{{ commentaire.createdAt|date('d/m/Y Ã  H:i') }}</span>
                         </div>
                         <div class="comment-body">{{ commentaire.contenu }}</div>
                     </div>
@@ -344,7 +309,7 @@
                         {% if form_errors(commentaireForm.contenu) is not empty %}
                             <div class="comment-form-error">{{ form_errors(commentaireForm.contenu) }}</div>
                         {% endif %}
-                        <button type="submit" class="btn-comment-submit">💬 Commenter</button>
+                        <button type="submit" class="btn-comment-submit">ðŸ’¬ Commenter</button>
                     {{ form_end(commentaireForm) }}
                 </div>
             {% else %}
@@ -358,7 +323,7 @@
     </div>
 </div>
 
-{# ── Toast de feedback ── #}
+{# â”€â”€ Toast de feedback â”€â”€ #}
 <div class="toast" id="toast"></div>
 
 {% if app.user %}
@@ -368,7 +333,7 @@
     let currentVote  = '{{ userVote ?? '' }}';
     let isShared     = {{ hasShared ? 'true' : 'false' }};
 
-    /* ── Toast helper ── */
+    /* â”€â”€ Toast helper â”€â”€ */
     function showToast(msg, type = 'success') {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -378,7 +343,7 @@
         setTimeout(() => t.classList.remove('show'), 2800);
     }
 
-    /* ── Like / Dislike ── */
+    /* â”€â”€ Like / Dislike â”€â”€ */
     async function vote(type) {
         const body = new URLSearchParams({ type });
         try {
@@ -394,13 +359,13 @@
             btnDislike.classList.remove('active-dislike');
 
             currentVote = data.userVote;
-            if (data.userVote === 'like')    { btnLike.classList.add('active-like'); showToast('👍 Like enregistré !'); }
-            else if (data.userVote === 'dislike') { btnDislike.classList.add('active-dislike'); showToast('👎 Dislike enregistré !'); }
-            else { showToast('Vote annulé.', 'info'); }
-        } catch (e) { showToast('Erreur réseau.', 'info'); }
+            if (data.userVote === 'like')    { btnLike.classList.add('active-like'); showToast('ðŸ‘ Like enregistrÃ© !'); }
+            else if (data.userVote === 'dislike') { btnDislike.classList.add('active-dislike'); showToast('ðŸ‘Ž Dislike enregistrÃ© !'); }
+            else { showToast('Vote annulÃ©.', 'info'); }
+        } catch (e) { showToast('Erreur rÃ©seau.', 'info'); }
     }
 
-    /* ── Repost ── */
+    /* â”€â”€ Repost â”€â”€ */
     async function repost() {
         if (isShared) return;
         try {
@@ -408,16 +373,17 @@
             const data = await res.json();
 
             document.getElementById('shares-count').textContent = data.shares;
-            document.getElementById('repost-label').textContent = 'Reposté';
+            document.getElementById('repost-label').textContent = 'RepostÃ©';
             const btn = document.getElementById('btn-repost');
             btn.classList.add('shared');
             btn.setAttribute('onclick', '');
             isShared = true;
-            showToast('🔁 ' + data.message);
-        } catch (e) { showToast('Erreur réseau.', 'info'); }
+            showToast('ðŸ” ' + data.message);
+        } catch (e) { showToast('Erreur rÃ©seau.', 'info'); }
     }
 </script>
 {% endif %}
 
 </body>
 </html>
+

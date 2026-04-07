@@ -1,0 +1,87 @@
+<aside class="sidebar">
+    <div class="sidebar-section-label">🏠 Tableau de bord</div>
+    <div class="sidebar-nav">
+        <a href="{{ path('app_dashboard') }}" class="sidebar-link {{ app.request.attributes.get('_route') == 'app_dashboard' ? 'active' : '' }}">
+            <div class="sidebar-icon si-blue">📊</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Dashboard</span>
+                <span class="sidebar-link-sub">Vue d'ensemble</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section-label">⚙️ Gestion</div>
+    <div class="sidebar-nav">
+        <a href="{{ path('app_challenge_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_challenge_' ? 'active' : '' }}">
+            <div class="sidebar-icon si-purple">🔥</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Motivation</span>
+                <span class="sidebar-link-sub">Challenges & objectifs</span>
+            </div>
+            <span class="sidebar-badge">PRO</span>
+        </a>
+
+        <a href="{{ path('app_habitude_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_habitude_' ? 'active' : '' }}">
+            <div class="sidebar-icon si-green">🔄</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Habitudes</span>
+                <span class="sidebar-link-sub">Suivi quotidien</span>
+            </div>
+        </a>
+
+        <a href="{{ path('app_store_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_store_' ? 'active' : '' }}">
+            <div class="sidebar-icon si-orange">🏪</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Stores</span>
+                <span class="sidebar-link-sub">Parcourir les boutiques</span>
+            </div>
+        </a>
+
+        <a href="{{ path('post_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'post_' ? 'active' : '' }}">
+            <div class="sidebar-icon si-pink">💬</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Posts</span>
+                <span class="sidebar-link-sub">Communauté &amp; partage</span>
+            </div>
+        </a>
+
+        <a href="{{ path('front_home') }}" class="sidebar-link {{ app.request.attributes.get('_route') == 'front_home' or app.request.attributes.get('_route') starts with 'front_exercise_' or app.request.attributes.get('_route') starts with 'front_program_list' or app.request.attributes.get('_route') starts with 'front_program_show' ? 'active' : '' }}">
+            <div class="sidebar-icon si-teal">💪</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Fitness</span>
+                <span class="sidebar-link-sub">Programmes & exercices</span>
+            </div>
+        </a>
+
+        <a href="{{ path('front_program_my_programs') }}" class="sidebar-link {{ app.request.attributes.get('_route') == 'front_program_my_programs' ? 'active' : '' }}">
+            <div class="sidebar-icon si-green">🎯</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Mes Programmes</span>
+                <span class="sidebar-link-sub">Programmes assignés</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section-label">📋 Support</div>
+    <div class="sidebar-nav">
+        <a href="{{ path('app_reclamation_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_reclamation_' ? 'active' : '' }}">
+            <div class="sidebar-icon si-yellow">📬</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Réclamations</span>
+                <span class="sidebar-link-sub">Mes demandes</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-pro-card">
+            <span class="pro-emoji">🌟</span>
+            <h4>Atomic You Pro</h4>
+            <p>Votre bien-être mental est notre priorité quotidienne.</p>
+        </div>
+    </div>
+</aside>

@@ -11,10 +11,13 @@ use App\Entity\Challenge;
 use App\Entity\Recompense;
 use App\Entity\Post;
 use App\Entity\Commentaire;
+use App\Entity\Habitude;
 use App\Repository\ChallengeRepository;
 use App\Repository\RecompenseRepository;
 use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
+use App\Repository\HabitudeRepository;
+use App\Form\AdminUserType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,26 +29,65 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class AdminController extends AbstractController
 {
     #[Route('', name: 'app_admin')]
-    public function index(UserRepository $userRepository, ReclamationRepository $reclamationRepo): Response
+    public function index(
+        UserRepository $userRepository, 
+        ReclamationRepository $reclamationRepo,
+        ChallengeRepository $challengeRepo,
+        PostRepository $postRepo,
+        HabitudeRepository $habitudeRepo
+    ): Response
     {
-        $users        = $userRepository->findAll();
-        $reclamations = $reclamationRepo->findBy([], ['createdAt' => 'DESC']);
+        $users = $userRepository->findAll();
+        $reclamations = $reclamationRepo->findAll();
 
         $stats = [
-            'total'       => count($users),
-            'admins'      => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach'], true))),
-            'active'      => count(array_filter($users, fn(User $u) => $u->isActive())),
-            'rec_total'   => count($reclamations),
-            'rec_ouvert'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
-            'rec_resolu'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'resolu')),
+            'users_total'  => count($users),
+            'users_active' => count(array_filter($users, fn(User $u) => $u->isActive())),
+            'users_admins' => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach']))),
+            'rec_total'    => count($reclamations),
+            'rec_ouvert'   => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
+            'challenges'   => $challengeRepo->count([]),
+            'posts'        => $postRepo->count([]),
+            'habitudes'    => $habitudeRepo->count([]),
         ];
 
         return $this->render('admin/index.html.twig', [
-            'users'        => $users,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/users', name: 'app_admin_users')]
+    public function users(UserRepository $userRepository): Response
+    {
+        $users = $userRepository->findAll();
+        $stats = [
+            'total'  => count($users),
+            'admins' => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach'], true))),
+            'active' => count(array_filter($users, fn(User $u) => $u->isActive())),
+        ];
+
+        return $this->render('admin/users.html.twig', [
+            'users' => $users,
+            'stats' => $stats,
+        ]);
+    }
+
+    #[Route('/reclamations', name: 'app_admin_reclamations')]
+    public function reclamations(ReclamationRepository $reclamationRepo): Response
+    {
+        $reclamations = $reclamationRepo->findBy([], ['createdAt' => 'DESC']);
+        $stats = [
+            'total'   => count($reclamations),
+            'ouvert'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
+            'resolu'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'resolu')),
+        ];
+
+        return $this->render('admin/reclamations.html.twig', [
             'reclamations' => $reclamations,
             'stats'        => $stats,
         ]);
     }
+
 
     #[Route('/user/{id}/toggle', name: 'app_admin_toggle_user', methods: ['POST'])]
     public function toggleUser(User $user, EntityManagerInterface $em): Response
@@ -59,7 +101,7 @@ class AdminController extends AbstractController
             $user->isActive() ? 'activé' : 'désactivé'
         ));
 
-        return $this->redirectToRoute('app_admin');
+        return $this->redirectToRoute('app_admin_users');
     }
 
     #[Route('/user/{id}/role', name: 'app_admin_change_role', methods: ['POST'])]
@@ -70,9 +112,43 @@ class AdminController extends AbstractController
             $user->setRole($role);
             $em->flush();
             $this->addFlash('success', 'Rôle mis à jour avec succès.');
+
+            // Security: If current admin downgrades THEMSELVES, log them out
+            /** @var User $currentUser */
+            $currentUser = $this->getUser();
+            if ($user->getId() === $currentUser->getId() && !$user->isAdmin()) {
+                $this->addFlash('warning', 'Vos droits ont été modifiés. Veuillez vous reconnecter.');
+                return $this->redirectToRoute('app_logout');
+            }
         }
 
-        return $this->redirectToRoute('app_admin');
+        return $this->redirectToRoute('app_admin_users');
+    }
+
+    #[Route('/user/{id}/edit', name: 'app_admin_user_edit', methods: ['GET', 'POST'])]
+    public function editUser(Request $request, User $user, EntityManagerInterface $em): Response
+    {
+        $form = $this->createForm(AdminUserType::class, $user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->flush();
+            $this->addFlash('success', 'Utilisateur "' . $user->getPrenom() . '" mis à jour.');
+
+            // Security: If current admin downgrades THEMSELVES, log them out
+            /** @var User $currentUser */
+            $currentUser = $this->getUser();
+            if ($user->getId() === $currentUser->getId() && !$user->isAdmin()) {
+                return $this->redirectToRoute('app_logout');
+            }
+
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        return $this->render('admin/user_edit.html.twig', [
+            'user' => $user,
+            'form' => $form->createView(),
+        ]);
     }
 
     #[Route('/user/{id}/delete', name: 'app_admin_delete_user', methods: ['POST'])]
@@ -84,7 +160,7 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'Utilisateur supprimé.');
         }
 
-        return $this->redirectToRoute('app_admin');
+        return $this->redirectToRoute('app_admin_users');
     }
 
     #[Route('/reclamation/{id}/statut', name: 'app_admin_reclamation_statut', methods: ['POST'])]
@@ -98,7 +174,7 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'Statut de la réclamation mis à jour.');
         }
 
-        return $this->redirectToRoute('app_admin');
+        return $this->redirectToRoute('app_admin_reclamations');
     }
 
     #[Route('/reclamation/{id}/delete', name: 'app_admin_reclamation_delete', methods: ['POST'])]
@@ -110,7 +186,7 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'Réclamation supprimée.');
         }
 
-        return $this->redirectToRoute('app_admin');
+        return $this->redirectToRoute('app_admin_reclamations');
     }
     #[Route('/motivation', name: 'app_admin_motivation')]
     public function motivationDashboard(
@@ -184,6 +260,34 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'Le commentaire a été supprimé.');
         }
         return $this->redirectToRoute('app_admin_posts');
+    }
+
+    #[Route('/habitudes', name: 'app_admin_habitudes')]
+    public function habitudesDashboard(HabitudeRepository $habitudeRepo): Response
+    {
+        $habitudes = $habitudeRepo->findBy([], ['startDate' => 'DESC']);
+
+        $stats = [
+            'total' => count($habitudes),
+            'active' => count(array_filter($habitudes, fn(Habitude $h) => $h->isActive())),
+            'completed' => count(array_filter($habitudes, fn(Habitude $h) => !$h->isActive())),
+        ];
+
+        return $this->render('admin/habitudes.html.twig', [
+            'habitudes' => $habitudes,
+            'stats'     => $stats,
+        ]);
+    }
+
+    #[Route('/habitudes/{id}/delete', name: 'app_admin_habitude_delete', methods: ['POST'])]
+    public function deleteHabitude(Request $request, Habitude $habitude, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete_admin_habitude'.$habitude->getId(), $request->request->get('_token'))) {
+            $em->remove($habitude);
+            $em->flush();
+            $this->addFlash('success', 'L\'habitude a été supprimée par l\'administrateur.');
+        }
+        return $this->redirectToRoute('app_admin_habitudes');
     }
 }
 

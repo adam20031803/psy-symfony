@@ -1,339 +1,326 @@
 {% extends 'base.html.twig' %}
 {% block title %}Challenge Manager Pro{% endblock %}
 {% block stylesheets %}
+    {{ parent() }}
     <link rel="stylesheet" href="{{ asset('css/manager.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg:       #0a0c1a;
-            --surface:  #111328;
-            --card:     #181b30;
-            --sidebar:  #0e1025;
-            --border:   rgba(255,255,255,0.06);
-            --accent:   #6c63ff;
-            --accent2:  #00d2ff;
-            --success:  #22d3a5;
-            --warning:  #f59e0b;
-            --pink:     #ec4899;
-            --orange:   #f97316;
-            --text:     #e2e8f0;
-            --muted:    #64748b;
-            --radius:   16px;
-            --sidebar-w: 280px;
+        /* Layout specific to challenge module */
+        .challenge-page {
+            width: 100%;
+            max-width: 100%;
+            padding: 28px 32px;
+            box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
+        .challenge-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 40px;
+            align-items: start;
+            width: 100%;
         }
+        @media (max-width: 1300px) { .challenge-grid { grid-template-columns: 1fr; } }
 
-        /* ── Background glow ── */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
+        /* Page header */
+        .challenge-header-custom {
+            margin-bottom: 28px;
         }
-
-        /* ── Navbar ── */
-        .top-nav {
-            position: sticky;
-            top: 0;
-            z-index: 10000;
-            background: rgba(14,16,37,.92);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 32px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .challenge-page-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, var(--accent2, #00d2ff));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            letter-spacing: -0.5px;
         }
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        .nav-logo .icon {
-            width: 34px; height: 34px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 9px;
-            display: flex;
-            align-items: center; justify-content: center;
-            font-size: 0.95rem;
-        }
-        .nav-logo span { color: var(--accent2); }
-        .nav-logo strong { color: var(--text); }
-        .nav-actions { display: flex; align-items: center; gap: 14px; }
-        .nav-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 5px 14px 5px 5px;
-        }
-        .nav-avatar {
-            width: 28px; height: 28px;
-            background: linear-gradient(135deg, var(--accent), var(--pink));
-            border-radius: 50%;
-            display: flex;
-            align-items: center; justify-content: center;
-            font-weight: 700;
-            font-size: 0.7rem; color: white;
-        }
-        .nav-name { font-size: 0.8rem; font-weight: 500; }
-        .btn-logout {
-            text-decoration: none;
-            color: var(--muted);
-            font-size: 0.78rem;
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: all .2s;
-        }
-        .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
-
-        /* ── Layout ── */
-        .app-layout {
-            display: flex;
-            flex: 1;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ── SIDEBAR ── */
-        .sidebar {
-            width: var(--sidebar-w);
-            min-height: calc(100vh - 60px);
-            background: var(--sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 24px 0;
-            position: sticky;
-            top: 60px;
-            height: calc(100vh - 60px);
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
-        .sidebar-section-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: var(--muted);
-            padding: 0 24px;
-            margin-bottom: 10px;
-            margin-top: 8px;
-        }
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            padding: 0 12px;
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            text-decoration: none;
-            color: rgba(255,255,255,0.6);
+        .challenge-page-sub {
+            color: rgba(255,255,255,0.4);
             font-size: 0.85rem;
-            font-weight: 500;
-            transition: all .25s cubic-bezier(.4,0,.2,1);
-            position: relative;
+            margin-top: 4px;
+        }
+
+        /* Stats row */
+        .challenge-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .ch-stat {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: border-color .2s;
+        }
+        .ch-stat:hover { border-color: rgba(108,99,255,.3); }
+        .ch-stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; flex-shrink: 0;
+        }
+        .bg-blue   { background: rgba(59,130,246,.15); }
+        .bg-green  { background: rgba(34,211,165,.15); }
+        .bg-red    { background: rgba(239,68,68,.15); }
+        .ch-stat-val { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1; }
+        .ch-stat-lab { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; }
+
+        /* Toolbar */
+        .challenge-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .ch-search {
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 9px 16px;
+        }
+        .ch-search input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        .ch-search input::placeholder { color: rgba(255,255,255,0.3); }
+        .ch-select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 9px 14px;
+            color: #fff;
+            font-size: 0.82rem;
+            outline: none;
+        }
+        .ch-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 18px;
+            border-radius: 12px;
+            font-size: 0.82rem; font-weight: 600;
+            text-decoration: none; border: none; cursor: pointer;
+            transition: opacity .2s, transform .15s;
+        }
+        .ch-btn:hover { opacity: .88; transform: translateY(-1px); }
+        .ch-btn-primary  { background: linear-gradient(135deg, #6c63ff, #00d2ff); color: #fff; }
+        .ch-btn-purple   { background: rgba(108,99,255,.2); color: #a78bfa; border: 1px solid rgba(108,99,255,.3); }
+        .ch-btn-pink     { background: rgba(236,72,153,.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,.3); }
+        .ch-btn-pdf      { background: rgba(255,255,255,.06); color: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.1); }
+
+
+        /* List panel */
+        .ch-panel {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 20px;
             overflow: hidden;
         }
-        .sidebar-link:hover {
-            background: rgba(108,99,255,.08);
-            color: var(--text);
-            transform: translateX(4px);
+        .ch-panel-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
         }
-        .sidebar-link.active {
-            background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08));
+        .ch-panel-header h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff; }
+        .ch-panel-body { padding: 16px; max-height: 580px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .ch-panel-body::-webkit-scrollbar { width: 4px; }
+        .ch-panel-body::-webkit-scrollbar-thumb { background: rgba(108,99,255,.4); border-radius: 4px; }
+
+        /* Challenge card in list */
+        .challenge-row {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: border-color .2s, background .2s, transform .15s;
+        }
+        .challenge-row:hover {
+            background: rgba(108,99,255,.06);
+            border-color: rgba(108,99,255,.25);
+            transform: translateY(-1px);
+        }
+        .challenge-row.selected {
+            border-color: rgba(0,210,255,.5);
+            background: rgba(0,210,255,.05);
+        }
+        .cr-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+        .cr-thumb {
+            width: 44px; height: 44px;
+            border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,.08);
+            background: rgba(255,255,255,.04);
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cr-thumb img, .cr-thumb video { width: 100%; height: 100%; object-fit: cover; }
+        .cr-title { font-size: 0.92rem; font-weight: 700; color: #fff; margin: 0 0 3px; }
+        .cr-meta  { font-size: 0.72rem; color: rgba(255,255,255,.4); }
+        .cr-badge {
+            padding: 3px 10px; border-radius: 20px;
+            font-size: 0.68rem; font-weight: 700;
+            flex-shrink: 0;
+        }
+        .cr-badge.actif    { background: rgba(34,197,94,.12); color: #4ade80; border: 1px solid rgba(34,197,94,.2); }
+        .cr-badge.termine  { background: rgba(59,130,246,.12); color: #60a5fa; border: 1px solid rgba(59,130,246,.2); }
+        .cr-badge.annule   { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+        .cr-desc { font-size: 0.78rem; color: rgba(255,255,255,.45); line-height: 1.5; margin-bottom: 12px; }
+        .cr-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+        .cr-action-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: 8px;
+            font-size: 0.72rem; font-weight: 600;
+            border: none; cursor: pointer;
+            transition: opacity .2s;
+        }
+        .cr-action-btn:hover { opacity: .8; }
+        .cr-btn-purple { background: rgba(108,99,255,.18); color: #a78bfa; }
+        .cr-btn-pink   { background: rgba(236,72,153,.15); color: #f9a8d4; }
+        .cr-btn-blue   { background: rgba(59,130,246,.15); color: #93c5fd; }
+        .cr-btn-gold   { background: rgba(245,158,11,.15); color: #fcd34d; }
+
+        /* Form panel */
+        .ch-form-panel {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 20px;
+            overflow: hidden;
+            position: sticky;
+            top: 80px;
+        }
+        .ch-form-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.06));
+        }
+        .ch-form-header h3 { margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff; }
+        .ch-form-header p  { margin: 3px 0 0; font-size: 0.72rem; color: rgba(255,255,255,.4); }
+        .ch-form-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .cf-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; display: block; }
+        .cf-input, .cf-select, .cf-textarea {
+            width: 100%;
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.09);
+            border-radius: 10px;
+            padding: 10px 14px;
             color: #fff;
-            font-weight: 600;
+            font-size: 0.85rem;
+            outline: none;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        .cf-input:focus, .cf-select:focus, .cf-textarea:focus { border-color: rgba(108,99,255,.5); }
+        .cf-textarea { resize: vertical; min-height: 80px; }
+        .cf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .cf-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+        .cf-btn {
+            padding: 11px; border-radius: 10px;
+            font-size: 0.8rem; font-weight: 700;
+            border: none; cursor: pointer;
+            transition: opacity .2s, transform .15s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .cf-btn:hover { opacity: .88; transform: translateY(-1px); }
+        .cf-btn-add    { background: linear-gradient(135deg, #6c63ff, #00d2ff); color: #fff; }
+        .cf-btn-edit   { background: rgba(108,99,255,.2); color: #a78bfa; border: 1px solid rgba(108,99,255,.3); }
+        .cf-btn-del    { background: rgba(239,68,68,.15); color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+        .cf-btn-reset  { background: rgba(255,255,255,.06); color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.1); }
+
+        /* Pro tip card */
+        .ch-tip {
+            margin-top: 16px;
+            padding: 16px 18px;
+            background: linear-gradient(135deg, rgba(108,99,255,.1), rgba(0,210,255,.06));
             border: 1px solid rgba(108,99,255,.2);
-            box-shadow: 0 4px 16px rgba(108,99,255,.12);
+            border-radius: 14px;
+            font-size: 0.78rem;
+            color: rgba(255,255,255,.55);
+            line-height: 1.6;
         }
-        .sidebar-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 60%;
-            background: linear-gradient(180deg, var(--accent), var(--accent2));
-            border-radius: 0 4px 4px 0;
-        }
+        .ch-tip strong { color: rgba(255,255,255,.85); }
 
-        .sidebar-icon {
-            width: 38px; height: 38px;
-            border-radius: 11px;
-            display: flex;
-            align-items: center; justify-content: center;
-            font-size: 1.15rem; flex-shrink: 0;
-            transition: transform .25s;
+        /* Flash messages */
+        .flash-msg {
+            position: fixed; top: 80px; right: 20px; z-index: 99999;
+            padding: 14px 22px; border-radius: 12px;
+            font-weight: 600; font-size: 0.85rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,.4);
+            animation: slideIn 0.4s ease;
+            color: white; max-width: 380px;
         }
-        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
-        .si-purple   { background: rgba(108,99,255,.12); }
-        .si-teal     { background: rgba(0,210,255,.10); }
-        .si-green    { background: rgba(34,211,165,.10); }
-        .si-pink     { background: rgba(236,72,153,.10); }
-        .si-orange   { background: rgba(249,115,22,.10); }
-        .si-blue     { background: rgba(59,130,246,.10); }
-        .si-yellow   { background: rgba(245,158,11,.10); }
+        .flash-success { background: rgba(34,197,94,.9); }
+        .flash-error   { background: rgba(239,68,68,.9); }
+        .flash-info    { background: rgba(59,130,246,.9); }
+        @keyframes slideIn { from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;} }
 
-        .sidebar-link-text { display: flex; flex-direction: column; gap: 1px; }
-        .sidebar-link-title { font-size: 0.84rem; line-height: 1.3; }
-        .sidebar-link-sub { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
-        .sidebar-link:hover .sidebar-link-sub,
-        .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
-
-        .sidebar-divider { height: 1px; background: var(--border); margin: 16px 24px; }
-        .sidebar-footer { margin-top: auto; padding: 20px; }
-        .sidebar-pro-card {
-            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08));
-            border: 1px solid rgba(108,99,255,.18);
-            border-radius: 14px; padding: 18px; text-align: center;
+        /* Modals */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.8); z-index: 90000;
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
         }
-
-        /* ── Main Area ── */
-        .content-area {
-            flex: 1;
-            padding: 30px;
-            max-width: 1300px;
-            position: relative;
+        .modal-box {
+            width: 90%; max-width: 600px;
+            padding: 28px; border-radius: 20px;
+            background: #181b30;
+            border: 1px solid rgba(255,255,255,.12);
+            animation: fadeIn 0.3s ease;
+            max-height: 85vh; overflow-y: auto;
         }
-
-        /* ── Specific Overrides for Challenge ── */
-        .challenge-header-custom {
-            margin-bottom: 25px;
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);} }
+        .coach-card-popup {
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px; padding: 14px;
         }
-        .challenge-container {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 25px;
+        .card-glass {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
         }
-
-        @media (max-width: 1100px) {
-            .challenge-container { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-        }
+        /* Utility classes for remaining markup */
+        .d-flex{display:flex;} .flex-column{flex-direction:column;}
+        .align-center{align-items:center;} .justify-between{justify-content:space-between;}
+        .gap-8{gap:8px;} .gap-10{gap:10px;} .gap-12{gap:12px;} .gap-15{gap:15px;} .gap-20{gap:20px;}
+        .m-0{margin:0;} .p-15{padding:15px;} .p-5{padding:5px;}
+        .text-white{color:#fff!important;} .text-glow{text-shadow:0 0 20px rgba(108,99,255,.4);}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;} .gap-30{gap:30px;}
+        .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:.8rem;font-weight:700;border:none;cursor:pointer;transition:opacity.2s,transform.15s;text-decoration:none;}
+        .btn:hover{opacity:.85;transform:translateY(-1px);}
+        .btn-purple{background:rgba(108,99,255,.2);color:#a78bfa;border:1px solid rgba(108,99,255,.3);}
+        .btn-pink{background:rgba(236,72,153,.15);color:#f9a8d4;border:1px solid rgba(236,72,153,.3);}
+        .btn-blue-purple{background:linear-gradient(135deg,#6c63ff,#00d2ff);color:#fff;}
+        .btn-orange-red{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+        .btn-blue{background:rgba(59,130,246,.15);color:#93c5fd;border:1px solid rgba(59,130,246,.2);}
+        .btn-grey{background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);}
+        .btn-small{padding:5px 12px;font-size:.72rem;}
+        .form-control{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:9px 13px;color:#fff;font-size:.84rem;outline:none;font-family:inherit;}
+        .form-control:focus{border-color:rgba(108,99,255,.5);}
+        .flex-grow-1{flex:1;}
     </style>
 {% endblock %}
 {% block body_class %}bg-challenge{% endblock %}
 {% block body %}
 
-<!-- ── Navbar unifiée ── -->
-<nav class="top-nav">
-    <div class="nav-logo">
-        <div class="icon">🧠</div>
-        <div><strong>Psy</strong><span>App</span></div>
-    </div>
-    <div class="nav-actions">
-        {% if app.user %}
-        <div class="nav-user">
-            <div class="nav-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
-            <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-        </div>
-        {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
-    </div>
-</nav>
+<div class="challenge-page">
 
-<div class="app-layout">
-
-    <!-- ══════ SIDEBAR UNIFIÉE ══════ -->
-    <aside class="sidebar">
-        <div class="sidebar-section-label">🏠 Tableau de bord</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_dashboard') }}" class="sidebar-link">
-                <div class="sidebar-icon si-blue">📊</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Dashboard</span>
-                    <span class="sidebar-link-sub">Vue d'ensemble</span>
-                </div>
-            </a>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <div class="sidebar-section-label">⚙️ Gestion</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_challenge_index') }}" class="sidebar-link active">
-                <div class="sidebar-icon si-purple">🔥</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Motivation</span>
-                    <span class="sidebar-link-sub">Challenges & objectifs</span>
-                </div>
-            </a>
-
-            <a href="#" class="sidebar-link">
-                <div class="sidebar-icon si-green">🔄</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Habitudes</span>
-                    <span class="sidebar-link-sub">Suivi quotidien</span>
-                </div>
-            </a>
-
-            <a href="{{ path('post_index') }}" class="sidebar-link">
-                <div class="sidebar-icon si-pink">💬</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Forum</span>
-                    <span class="sidebar-link-sub">Communauté & partage</span>
-                </div>
-            </a>
-        </div>
-
-        <div class="sidebar-divider"></div>
-
-        <div class="sidebar-section-label">📋 Support</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_reclamation_index') }}" class="sidebar-link">
-                <div class="sidebar-icon si-yellow">📬</div>
-                <div class="sidebar-link-text">
-                    <span class="sidebar-link-title">Réclamations</span>
-                    <span class="sidebar-link-sub">Mes demandes</span>
-                </div>
-            </a>
-        </div>
-
-        <div class="sidebar-footer">
-            <div class="sidebar-pro-card">
-                <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">🌟</span>
-                <h4 style="font-size: 0.8rem; color: white;">PsyApp Pro</h4>
-                <p style="font-size: 0.7rem; color: var(--muted);">Version Motivation étendue</p>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ══════ ZONE DE CONTENU ══════ -->
-    <div class="content-area">
-
-{# ============================================================ FLASH MESSAGES #}
+{# ── Flash messages ── #}
 {% for type, messages in app.flashes %}
 <div class="flash-msg flash-{{ type }}">{% for m in messages %}{{ m }}{% endfor %}</div>
 {% endfor %}
@@ -445,44 +432,6 @@
   </div>
 </div>
 
-  <header class="challenge-header-custom d-flex flex-column gap-0">
-    <div class="top-header justify-between d-flex align-center">
-      <div class="d-flex align-center gap-15">
-        <div class="header-circle challenge-circle animate-pulse"></div>
-        <div>
-          <h1 class="brand-title text-glow">CHALLENGE MANAGER PRO</h1>
-          <p class="brand-subtitle" style="color:#a8c0ff;">Système de gestion intelligente</p>
-        </div>
-      </div>
-      <form method="GET" action="{{ path('app_challenge_index') }}" class="d-flex align-center gap-15 card-glass" style="padding:10px 15px; border-radius:12px;">
-        <div class="d-flex align-center gap-10 flex-grow-1">
-          <span style="font-size:16px;">🔍</span>
-          <input type="text" name="search" value="{{ filters.search ?? '' }}" class="search-input" placeholder="Recherche..." style="background:transparent; border:none; color:white; width:120px; outline:none; font-size:12px;">
-        </div>
-        
-        <select name="statut" class="filter-select" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:4px 8px; color:white; font-size:11px; outline:none;">
-          <option value="">Statut</option>
-          <option value="actif" {% if filters.statut == 'actif' %}selected{% endif %}>Actif</option>
-          <option value="termine" {% if filters.statut == 'termine' %}selected{% endif %}>Terminé</option>
-        </select>
-
-        <button type="submit" class="btn btn-blue-purple" style="border-radius:8px; padding:6px 12px; font-size:11px;">FILTRER</button>
-      </form>
-    </div>
-    <div class="action-bar gap-15 card-glass d-flex align-center justify-between" style="margin-top:10px; padding:12px; border-radius:12px;">
-      <div class="d-flex gap-10">
-        <a href="{{ path('app_coach_index') }}" class="btn btn-purple btn-small" style="font-size:11px;">👨‍🏫 COACHES</a>
-        <a href="{{ path('app_recompense_index') }}" class="btn btn-pink btn-small" style="font-size:11px;">🎁 RÉCOMPENSES</a>
-      </div>
-      <div class="d-flex gap-10 align-center">
-        <div class="stats-mini p-5 d-flex gap-10" style="background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.05);">
-          <span style="color:#a8c0ff; font-size:11px;">TOTAL: <strong>{{ stats.total }}</strong></span>
-        </div>
-        <a href="{{ path('app_challenge_export_pdf') }}" target="_blank" class="btn btn-blue btn-small" style="font-size:11px;">📄 PDF</a>
-      </div>
-    </div>
-  </header>
-
 {# ============================================================ MODAL: DÉTAILS DU CHALLENGE (DBL CLICK) #}
 <div id="modalDetails" class="modal-overlay" style="display:none;">
   <div class="modal-box card-glass" style="max-width:850px;padding:0;overflow:hidden;border:none;box-shadow:0 0 50px rgba(0,0,0,0.8);">
@@ -534,41 +483,69 @@
   </div>
 </div>
 
-<div class="challenge-container">
 
-  {# COLONNE GAUCHE — Liste #}
-  <div class="d-flex flex-column gap-20">
-    <div class="stats-grid">
-      <div class="stat-card border-blue card-glass">
-        <div class="stat-icon text-blue">📊</div><div class="stat-title">TOTAL</div>
-        <div class="stat-value text-white text-glow">{{ stats.total }}</div><div class="stat-subtitle">Challenges</div>
-      </div>
-      <div class="stat-card border-green card-glass">
-        <div class="stat-icon text-green-alt">✅</div><div class="stat-title">ACTIFS</div>
-        <div class="stat-value text-green text-glow">{{ stats.actifs }}</div><div class="stat-subtitle">En cours</div>
-      </div>
-      <div class="stat-card border-red card-glass">
-        <div class="stat-icon text-red-alt">❌</div><div class="stat-title">INACTIFS</div>
-        <div class="stat-value text-red text-glow">{{ stats.inactifs }}</div><div class="stat-subtitle">Archivés</div>
-      </div>
+
+  {# HEADER #}
+  <div class="challenge-header-custom d-flex justify-between align-center">
+    <div>
+      <h1 class="challenge-page-title text-glow">Challenge Manager Pro</h1>
+      <p class="challenge-page-sub">Gérez vos défis et votre communauté fitness</p>
     </div>
+    <div class="d-flex gap-10">
+      <a href="{{ path('app_coach_index') }}" class="ch-btn ch-btn-purple">👨‍🏫 Coachs</a>
+      <a href="{{ path('app_recompense_index') }}" class="ch-btn ch-btn-pink">🎁 Prix</a>
+      <a href="{{ path('app_challenge_export_pdf') }}" target="_blank" class="ch-btn ch-btn-pdf">📄 PDF</a>
+    </div>
+  </div>
 
-    <div class="list-wrapper flex-grow-1 card-glass" style="padding:0;overflow:hidden;display:flex;flex-direction:column;">
-      <div class="list-header-box bg-header-challenge d-flex align-center justify-center p-15">
-        <span style="font-size:22px;">🏆</span>
-        <h3 class="form-card-title text-glow m-0" style="margin-left:10px;">LISTE DES CHALLENGES</h3>
+  {# STATS #}
+  <div class="challenge-stats-row">
+    <div class="ch-stat">
+      <div class="ch-stat-icon bg-blue">📊</div>
+      <div><div class="ch-stat-val">{{ stats.total }}</div><div class="ch-stat-lab">Total Challenges</div></div>
+    </div>
+    <div class="ch-stat">
+      <div class="ch-stat-icon bg-green">🔥</div>
+      <div><div class="ch-stat-val">{{ stats.actifs }}</div><div class="ch-stat-lab">En cours</div></div>
+    </div>
+    <div class="ch-stat">
+      <div class="ch-stat-icon bg-red">🏁</div>
+      <div><div class="ch-stat-val">{{ stats.inactifs }}</div><div class="ch-stat-lab">Terminés</div></div>
+    </div>
+  </div>
+
+  {# TOOLBAR #}
+  <form method="GET" action="{{ path('app_challenge_index') }}" class="challenge-toolbar">
+    <div class="ch-search">
+      <span>🔍</span>
+      <input type="text" name="search" value="{{ filters.search ?? '' }}" placeholder="Rechercher un défi...">
+    </div>
+    <select name="statut" class="ch-select">
+      <option value="">Tous les statuts</option>
+      <option value="actif" {% if filters.statut == 'actif' %}selected{% endif %}>✅ Actif</option>
+      <option value="termine" {% if filters.statut == 'termine' %}selected{% endif %}>🏁 Terminé</option>
+      <option value="annule" {% if filters.statut == 'annule' %}selected{% endif %}>❌ Annulé</option>
+    </select>
+    <button type="submit" class="ch-btn ch-btn-primary">Filtrer</button>
+  </form>
+
+  {# ── 2-Col Grid (List + Form) ── #}
+  <div class="challenge-grid">
+    
+    {# LEFT COL: LIST #}
+    <div class="ch-panel">
+      <div class="ch-panel-header">
+        <span style="font-size:1.4rem;">🏁</span>
+        <h3 class="m-0">Liste des Challenges ({{ challenges|length }})</h3>
       </div>
-
-      <div style="overflow-y:auto;max-height:520px;padding:15px;">
+      <div class="ch-panel-body" style="background:rgba(255,255,255,0.01); display: flex; flex-direction: column; gap: 15px;">
         {% if challenges is empty %}
-        <div class="list-placeholder d-flex flex-column align-center gap-15" style="padding:40px;">
-          <span style="font-size:48px;">📭</span>
-          <span style="color:white;font-weight:bold;">Aucun challenge disponible</span>
+        <div style="text-align:center;padding:48px 24px;">
+          <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+          <p style="color:rgba(255,255,255,.4);font-size:.9rem;">Aucun challenge trouvé</p>
         </div>
         {% else %}
-        <div class="d-flex flex-column gap-12">
           {% for challenge in challenges %}
-
           {# Serialize coaches data for JS #}
           {% set coachesJson = [] %}
           {% for cc in challenge.coaches %}
@@ -613,7 +590,6 @@
 
             <div class="d-flex justify-between align-start" style="margin-bottom:15px;">
               <div class="d-flex align-center gap-15">
-                {# Pro Thumbnail integrated #}
                 <div style="width:50px;height:50px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);flex-shrink:0;">
                   {% if challenge.mediaUrl %}
                     {% if challenge.mediaType == 'video' %}
@@ -650,120 +626,117 @@
               {% if challenge.categorie %}<span>📂 <strong style="color:#c788f5;">{{ challenge.categorie.nom }}</strong></span>{% endif %}
             </div>
 
-            {# Action buttons #}
             <div class="d-flex gap-10" style="flex-wrap:wrap;">
               <button class="btn btn-purple btn-small btn-coaches-popup" onclick="event.stopPropagation()">
                 👨‍🏫 {{ challenge.coaches|length }} Coach(s)
               </button>
               <button class="btn btn-pink btn-small btn-recs-popup" onclick="event.stopPropagation()">
-                🎁 {{ challenge.recompenses|length }} Récompense(s)
+                🎁 {{ challenge.recompenses|length }} Prix
               </button>
               <button class="btn btn-blue-purple btn-small btn-add-coach" onclick="event.stopPropagation()">
-                ➕ Ajouter Coach
+                ➕ Coach
               </button>
               <button class="btn btn-small btn-add-rec" style="background:linear-gradient(to right,#f7971e,#ffd200);" onclick="event.stopPropagation()">
-                ➕ Ajouter Récompense
+                ➕ Prix
               </button>
+            </div>
+            <div style="padding:15px; border-top:1px solid rgba(255,255,255,0.05); text-align:center; color:rgba(255,255,255,0.3); font-size:0.8rem; margin-top:15px;">
+                👆 Cliquez pour modifier • Double-clic pour aperçu
             </div>
           </div>
           {% endfor %}
-        </div>
         {% endif %}
       </div>
+    </div>
 
-      <div class="list-footer" style="padding:10px;text-align:center;color:rgba(255,255,255,0.5);font-size:12px;">
-        👆 Cliquez sur un challenge pour remplir le formulaire d'édition
+    {# RIGHT COL: FORM #}
+    <div class="d-flex flex-column gap-20">
+      <div class="ch-form-panel card-glass" style="padding:25px; top:20px; position:sticky;">
+        <div class="d-flex align-center gap-12" style="margin-bottom:20px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:#00d2ff;box-shadow:0 0 10px #00d2ff;"></div>
+          <h3 class="text-glow m-0" style="color:white;font-size:1.1rem;">ÉDITION CHALLENGE</h3>
+        </div>
+
+        <form id="challengeForm" method="POST" action="{{ path('app_challenge_new') }}" class="d-flex flex-column gap-12" enctype="multipart/form-data">
+          <input type="hidden" name="id" id="challengeId" value="">
+
+          <div class="d-flex flex-column gap-5">
+            <label class="cf-label">VISUEL (PHOTO/VIDÉO)</label>
+            <input type="file" name="media" id="mediaField" class="form-control" accept="image/*,video/*">
+          </div>
+
+          <div class="d-flex flex-column gap-5">
+            <label class="cf-label">TITRE *</label>
+            <input type="text" name="titre" id="titreField" class="form-control" placeholder="Ex: Maîtrise de Java en 30 jours" required>
+          </div>
+
+          <div class="d-flex flex-column gap-5">
+            <label class="cf-label">DESCRIPTION *</label>
+            <textarea name="description" id="descField" class="form-control" rows="3" placeholder="Décrivez les objectifs..." required></textarea>
+          </div>
+
+          <div class="cf-grid-2">
+            <div class="d-flex flex-column gap-5">
+              <label class="cf-label">📅 DÉBUT</label>
+              <input type="date" name="dateDebut" id="dateDebutField" class="form-control">
+            </div>
+            <div class="d-flex flex-column gap-5">
+              <label class="cf-label">⏳ FIN</label>
+              <input type="date" name="dateFin" id="dateFinField" class="form-control">
+            </div>
+          </div>
+
+          <div class="cf-grid-2">
+            <div class="d-flex flex-column gap-5">
+              <label class="cf-label">⚡ STATUT</label>
+              <select name="statut" id="statutField" class="form-control">
+                <option value="actif">✅ Actif</option>
+                <option value="termine">🏁 Terminé</option>
+                <option value="annule">❌ Annulé</option>
+              </select>
+            </div>
+            <div class="d-flex flex-column gap-5">
+              <label class="cf-label">📂 CATÉGORIE</label>
+              <select name="categorie" id="categorieField" class="form-control">
+                <option value="">-- Aucune --</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.icon ?? '' }} {{ cat.nom }}</option>
+                {% endfor %}
+                <option value="autre" style="color:#c788f5;font-weight:bold;">+ Autre thématique...</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="other-cat-group" style="display:none;" class="d-flex flex-column gap-5">
+            <label class="cf-label" style="color:#c788f5;">NOUVELLE THÉMATIQUE</label>
+            <input type="text" name="new_categorie" id="newCatField" class="form-control" placeholder="Entrez le nom de la catégorie...">
+          </div>
+
+          <div class="cf-grid-2" style="margin-top:10px;">
+            <button type="submit" id="btnAdd" class="btn btn-blue-purple" style="padding:12px;border-radius:8px;justify-content:center;">➕ AJOUTER</button>
+            <button type="button" id="btnEdit" class="btn btn-purple" style="padding:12px;border-radius:8px;justify-content:center;">✏️ MODIFIER</button>
+            <button type="button" id="btnDelete" class="btn btn-orange-red" style="padding:12px;border-radius:8px;justify-content:center;">🗑️ SUPPRIMER</button>
+            <button type="button" id="btnReset" class="btn btn-grey" style="padding:12px;border-radius:8px;justify-content:center;">🔄 VIDER</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="advice-card card-glass d-flex flex-column gap-10" style="padding:20px;background:linear-gradient(135deg,rgba(102,126,234,0.2),rgba(118,75,162,0.2));border:1px solid rgba(102,126,234,0.3);">
+        <div class="d-flex align-center gap-10">
+          <span style="font-size:24px;">💡</span>
+          <span class="advice-title text-glow" style="color:white;font-weight:bold;">CONSEIL PRO</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:0;line-height:1.6;">
+          Les descriptions détaillées augmentent l'engagement de 40%. Assignez des coaches experts et des récompenses motivantes pour maximiser les résultats!
+        </p>
       </div>
     </div>
   </div>
 
-  {# COLONNE DROITE — Formulaire #}
-  <div class="d-flex flex-column gap-20">
-    <div class="form-card d-flex flex-column gap-15 card-glass" style="padding:25px;">
-      <div class="d-flex align-center gap-12" style="margin-bottom:5px;">
-        <div class="form-header-circle bg-form-challenge"></div>
-        <h3 class="form-card-title text-glow m-0">ÉDITION CHALLENGE</h3>
-      </div>
 
-      <form id="challengeForm" method="POST" action="{{ path('app_challenge_new') }}" class="d-flex flex-column gap-12" enctype="multipart/form-data">
-        <input type="hidden" name="id" id="challengeId" value="">
 
-        <div class="form-group d-flex flex-column gap-5">
-          <label class="form-group-title" style="color:#a8c0ff;">VISUEL (PHOTO/VIDÉO)</label>
-          <input type="file" name="media" id="mediaField" class="form-control" accept="image/*,video/*">
-        </div>
 
-        <div class="form-group d-flex flex-column gap-5">
-          <label class="form-group-title" style="color:#a8c0ff;">TITRE *</label>
-          <input type="text" name="titre" id="titreField" class="form-control" placeholder="Ex: Maîtrise de Java en 30 jours" required>
-        </div>
-
-        <div class="form-group d-flex flex-column gap-5">
-          <label class="form-group-title" style="color:#a8c0ff;">DESCRIPTION *</label>
-          <textarea name="description" id="descField" class="form-control" rows="3" placeholder="Décrivez les objectifs..." required></textarea>
-        </div>
-
-        <div class="grid-2 gap-12">
-          <div class="form-group d-flex flex-column gap-5">
-            <label class="form-group-title" style="color:#a8c0ff;">📅 DATE DÉBUT</label>
-            <input type="date" name="dateDebut" id="dateDebutField" class="form-control">
-          </div>
-          <div class="form-group d-flex flex-column gap-5">
-            <label class="form-group-title" style="color:#a8c0ff;">⏳ DATE FIN</label>
-            <input type="date" name="dateFin" id="dateFinField" class="form-control">
-          </div>
-        </div>
-
-        <div class="grid-2 gap-12">
-          <div class="form-group d-flex flex-column gap-5">
-            <label class="form-group-title" style="color:#a8c0ff;">⚡ STATUT</label>
-            <select name="statut" id="statutField" class="form-control">
-              <option value="actif">✅ Actif</option>
-              <option value="termine">🏁 Terminé</option>
-              <option value="annule">❌ Annulé</option>
-            </select>
-          </div>
-          <div class="form-group d-flex flex-column gap-5">
-            <label class="form-group-title" style="color:#a8c0ff;">📂 CATÉGORIE</label>
-            <select name="categorie" id="categorieField" class="form-control">
-              <option value="">-- Aucune --</option>
-              {% for cat in categories %}
-              <option value="{{ cat.id }}">{{ cat.icon ?? '' }} {{ cat.nom }}</option>
-              {% endfor %}
-              <option value="autre" style="color:#c788f5;font-weight:bold;">+ Autre thématique...</option>
-            </select>
-          </div>
-        </div>
-
-        <div id="other-cat-group" style="display:none;" class="form-group d-flex flex-column gap-5">
-          <label class="form-group-title" style="color:#c788f5;">NOUVELLE THÉMATIQUE</label>
-          <input type="text" name="new_categorie" id="newCatField" class="form-control" placeholder="Entrez le nom de la catégorie...">
-        </div>
-
-        <div class="grid-2 gap-12" style="margin-top:10px;">
-          <button type="submit" id="btnAdd" class="btn btn-blue-purple" style="padding:12px;border-radius:8px;">➕ AJOUTER</button>
-          <button type="button" id="btnEdit" class="btn btn-purple" style="padding:12px;border-radius:8px;">✏️ MODIFIER</button>
-          <button type="button" id="btnDelete" class="btn btn-orange-red" style="padding:12px;border-radius:8px;">🗑️ SUPPRIMER</button>
-          <button type="button" id="btnReset" class="btn" style="padding:12px;border-radius:8px;background:rgba(255,255,255,0.1);color:white;">🔄 VIDER</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="advice-card card-glass d-flex flex-column gap-10" style="padding:20px;background:linear-gradient(135deg,rgba(102,126,234,0.2),rgba(118,75,162,0.2));border:1px solid rgba(102,126,234,0.3);">
-      <div class="d-flex align-center gap-10">
-        <span style="font-size:24px;">💡</span>
-        <span class="advice-title text-glow" style="color:white;">CONSEIL PRO</span>
-      </div>
-      <p style="color:rgba(255,255,255,0.7);font-size:12px;margin:0;line-height:1.6;">
-        Les descriptions détaillées augmentent l'engagement de 40%. Assignez des coaches experts et des récompenses motivantes pour maximiser les résultats!
-      </p>
-    </div>
-  </div>
-    </div> {# .challenge-container #}
-  </div> {# .content-area #}
-</div> {# .app-layout #}
-
-<footer class="main-footer text-white" style="text-align:center; padding: 20px; opacity:0.5; font-size: 0.8rem;">© 2024 PsyApp — Challenge Manager Pro</footer>
+<footer class="main-footer text-white" style="text-align:center; padding: 20px; opacity:0.5; font-size: 0.8rem;">© 2024 Atomic You — Challenge Manager Pro</footer>
 
 {# ============================================================ STYLES MODAUX #}
 <style>
@@ -1000,3 +973,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
+

@@ -1,0 +1,94 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Exercices — FitLife{% endblock %}
+{% block meta_description %}Parcourez notre catalogue d'exercices Cardio, Musculation, Yoga et HIIT.{% endblock %}
+
+{% block fitness_content %}
+{# ---- Page Header ---- #}
+<div class="page-header" style="margin-bottom: 32px; padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <div>
+        <h1 class="fw-bold mb-1 text-white">💪 Exercices</h1>
+        <p style="color: #94a3b8; font-size: 0.95rem;">{{ exercises|length }} exercice(s) disponible(s)</p>
+    </div>
+</div>
+
+<div class="py-2">
+    {# ---- Category filter ---- #}
+    <div class="d-flex gap-2 flex-wrap mb-4">
+        <a href="{{ path('front_exercise_list') }}" class="category-pill {{ selectedCategory is null ? 'active' : '' }}">
+            Tous
+        </a>
+        {% for cat in categories %}
+            <a href="{{ path('front_exercise_list') }}?category={{ cat }}" class="category-pill {{ selectedCategory == cat ? 'active' : '' }}">
+                {{ cat }}
+            </a>
+        {% endfor %}
+    </div>
+
+    {# ---- Results info ---- #}
+    {% if selectedCategory %}
+        <div class="mb-4">
+            <span style="font-size:0.9rem;color:#94a3b8;">
+                Catégorie : <strong class="text-white">{{ selectedCategory }}</strong> — 
+                {{ exercises|length }} résultat(s)
+                <a href="{{ path('front_exercise_list') }}" class="ms-2" style="color: #60a5fa; text-decoration: none;">Effacer le filtre</a>
+            </span>
+        </div>
+    {% endif %}
+
+    {# ---- Exercise Grid ---- #}
+    <div class="row g-4">
+        {% for exercise in exercises %}
+            <div class="col-md-6 col-lg-4">
+                <div class="fit-card h-100 d-flex flex-column">
+                    {# Image #}
+                    {% if exercise.imageUrl %}
+                        <img src="{{ exercise.imageUrl }}" alt="{{ exercise.name }}" class="card-img-top">
+                    {% else %}
+                        <div class="img-placeholder" style="height:200px;">
+                            <i class="bi bi-{{ exercise.category == 'Cardio' ? 'heart-pulse' : (exercise.category == 'Yoga' ? 'peace' : 'activity') }}"></i>
+                        </div>
+                    {% endif %}
+
+                    <div class="card-body d-flex flex-column flex-grow-1 p-4">
+                        {# Top badges #}
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge" style="background: rgba(59,130,246,0.15); color: #60a5fa;">{{ exercise.category }}</span>
+                            {% if exercise.difficulty == 'Débutant' %}
+                                <span class="badge bg-success" style="opacity: 0.85;">{{ exercise.difficulty }}</span>
+                            {% elseif exercise.difficulty == 'Intermédiaire' %}
+                                <span class="badge bg-warning" style="opacity: 0.85;">{{ exercise.difficulty }}</span>
+                            {% else %}
+                                <span class="badge bg-danger" style="opacity: 0.85;">{{ exercise.difficulty }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold mb-2 text-white">{{ exercise.name }}</h5>
+                        <p style="color:#94a3b8; font-size:0.85rem; line-height:1.6;" class="flex-grow-1 mb-4">
+                            {{ exercise.description|length > 100 ? exercise.description|slice(0,100) ~ '…' : exercise.description }}
+                        </p>
+
+                        {# Stats row #}
+                        <div class="d-flex gap-4 mb-4 pb-4" style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.82rem; color: #64748b;">
+                            <span><i class="bi bi-clock-fill me-1 text-primary"></i>{{ exercise.duration }} min</span>
+                            <span><i class="bi bi-fire me-1 text-danger"></i>{{ exercise.calories }} kcal</span>
+                        </div>
+
+                        <a href="{{ path('front_exercise_show', {id: exercise.id}) }}" class="btn btn-outline-primary w-100 py-2">
+                            Voir l'exercice <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5" style="border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; margin-top: 20px;">
+                    <i class="bi bi-search display-4 d-block mb-3" style="color: #475569;"></i>
+                    <h5 style="color: #94a3b8;">Aucun exercice trouvé</h5>
+                    <a href="{{ path('front_exercise_list') }}" class="btn btn-outline-primary mt-3">Voir tous les exercices</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

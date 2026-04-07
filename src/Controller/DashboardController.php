@@ -6,6 +6,9 @@ use App\Repository\PostRepository;
 use App\Repository\ChallengeRepository;
 use App\Repository\PostLikeRepository;
 use App\Repository\ReclamationRepository;
+use App\Repository\HabitudeRepository;
+use App\Repository\WorkoutProgressRepository;
+use App\Repository\WorkoutPlanRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,7 +22,10 @@ class DashboardController extends AbstractController
         ReclamationRepository $reclamationRepo,
         PostRepository $postRepo,
         ChallengeRepository $challengeRepo,
-        PostLikeRepository $postLikeRepo
+        PostLikeRepository $postLikeRepo,
+        HabitudeRepository $habitudeRepo,
+        WorkoutProgressRepository $workoutProgressRepo,
+        WorkoutPlanRepository $workoutPlanRepo
     ): Response {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -44,12 +50,32 @@ class DashboardController extends AbstractController
             'challenges_count' => count($activeChallenges), // On pourrait faire mieux avec une relation de participation
         ];
 
+        // Habitude data
+        $habitudeStats = $habitudeRepo->getGlobalStats($user->getId());
+        $habitsToday = $habitudeRepo->findCompletedToday($user->getId());
+
+        // Fitness data
+        $recentWorkouts = $workoutProgressRepo->findBy(
+            ['user' => $user],
+            ['date' => 'DESC', 'createdAt' => 'DESC'],
+            3
+        );
+        $plannedWorkouts = $workoutPlanRepo->findBy(
+            ['user' => $user, 'statut' => 'planifie'],
+            ['datePlanifie' => 'ASC'],
+            3
+        );
+
         return $this->render('dashboard/index.html.twig', [
             'user'             => $user,
             'reclamations'     => $reclamations,
             'recentPosts'      => $recentPosts,
             'activeChallenges' => $activeChallenges,
             'userStats'        => $userStats,
+            'habitudeStats'    => $habitudeStats,
+            'habitsToday'      => $habitsToday,
+            'recentWorkouts'   => $recentWorkouts,
+            'plannedWorkouts'  => $plannedWorkouts,
         ]);
     }
 }

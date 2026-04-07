@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Welcome!{% endblock %} — PsyApp</title>
+    <title>{% block title %}Welcome!{% endblock %} — Atomic You</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,7 +14,6 @@
                 font-family: 'Inter', sans-serif;
             }
         </style>
-        {% if app.user %}
         <style>
             *, *::before, *::after { box-sizing: border-box; }
 
@@ -36,16 +35,18 @@
                 --sidebar-w: 280px;
             }
 
-            body.psyapp-logged {
+            body.atomicyou-logged {
                 margin: 0;
                 background: var(--bg);
                 color: var(--text);
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
+                width: 100%;
+                overflow-x: hidden;
             }
 
-            body.psyapp-logged::before {
+            body.atomicyou-logged::before {
                 content: '';
                 position: fixed;
                 inset: 0;
@@ -124,6 +125,7 @@
             .app-layout {
                 display: flex;
                 flex: 1;
+                width: 100%;
                 position: relative;
                 z-index: 1;
                 min-height: 0;
@@ -282,7 +284,6 @@
                 flex: 1;
                 padding: 36px 40px 80px;
                 min-width: 0;
-                width: 100%;
             }
 
             @media (max-width: 900px) {
@@ -295,9 +296,9 @@
                 50% { box-shadow: 0 0 18px 4px rgba(108,99,255,.12); }
             }
         </style>
-        {% endif %}
     {% endblock %}
 
+    {% set skipAuthLayout = block('skip_auth_layout') is defined and block('skip_auth_layout')|trim == 'true' %}
     {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
     {% if frankenphpHotReload %}
     <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
@@ -305,105 +306,34 @@
     <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
     {% endif %}
 </head>
-<body class="{% block body_class %}{% endblock %}{% if app.user %} psyapp-logged{% endif %}">
-    {% if app.user %}
-        {% set currentRoute = app.request.attributes.get('_route') %}
+<body class="{% block body_class %}{% endblock %} {% if not skipAuthLayout %}atomicyou-logged{% endif %}">
+        {% if not skipAuthLayout %}
         <nav class="top-nav">
             <a href="{{ path('app_dashboard') }}" class="nav-logo" style="text-decoration:none;">
                 <div class="icon">🧠</div>
-                <div><strong>Psy</strong><span>App</span></div>
+                <div><strong>Atomic</strong><span>You</span></div>
             </a>
             <div class="nav-actions">
                 <div class="nav-user">
-                    <div class="nav-avatar">{{ app.user.prenom|default('')|slice(0,1)|upper }}{{ app.user.nom|default('')|slice(0,1)|upper }}</div>
-                    <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                    <div class="nav-avatar">{{ app.user ? app.user.prenom|default('')|slice(0,1)|upper : 'U' }}{{ app.user ? app.user.nom|default('')|slice(0,1)|upper : 'S' }}</div>
+                    <span class="nav-name">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Admin User' }}</span>
                 </div>
                 <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
             </div>
         </nav>
 
         <div class="app-layout">
-            <aside class="sidebar">
-                <div class="sidebar-section-label">🏠 Tableau de bord</div>
-                <div class="sidebar-nav">
-                    <a href="{{ path('app_dashboard') }}" class="sidebar-link {{ currentRoute == 'app_dashboard' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-blue">📊</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Dashboard</span>
-                            <span class="sidebar-link-sub">Vue d'ensemble</span>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="sidebar-divider"></div>
-
-                <div class="sidebar-section-label">⚙️ Gestion</div>
-                <div class="sidebar-nav">
-                    <a href="{{ path('app_challenge_index') }}" class="sidebar-link {{ currentRoute starts with 'app_challenge_' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-purple">🔥</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Motivation</span>
-                            <span class="sidebar-link-sub">Challenges & objectifs</span>
-                        </div>
-                        <span class="sidebar-badge">PRO</span>
-                    </a>
-
-                    <a href="{{ path('app_habitude_index') }}" class="sidebar-link {{ currentRoute starts with 'app_habitude_' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-green">🔄</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Habitudes</span>
-                            <span class="sidebar-link-sub">Suivi quotidien</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ path('app_store_index') }}" class="sidebar-link {{ currentRoute starts with 'app_store_' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-orange">🏪</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Stores</span>
-                            <span class="sidebar-link-sub">Parcourir les boutiques</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ path('post_index') }}" class="sidebar-link {{ currentRoute starts with 'post_' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-pink">💬</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Posts</span>
-                            <span class="sidebar-link-sub">Communauté &amp; partage</span>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="sidebar-divider"></div>
-
-                <div class="sidebar-section-label">📋 Support</div>
-                <div class="sidebar-nav">
-                    <a href="{{ path('app_reclamation_index') }}" class="sidebar-link {{ currentRoute starts with 'app_reclamation_' ? 'active' : '' }}">
-                        <div class="sidebar-icon si-yellow">📬</div>
-                        <div class="sidebar-link-text">
-                            <span class="sidebar-link-title">Réclamations</span>
-                            <span class="sidebar-link-sub">Mes demandes</span>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="sidebar-footer">
-                    <div class="sidebar-pro-card">
-                        <span class="pro-emoji">🌟</span>
-                        <h4>PsyApp Pro</h4>
-                        <p>Votre bien-être mental est notre priorité quotidienne.</p>
-                    </div>
-                </div>
-            </aside>
+            {% include 'components/sidebar.html.twig' %}
 
             <main class="main-content">
-    {% endif %}
+        {% endif %}
 
     {% block body %}{% endblock %}
 
-    {% if app.user %}
+        {% if not skipAuthLayout %}
             </main>
         </div>
-    {% endif %}
+        {% endif %}
 
     {% block javascripts %}{% endblock %}
 </body>

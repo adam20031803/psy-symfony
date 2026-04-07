@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Habitudes — PsyApp{% endblock %}
+{% block title %}Mes Habitudes — Atomic You{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -543,7 +543,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-icon">✅</div>
-            <div class="stat-value" id="completed-today">0</div>
+            <div class="stat-value" id="completed-today">{{ completedToday|default(0) }}</div>
             <div class="stat-label">Completed Today</div>
         </div>
         <div class="stat-card">

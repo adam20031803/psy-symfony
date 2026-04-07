@@ -351,7 +351,7 @@ class ChallengeController extends AbstractController
         try {
             // It's better to send from a fixed verified address to avoid SMTP rejection (spoofing)
             // The coach can still reply to the sender via Reply-To
-            $fromEmail = $this->getParameter('app.mailer_from') ?? 'noreply@psyapp.com';
+            $fromEmail = $this->getParameter('app.mailer_from') ?? 'noreply@atomicyou.com';
 
             $email = (new Email())
                 ->from($fromEmail)
@@ -377,7 +377,7 @@ class ChallengeController extends AbstractController
                         </div>
                     </div>
                     <div style="background:#f9fafb;padding:20px;text-align:center;border-top:1px solid #eee;">
-                        <p style="color:#9ca3af;font-size:12px;margin:0;">Ceci est un email automatique envoyé depuis PsyApp. Ne répondez pas directement à cet email technique.</p>
+                        <p style="color:#9ca3af;font-size:12px;margin:0;">Ceci est un email automatique envoyé depuis Atomic You. Ne répondez pas directement à cet email technique.</p>
                     </div>
                 </div>');
 

@@ -1,0 +1,81 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier — {{ program.title }} — Admin{% endblock %}
+{% block topbar_title %}Modifier le programme{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-pencil-square me-2 text-warning"></i>Modifier le programme</h1>
+        <div class="page-sub">{{ program.title }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ path('admin_program_show', {id: program.id}) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-eye me-1"></i>Voir
+        </a>
+        <a href="{{ path('admin_program_index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Liste
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header py-3">
+                <i class="bi bi-journal-bookmark-fill me-2 text-warning"></i>Modifier les informations
+            </div>
+            <div class="card-body p-4">
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        {{ form_label(form.title) }}
+                        {{ form_widget(form.title) }}
+                        <div class="text-danger small mt-1">{{ form_errors(form.title) }}</div>
+                    </div>
+                    <div class="col-12">
+                        {{ form_label(form.goal) }}
+                        {{ form_widget(form.goal) }}
+                        <div class="text-danger small mt-1">{{ form_errors(form.goal) }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.durationWeeks) }}
+                        <div class="input-group">
+                            {{ form_widget(form.durationWeeks) }}
+                            <span class="input-group-text">semaines</span>
+                        </div>
+                        <div class="text-danger small mt-1">{{ form_errors(form.durationWeeks) }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_label(form.level) }}
+                        {{ form_widget(form.level) }}
+                        <div class="text-danger small mt-1">{{ form_errors(form.level) }}</div>
+                    </div>
+                    <div class="col-12">
+                        {{ form_label(form.exercises) }}
+                        {{ form_widget(form.exercises) }}
+                        <div class="form-text">{{ form_help(form.exercises) }}</div>
+                        <div class="text-danger small mt-1">{{ form_errors(form.exercises) }}</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-switch p-3" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                            {{ form_widget(form.isPublished) }}
+                            {{ form_label(form.isPublished) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4 pt-3" style="border-top:1px solid #e2e8f0;">
+                    <button type="submit" class="btn btn-warning px-4 text-dark fw-semibold">
+                        <i class="bi bi-check-lg me-1"></i>Enregistrer les modifications
+                    </button>
+                    <a href="{{ path('admin_program_index') }}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

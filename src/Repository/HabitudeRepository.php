@@ -17,13 +17,18 @@ class HabitudeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find habits by search text and category
+     * Find habits by search text, category and user
      */
-    public function searchByCategoryAndText(?string $category, ?string $searchText): array
+    public function searchByCategoryAndText(?string $category, ?string $searchText, ?int $userId = null): array
     {
         $qb = $this->createQueryBuilder('h')
             ->leftJoin('h.user', 'u')
             ->addSelect('u');
+
+        if ($userId !== null) {
+            $qb->andWhere('h.user = :userId')
+               ->setParameter('userId', $userId);
+        }
 
         if ($category && $category !== 'Toutes') {
             $qb->andWhere('h.category = :category')
@@ -43,54 +48,60 @@ class HabitudeRepository extends ServiceEntityRepository
     /**
      * Get habits completed today for a user
      */
-    public function findCompletedToday(?int $userId): array
+    public function findCompletedToday(?int $userId = null): array
     {
         $today = new \DateTime();
         $today->setTime(0, 0, 0);
         $tomorrow = clone $today;
         $tomorrow->modify('+1 day');
 
-        return $this->createQueryBuilder('h')
+        $qb = $this->createQueryBuilder('h')
             ->leftJoin('h.completions', 'c')
-            ->andWhere('h.user = :userId')
             ->andWhere('c.completedAt >= :today')
             ->andWhere('c.completedAt < :tomorrow')
-            ->setParameter('userId', $userId)
             ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
-            ->getQuery()
-            ->getResult();
+            ->setParameter('tomorrow', $tomorrow);
+
+        if ($userId !== null) {
+            $qb->andWhere('h.user = :userId')
+               ->setParameter('userId', $userId);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
      * Get global statistics
      */
-    public function getGlobalStats(?int $userId): array
+    public function getGlobalStats(?int $userId = null): array
     {
-        $totalHabits = $this->createQueryBuilder('h')
-            ->select('COUNT(h.id)')
-            ->andWhere('h.user = :userId')
-            ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
+        $qbTotal = $this->createQueryBuilder('h')
+            ->select('COUNT(h.id)');
+        if ($userId !== null) {
+            $qbTotal->andWhere('h.user = :userId')
+                    ->setParameter('userId', $userId);
+        }
+        $totalHabits = $qbTotal->getQuery()->getSingleScalarResult();
 
-        $activeHabits = $this->createQueryBuilder('h')
+        $qbActive = $this->createQueryBuilder('h')
             ->select('COUNT(h.id)')
-            ->andWhere('h.user = :userId')
             ->andWhere('h.active = :active')
-            ->setParameter('userId', $userId)
-            ->setParameter('active', true)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->setParameter('active', true);
+        if ($userId !== null) {
+            $qbActive->andWhere('h.user = :userId')
+                     ->setParameter('userId', $userId);
+        }
+        $activeHabits = $qbActive->getQuery()->getSingleScalarResult();
 
-        $globalStreak = $this->createQueryBuilder('h')
+        $qbStreak = $this->createQueryBuilder('h')
             ->select('SUM(h.currentStreak)')
-            ->andWhere('h.user = :userId')
             ->andWhere('h.active = :active')
-            ->setParameter('userId', $userId)
-            ->setParameter('active', true)
-            ->getQuery()
-            ->getSingleScalarResult() ?? 0;
+            ->setParameter('active', true);
+        if ($userId !== null) {
+            $qbStreak->andWhere('h.user = :userId')
+                     ->setParameter('userId', $userId);
+        }
+        $globalStreak = $qbStreak->getQuery()->getSingleScalarResult() ?? 0;
 
         return [
             'total' => (int) $totalHabits,

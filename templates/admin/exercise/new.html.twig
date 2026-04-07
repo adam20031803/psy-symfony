@@ -1,0 +1,422 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Ajouter un exercice — Admin{% endblock %}
+{% block topbar_title %}Ajouter un exercice{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ── Page Layout ── */
+    .ex-page { max-width: 780px; margin: 0 auto; }
+
+    /* ── Page Header ── */
+    .ex-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        gap: 16px;
+    }
+    .ex-page-header-left { display: flex; flex-direction: column; gap: 4px; }
+    .ex-page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .ex-page-header h1 .icon-circle {
+        width: 40px; height: 40px;
+        background: linear-gradient(135deg, #3b82f6, #00d2ff);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(59,130,246,0.35);
+    }
+    .ex-page-header .subtitle {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-left: 50px;
+    }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 18px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #94a3b8;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.2); }
+
+    /* ── Form Card ── */
+    .ex-form-card {
+        background: #1a1d30;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .ex-form-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(59,130,246,0.06);
+    }
+    .ex-form-card-header .header-icon {
+        width: 32px; height: 32px;
+        background: rgba(59,130,246,0.15);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3b82f6;
+        font-size: 1rem;
+    }
+    .ex-form-card-header span {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e2e8f0;
+    }
+    .ex-form-card-body { padding: 28px; }
+
+    /* ── Form Grid ── */
+    .ex-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .ex-col-full { grid-column: 1 / -1; }
+
+    /* ── Field Group ── */
+    .ex-field-group { display: flex; flex-direction: column; gap: 6px; }
+    .ex-field-group label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+    .ex-field-group label .req { color: #3b82f6; font-size: 0.7rem; }
+
+    /* ── Inputs ── */
+    .ex-field-group input[type="text"],
+    .ex-field-group input[type="number"],
+    .ex-field-group input[type="url"],
+    .ex-field-group textarea,
+    .ex-field-group select {
+        width: 100%;
+        background: rgba(13,15,26,0.7);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 11px 14px;
+        color: #e2e8f0;
+        font-size: 0.9rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        box-sizing: border-box;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+    .ex-field-group input:focus,
+    .ex-field-group textarea:focus,
+    .ex-field-group select:focus {
+        border-color: #3b82f6;
+        background: rgba(13,15,26,0.9);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    .ex-field-group input::placeholder,
+    .ex-field-group textarea::placeholder { color: #334155; }
+    .ex-field-group textarea { min-height: 100px; resize: vertical; }
+    .ex-field-group select option { background: #141627; color: #e2e8f0; }
+
+    /* ── Input with suffix ── */
+    .ex-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .ex-input-wrap input {
+        padding-right: 52px !important;
+        width: 100%;
+    }
+    .ex-input-suffix {
+        position: absolute;
+        right: 12px;
+        color: #3b82f6;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+    }
+
+    /* ── Select arrow ── */
+    .ex-select-wrap { position: relative; }
+    .ex-select-wrap::after {
+        content: '▾';
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #3b82f6;
+        pointer-events: none;
+        font-size: 0.9rem;
+    }
+    .ex-select-wrap select { padding-right: 36px !important; cursor: pointer; }
+
+    /* ── Error ── */
+    .ex-field-error { color: #ff4d6d; font-size: 0.78rem; margin-top: 2px; }
+
+    /* ── Hint ── */
+    .ex-field-hint { color: #475569; font-size: 0.77rem; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+
+    /* ── Image Preview ── */
+    #imagePreviewBox {
+        margin-top: 10px;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        display: none;
+        background: rgba(0,0,0,0.3);
+        height: 140px;
+    }
+    #imagePreviewBox img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── Form Footer ── */
+    .ex-form-footer {
+        padding: 20px 28px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.15);
+    }
+    .btn-submit-ex {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 11px 28px;
+        background: linear-gradient(135deg, #3b82f6, #00d2ff);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+    }
+    .btn-submit-ex:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+    .btn-cancel-ex {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 11px 20px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #64748b;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-cancel-ex:hover { background: rgba(255,77,109,0.08); color: #ff4d6d; border-color: rgba(255,77,109,0.3); }
+
+    /* ── Difficulty badges ── */
+    .diff-hint {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+    }
+    .diff-badge {
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+    .diff-badge.debutant  { background: rgba(34,211,165,0.1); color: #22d3a5; border-color: rgba(34,211,165,0.25); }
+    .diff-badge.intermediaire { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+    .diff-badge.avance    { background: rgba(255,77,109,0.1); color: #ff4d6d; border-color: rgba(255,77,109,0.25); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+        .ex-form-grid { grid-template-columns: 1fr; }
+        .ex-col-full { grid-column: 1; }
+        .ex-page-header { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ex-page">
+
+    {# ── Page Header ── #}
+    <div class="ex-page-header">
+        <div class="ex-page-header-left">
+            <h1>
+                <span class="icon-circle"><i class="bi bi-lightning-fill"></i></span>
+                Ajouter un exercice
+            </h1>
+            <div class="subtitle">Remplissez tous les champs pour créer un nouvel exercice</div>
+        </div>
+        <a href="{{ path('admin_exercise_index') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
+
+    {# ── Form Card ── #}
+    <div class="ex-form-card">
+        <div class="ex-form-card-header">
+            <div class="header-icon"><i class="bi bi-activity"></i></div>
+            <span>Informations de l'exercice</span>
+        </div>
+
+        <div class="ex-form-card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'exercise-form'}}) }}
+
+            <div class="ex-form-grid">
+
+                {# Name — full width #}
+                <div class="ex-field-group ex-col-full">
+                    <label for="{{ form.name.vars.id }}">
+                        <i class="bi bi-pencil-fill" style="color:#3b82f6;"></i>
+                        Nom de l'exercice <span class="req">●</span>
+                    </label>
+                    {{ form_widget(form.name, {'attr': {'placeholder': 'Ex. Squats, Pompes, Planche…'}}) }}
+                    <div class="ex-field-error">{{ form_errors(form.name) }}</div>
+                </div>
+
+                {# Description — full width #}
+                <div class="ex-field-group ex-col-full">
+                    <label for="{{ form.description.vars.id }}">
+                        <i class="bi bi-card-text" style="color:#3b82f6;"></i>
+                        Description
+                    </label>
+                    {{ form_widget(form.description, {'attr': {'placeholder': 'Décrivez cet exercice, les muscles ciblés, la technique…', 'rows': '4'}}) }}
+                    <div class="ex-field-error">{{ form_errors(form.description) }}</div>
+                </div>
+
+                {# Category #}
+                <div class="ex-field-group">
+                    <label for="{{ form.category.vars.id }}">
+                        <i class="bi bi-tag-fill" style="color:#3b82f6;"></i>
+                        Catégorie <span class="req">●</span>
+                    </label>
+                    <div class="ex-select-wrap">
+                        {{ form_widget(form.category) }}
+                    </div>
+                    <div class="ex-field-error">{{ form_errors(form.category) }}</div>
+                </div>
+
+                {# Difficulty #}
+                <div class="ex-field-group">
+                    <label for="{{ form.difficulty.vars.id }}">
+                        <i class="bi bi-bar-chart-fill" style="color:#3b82f6;"></i>
+                        Difficulté <span class="req">●</span>
+                    </label>
+                    <div class="ex-select-wrap">
+                        {{ form_widget(form.difficulty) }}
+                    </div>
+                    <div class="diff-hint">
+                        <span class="diff-badge debutant">Débutant</span>
+                        <span class="diff-badge intermediaire">Intermédiaire</span>
+                        <span class="diff-badge avance">Avancé</span>
+                    </div>
+                    <div class="ex-field-error">{{ form_errors(form.difficulty) }}</div>
+                </div>
+
+                {# Duration #}
+                <div class="ex-field-group">
+                    <label for="{{ form.duration.vars.id }}">
+                        <i class="bi bi-clock-fill" style="color:#3b82f6;"></i>
+                        Durée <span class="req">●</span>
+                    </label>
+                    <div class="ex-input-wrap">
+                        {{ form_widget(form.duration, {'attr': {'placeholder': '30'}}) }}
+                        <span class="ex-input-suffix">min</span>
+                    </div>
+                    <div class="ex-field-error">{{ form_errors(form.duration) }}</div>
+                </div>
+
+                {# Calories #}
+                <div class="ex-field-group">
+                    <label for="{{ form.calories.vars.id }}">
+                        <i class="bi bi-fire" style="color:#f59e0b;"></i>
+                        Calories brûlées
+                    </label>
+                    <div class="ex-input-wrap">
+                        {{ form_widget(form.calories, {'attr': {'placeholder': '250'}}) }}
+                        <span class="ex-input-suffix">kcal</span>
+                    </div>
+                    <div class="ex-field-error">{{ form_errors(form.calories) }}</div>
+                </div>
+
+                {# Image URL — full width #}
+                <div class="ex-field-group ex-col-full">
+                    <label for="{{ form.imageUrl.vars.id }}">
+                        <i class="bi bi-image" style="color:#3b82f6;"></i>
+                        URL de l'image
+                        <span style="color:#475569;font-size:0.75rem;margin-left:4px;font-weight:400;text-transform:none;letter-spacing:0;">(optionnel)</span>
+                    </label>
+                    {{ form_widget(form.imageUrl, {'attr': {'placeholder': 'https://exemple.com/image.jpg', 'id': 'exercise-image-url'}}) }}
+                    <div class="ex-field-hint">
+                        <i class="bi bi-info-circle"></i>
+                        URL d'une image représentant cet exercice
+                    </div>
+                    <div id="imagePreviewBox">
+                        <img id="imagePreview" src="" alt="Aperçu">
+                    </div>
+                    <div class="ex-field-error">{{ form_errors(form.imageUrl) }}</div>
+                </div>
+
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        {# ── Footer ── #}
+        <div class="ex-form-footer">
+            <button type="submit" form="exercise-form" class="btn-submit-ex">
+                <i class="bi bi-check-lg"></i> Créer l'exercice
+            </button>
+            <a href="{{ path('admin_exercise_index') }}" class="btn-cancel-ex">
+                <i class="bi bi-x"></i> Annuler
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const urlInput = document.getElementById('exercise-image-url');
+    const previewBox = document.getElementById('imagePreviewBox');
+    const previewImg = document.getElementById('imagePreview');
+    if (urlInput) {
+        urlInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            if (val && (val.startsWith('http') || val.startsWith('/'))) {
+                previewImg.src = val;
+                previewBox.style.display = 'block';
+                previewImg.onerror = function () { previewBox.style.display = 'none'; };
+            } else {
+                previewBox.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Exercices — Admin{% endblock %}
+{% block topbar_title %}Gestion des Exercices{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-activity me-2" style="color:var(--accent);"></i>Exercices</h1>
+        <div class="page-sub">{{ exercises|length }} exercice(s) enregistré(s)</div>
+    </div>
+    <a href="{{ path('admin_exercise_new') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Ajouter un exercice
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-header py-3 d-flex justify-content-between align-items-center">
+        <span style="font-weight: 600; font-size: 1rem;"><i class="bi bi-list me-2" style="color:var(--accent);"></i>Liste des exercices</span>
+    </div>
+    <div class="card-body p-0">
+        <table class="table mb-0" id="exercise-table">
+            <thead>
+                <tr>
+                    <th class="ps-4" style="width:30%;">Nom</th>
+                    <th>Catégorie</th>
+                    <th>Difficulté</th>
+                    <th>Durée</th>
+                    <th>Calories</th>
+                    <th>Ajouté le</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exercise in exercises %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-semibold" style="color: #fff;">{{ exercise.name }}</div>
+                            <div style="font-size:0.75rem;color:var(--muted);">
+                                {{ exercise.description|length > 60 ? exercise.description|slice(0,60) ~ '…' : exercise.description }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: rgba(59,130,246,.15); color: #60a5fa; border: 1px solid rgba(59,130,246,.25);">{{ exercise.category }}</span>
+                        </td>
+                        <td>
+                            {% if exercise.difficulty == 'Débutant' %}
+                                <span class="badge" style="background: rgba(34,211,165,.15); color: var(--success); border: 1px solid rgba(34,211,165,.25);">{{ exercise.difficulty }}</span>
+                            {% elseif exercise.difficulty == 'Intermédiaire' %}
+                                <span class="badge" style="background: rgba(245,158,11,.15); color: var(--warning); border: 1px solid rgba(245,158,11,.25);">{{ exercise.difficulty }}</span>
+                            {% else %}
+                                <span class="badge" style="background: rgba(255,77,109,.15); color: var(--danger); border: 1px solid rgba(255,77,109,.25);">{{ exercise.difficulty }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:var(--muted);"><i class="bi bi-clock me-1" style="color:var(--muted);"></i>{{ exercise.duration }} min</td>
+                        <td style="color:var(--danger);"><i class="bi bi-fire me-1"></i>{{ exercise.calories }} kcal</td>
+                        <td style="font-size:0.8rem;color:var(--muted);">{{ exercise.createdAt|date('d/m/Y') }}</td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex gap-1 justify-content-end">
+                                <a href="{{ path('admin_exercise_show', {id: exercise.id}) }}"
+                                   class="btn btn-sm" style="background: rgba(59,130,246,.15); color: #60a5fa;" title="Voir">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_exercise_edit', {id: exercise.id}) }}"
+                                   class="btn btn-sm" style="background: rgba(245,158,11,.15); color: var(--warning);" title="Modifier">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post"
+                                      action="{{ path('admin_exercise_delete', {id: exercise.id}) }}"
+                                      onsubmit="return confirm('Supprimer cet exercice ?');" style="display:inline-block;">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('delete_exercise_' ~ exercise.id) }}">
+                                    <button class="btn btn-sm" style="background: rgba(255,77,109,.15); color: var(--danger);" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                            Aucun exercice trouvé. <a href="{{ path('admin_exercise_new') }}" style="color:var(--accent);">Créer le premier</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

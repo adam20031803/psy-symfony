@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motivation Hub — PsyApp Admin Pro</title>
+    <title>Motivation Hub — Atomic You Admin Pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -78,35 +78,7 @@
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="sidebar-logo">
-        <div class="icon">🧠</div>
-        <div><strong>Psy</strong><span>App</span> <small style="font-size: 0.6rem; opacity: 0.5; display: block; margin-top: -5px; font-weight: 500;">ADMIN PRO</small></div>
-    </div>
-    
-    <div class="nav-label">Principal</div>
-    <a href="{{ path('app_admin') }}" class="nav-item">
-        <span class="nav-icon">👤</span> Utilisateurs
-    </a>
-    <a href="{{ path('app_admin') }}#section-reclamations" class="nav-item">
-        <span class="nav-icon">📬</span> Réclamations
-    </a>
-    <a href="{{ path('app_admin_motivation') }}" class="nav-item active">
-        <span class="nav-icon">🚀</span> Motivation Hub
-    </a>
-    <a href="{{ path('app_admin_posts') }}" class="nav-item">
-        <span class="nav-icon">💬</span> Posts Forum
-    </a>
-
-    <div class="sidebar-spacer" style="flex:1;"></div>
-    <div class="nav-label">Système</div>
-    <a href="{{ path('post_index') }}" class="nav-item">
-        <span class="nav-icon">🏠</span> Retour au Site
-    </a>
-    <a href="{{ path('app_logout') }}" class="nav-item danger" style="color: var(--danger);">
-        <span class="nav-icon">🚪</span> Déconnexion
-    </a>
-</aside>
+{% include 'components/admin_sidebar.html.twig' %}
 
 <main class="main">
     <div class="bg-glow"></div>

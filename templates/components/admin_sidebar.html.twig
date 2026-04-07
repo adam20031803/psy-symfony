@@ -1,0 +1,44 @@
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="icon">🧠</div>
+        <div><strong>Atomic</strong><span>You</span> <small style="font-size: 0.6rem; opacity: 0.5; display: block; margin-top: -5px; font-weight: 500;">ADMIN PRO</small></div>
+    </div>
+
+    <div class="nav-label">Principal</div>
+    <a href="{{ path('app_admin_users') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_users' ? 'active' : '' }}">
+        <span class="nav-icon">👥</span> Utilisateurs
+    </a>
+    <a href="{{ path('app_admin_reclamations') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_reclamations' ? 'active' : '' }}">
+        <span class="nav-icon">📬</span> Réclamations
+    </a>
+    <a href="{{ path('app_admin_motivation') }}" class="nav-item">
+        <span class="nav-icon">🚀</span> Motivation Hub
+    </a>
+    <a href="{{ path('app_admin_posts') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_posts' ? 'active' : '' }}">
+        <span class="nav-icon">💬</span> Posts Forum
+    </a>
+    <a href="{{ path('app_admin_habitudes') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_habitudes' ? 'active' : '' }}">
+        <span class="nav-icon">🎯</span> Habitudes
+    </a>
+
+    <div class="nav-label">Fitness</div>
+    <a href="{{ path('admin_dashboard') }}" class="nav-item {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+        <span class="nav-icon">💪</span> Gestion Fitness
+    </a>
+    <a href="{{ path('admin_exercise_index') }}" class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_exercise' ? 'active' : '' }}">
+        <span class="nav-icon nav-icon-sub">🔹</span> Exercices
+    </a>
+    <a href="{{ path('admin_program_index') }}" class="nav-item {{ app.request.attributes.get('_route') starts with 'admin_program' ? 'active' : '' }}">
+        <span class="nav-icon nav-icon-sub">🔹</span> Programmes
+    </a>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="nav-label">Système</div>
+    <a href="{{ path('front_home') }}" class="nav-item">
+        <span class="nav-icon">🏠</span> Retour au Site
+    </a>
+    <a href="{{ path('app_logout') }}" class="nav-item danger">
+        <span class="nav-icon">🚪</span> Déconnexion
+    </a>
+</aside>

@@ -1,6 +1,6 @@
-# 🧠 PsyApp - Module Motivation & Défis (Symfony)
+# 🧠 Atomic You - Module Motivation & Défis (Symfony)
 
-Bienvenue sur le dépôt du projet **PsyApp**, une plateforme complète et moderne développée en **Symfony**. Ce projet intègre une interface de gestion ultra-professionnelle (design Glassmorphism, animations fluides) dédiée à la santé mentale, la motivation, la forme physique et les habitudes.
+Bienvenue sur le dépôt du projet **Atomic You**, une plateforme complète et moderne développée en **Symfony**. Ce projet intègre une interface de gestion ultra-professionnelle (design Glassmorphism, animations fluides) dédiée à la santé mentale, la motivation, la forme physique et les habitudes.
 
 Ce dépôt met particulièrement en avant la branche et le module **Motivation (Challenge Manager Pro)**.
 
@@ -53,7 +53,7 @@ Dupliquez le fichier `.env` pour créer un fichier local (ou modifiez directemen
 # .env (exemples)
 DATABASE_URL="mysql://root:@127.0.0.1:3306/psy_symfony?serverVersion=8&charset=utf8mb4"
 MAILER_DSN="smtp://votre_utilisateur:votre_motdepasse@serveur_smtp:port"
-MAILER_FROM="no-reply@psyapp.com"
+MAILER_FROM="no-reply@atomicyou.com"
 ```
 
 ### 4. Créer et Migrer la Base de Données
