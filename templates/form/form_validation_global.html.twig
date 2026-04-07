@@ -1,0 +1,6 @@
+{# Uniquement après soumission : évite toute indication d’erreur au chargement (form.vars.valid est true si non soumis). #}
+{% if form.vars.submitted and not form.vars.valid %}
+    <div class="alert alert-danger py-2 mb-3 border-0 shadow-sm" role="alert">
+        <strong>Données invalides.</strong> Veuillez corriger les champs surlignés en rouge.
+    </div>
+{% endif %}

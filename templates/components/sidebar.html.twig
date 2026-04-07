@@ -47,6 +47,14 @@
             </div>
         </a>
 
+        <a href="{{ path('app_mental_entry_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') in ['app_mental_entry_index', 'app_mental_tip_index'] ? 'active' : '' }}">
+            <div class="sidebar-icon si-purple">🧠</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Santé Mentale</span>
+                <span class="sidebar-link-sub">Humeurs &amp; bien-être</span>
+            </div>
+        </a>
+
         <a href="{{ path('front_home') }}" class="sidebar-link {{ app.request.attributes.get('_route') == 'front_home' or app.request.attributes.get('_route') starts with 'front_exercise_' or app.request.attributes.get('_route') starts with 'front_program_list' or app.request.attributes.get('_route') starts with 'front_program_show' ? 'active' : '' }}">
             <div class="sidebar-icon si-teal">💪</div>
             <div class="sidebar-link-text">
