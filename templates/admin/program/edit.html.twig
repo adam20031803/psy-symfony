@@ -3,79 +3,1000 @@
 {% block title %}Modifier — {{ program.title }} — Admin{% endblock %}
 {% block topbar_title %}Modifier le programme{% endblock %}
 
+{% block stylesheets %}
+<style>
+    /* ── Page Layout ── */
+    .prog-page { max-width: 820px; margin: 0 auto; }
+
+    /* ── Page Header ── */
+    .prog-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        gap: 16px;
+    }
+    .prog-page-header-left { display: flex; flex-direction: column; gap: 4px; }
+    .prog-page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .prog-page-header h1 .icon-circle {
+        width: 40px; height: 40px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+    }
+    .prog-page-header .subtitle {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-left: 50px;
+    }
+    .btn-back-prog {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 18px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #94a3b8;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .btn-back-prog:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; border-color: rgba(255,255,255,0.2); }
+
+    /* ── Form Card ── */
+    .prog-form-card {
+        background: #1a1d30;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .prog-form-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(245,158,11,0.05);
+    }
+    .prog-form-card-header .header-icon {
+        width: 32px; height: 32px;
+        background: rgba(245,158,11,0.12);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: #f59e0b;
+        font-size: 1rem;
+    }
+    .prog-form-card-header span {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e2e8f0;
+    }
+    .prog-form-card-body { padding: 28px; }
+
+    /* ── Form Grid ── */
+    .prog-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .prog-col-full { grid-column: 1 / -1; }
+
+    /* ── Field Group ── */
+    .prog-field-group { display: flex; flex-direction: column; gap: 6px; }
+    .prog-field-group label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+    .prog-field-group label .req { color: #f59e0b; font-size: 0.7rem; }
+
+    /* ── Inputs ── */
+    .prog-field-group input[type="text"],
+    .prog-field-group input[type="number"],
+    .prog-field-group textarea,
+    .prog-field-group select {
+        width: 100%;
+        background: rgba(13,15,26,0.7);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 11px 14px;
+        color: #e2e8f0;
+        font-size: 0.9rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        box-sizing: border-box;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+    .prog-field-group input:focus,
+    .prog-field-group textarea:focus,
+    .prog-field-group select:focus {
+        border-color: #f59e0b;
+        background: rgba(13,15,26,0.9);
+        box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+    }
+    .prog-field-group input::placeholder,
+    .prog-field-group textarea::placeholder { color: #334155; }
+    .prog-field-group textarea { min-height: 90px; resize: vertical; }
+    .prog-field-group select option { background: #141627; color: #e2e8f0; }
+
+    /* ── Input with suffix ── */
+    .prog-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .prog-input-wrap input {
+        padding-right: 70px !important;
+        width: 100%;
+    }
+    .prog-input-suffix {
+        position: absolute;
+        right: 12px;
+        color: #f59e0b;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+    }
+
+    /* ── Select arrow ── */
+    .prog-select-wrap { position: relative; }
+    .prog-select-wrap::after {
+        content: '▾';
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #f59e0b;
+        pointer-events: none;
+        font-size: 0.9rem;
+    }
+    .prog-select-wrap select { padding-right: 36px !important; cursor: pointer; }
+
+    /* ── Multi Select (Exercises) ── */
+    .prog-multi-select {
+        width: 100%;
+        background: rgba(13,15,26,0.7);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        color: #e2e8f0;
+        font-size: 0.88rem;
+        font-family: inherit;
+        min-height: 140px;
+        padding: 8px;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .prog-multi-select:focus {
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+    }
+    .prog-multi-select option {
+        background: #141627;
+        color: #e2e8f0;
+        padding: 6px 10px;
+        border-radius: 6px;
+        margin: 1px 0;
+    }
+    .prog-multi-select option:checked {
+        background: rgba(245,158,11,0.2);
+        color: #f59e0b;
+    }
+    .prog-multi-hint {
+        display: flex; align-items: center; gap: 6px;
+        color: #475569; font-size: 0.77rem;
+        margin-top: 2px;
+    }
+
+    /* ── Toggle Switch ── */
+    .prog-toggle-wrap {
+        background: rgba(13,15,26,0.5);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: border-color 0.2s, background 0.2s;
+    }
+    .prog-toggle-wrap:hover { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+
+    .prog-toggle-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .prog-toggle-info strong { color: #e2e8f0; font-size: 0.88rem; }
+    .prog-toggle-info small { color: #475569; font-size: 0.78rem; }
+
+    /* Custom styled checkbox toggle */
+    .prog-switch-label {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+    }
+    .prog-switch-label input { opacity: 0; width: 0; height: 0; }
+    .prog-switch-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255,255,255,0.1);
+        border-radius: 26px;
+        transition: background 0.3s;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .prog-switch-slider::before {
+        content: '';
+        position: absolute;
+        height: 20px; width: 20px;
+        left: 2px; top: 2px;
+        background: rgba(255,255,255,0.5);
+        border-radius: 50%;
+        transition: transform 0.3s, background 0.3s;
+    }
+    .prog-switch-label input:checked + .prog-switch-slider {
+        background: rgba(245,158,11,0.3);
+        border-color: rgba(245,158,11,0.5);
+    }
+    .prog-switch-label input:checked + .prog-switch-slider::before {
+        transform: translateX(22px);
+        background: #f59e0b;
+    }
+
+    /* ── Error ── */
+    .prog-field-error { color: #ff4d6d; font-size: 0.78rem; margin-top: 2px; }
+
+    /* ── Level Pill ── */
+    .level-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .level-pill {
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+    .level-pill.deb  { background: rgba(34,211,165,0.1); color: #22d3a5; border-color: rgba(34,211,165,0.25); }
+    .level-pill.int { background: rgba(59,130,246,0.1); color: #3b82f6; border-color: rgba(59,130,246,0.25); }
+    .level-pill.adv { background: rgba(255,77,109,0.1); color: #ff4d6d; border-color: rgba(255,77,109,0.25); }
+
+    /* ── Form Footer ── */
+    .prog-form-footer {
+        padding: 20px 28px;
+        border-top: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0,0,0,0.15);
+    }
+    .btn-submit-prog {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 11px 28px;
+        background: linear-gradient(135deg, #f59e0b, #f97316);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 15px rgba(245,158,11,0.25);
+    }
+    .btn-submit-prog:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.35); }
+    .btn-cancel-prog {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 11px 20px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #64748b;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-cancel-prog:hover { background: rgba(255,77,109,0.08); color: #ff4d6d; border-color: rgba(255,77,109,0.3); }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+        .prog-form-grid { grid-template-columns: 1fr; }
+        .prog-col-full { grid-column: 1; }
+        .prog-page-header { flex-direction: column; align-items: flex-start; }
+    }
+
+    /* ── Assignment Section ── */
+    .assign-card {
+        background: #1a1d30;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        margin-top: 20px;
+    }
+    .assign-card-header {
+        padding: 20px 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(59,130,246,0.05);
+    }
+    .assign-card-header .header-icon {
+        width: 32px; height: 32px;
+        background: rgba(59,130,246,0.12);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: #3b82f6;
+        font-size: 1rem;
+    }
+    .assign-card-header span { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; }
+    .assign-card-body { padding: 24px 28px; }
+
+    /* Stats Pills */
+    .assign-stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .assign-stat-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+    .assign-stat-pill.total {
+        background: rgba(100,116,139,0.08);
+        color: #94a3b8;
+        border-color: rgba(100,116,139,0.2);
+    }
+    .assign-stat-pill.accepted {
+        background: rgba(34,211,165,0.08);
+        color: #22d3a5;
+        border-color: rgba(34,211,165,0.25);
+    }
+    .assign-stat-pill.declined {
+        background: rgba(255,77,109,0.08);
+        color: #ff4d6d;
+        border-color: rgba(255,77,109,0.25);
+    }
+    .assign-stat-pill.pending {
+        background: rgba(245,158,11,0.08);
+        color: #f59e0b;
+        border-color: rgba(245,158,11,0.25);
+    }
+
+    /* Assigned Users List */
+    .assigned-users-section {
+        margin-bottom: 24px;
+    }
+    .assigned-users-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: #475569;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .assigned-users-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.07);
+    }
+    .assigned-user-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: rgba(13,15,26,0.5);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        transition: all 0.2s;
+    }
+    .assigned-user-item:hover {
+        border-color: rgba(59,130,246,0.3);
+        background: rgba(59,130,246,0.04);
+    }
+    .assigned-user-avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .assigned-user-info { flex: 1; min-width: 0; }
+    .assigned-user-name {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #e2e8f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .assigned-user-email {
+        font-size: 0.75rem;
+        color: #475569;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .assigned-user-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border: 1px solid;
+        flex-shrink: 0;
+    }
+    .assigned-user-status.pending {
+        background: rgba(245,158,11,0.1);
+        color: #f59e0b;
+        border-color: rgba(245,158,11,0.3);
+    }
+    .assigned-user-status.accepted {
+        background: rgba(34,211,165,0.1);
+        color: #22d3a5;
+        border-color: rgba(34,211,165,0.3);
+    }
+    .assigned-user-status.declined {
+        background: rgba(255,77,109,0.1);
+        color: #ff4d6d;
+        border-color: rgba(255,77,109,0.3);
+    }
+    .no-assignments {
+        text-align: center;
+        padding: 32px 20px;
+        color: #475569;
+        font-size: 0.88rem;
+    }
+    .no-assignments i {
+        font-size: 2.5rem;
+        display: block;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+
+    /* Divider */
+    .assign-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 24px 0;
+    }
+    .assign-divider span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: #475569;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .assign-divider::before, .assign-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.07);
+    }
+
+    /* Radio options */
+    .send-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .send-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(13,15,26,0.5);
+    }
+    .send-option:hover { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.04); }
+    .send-option input[type="radio"] { display: none; }
+    .send-option-check {
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.15);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+        transition: all 0.2s;
+    }
+    .send-option-check::after {
+        content: '';
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #3b82f6;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .send-option.selected {
+        border-color: rgba(59,130,246,0.5);
+        background: rgba(59,130,246,0.06);
+    }
+    .send-option.selected .send-option-check {
+        border-color: #3b82f6;
+    }
+    .send-option.selected .send-option-check::after { opacity: 1; }
+    .send-option-text strong { color: #e2e8f0; font-size: 0.88rem; display: block; margin-bottom: 2px; }
+    .send-option-text small { color: #475569; font-size: 0.78rem; }
+
+    /* User search & list */
+    #userListSection {
+        display: none;
+        animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+    .user-search {
+        width: 100%;
+        background: rgba(13,15,26,0.7);
+        border: 1.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 10px 14px;
+        color: #e2e8f0;
+        font-size: 0.88rem;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+        margin-bottom: 12px;
+        transition: border-color 0.2s;
+    }
+    .user-search:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .user-search::placeholder { color: #334155; }
+    .user-checklist {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+    @media (max-width: 600px) { .user-checklist { grid-template-columns: 1fr; } }
+    .user-check-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: rgba(13,15,26,0.6);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+        user-select: none;
+    }
+    .user-check-item:hover { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.05); }
+    .user-check-item input[type="checkbox"] { display: none; }
+    .user-check-box {
+        width: 18px; height: 18px;
+        border-radius: 5px;
+        border: 1.5px solid rgba(255,255,255,0.15);
+        background: transparent;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.15s;
+        font-size: 0.7rem;
+    }
+    .user-check-item.checked {
+        border-color: rgba(59,130,246,0.5);
+        background: rgba(59,130,246,0.08);
+    }
+    .user-check-item.checked .user-check-box {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: #fff;
+    }
+    .user-check-box::after { content: ''; }
+    .user-check-item.checked .user-check-box::after { content: '✓'; }
+    .user-avatar-mini {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+    .user-name-wrap { display: flex; flex-direction: column; min-width: 0; }
+    .user-name-wrap strong { font-size: 0.78rem; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-name-wrap small { font-size: 0.68rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .selected-count {
+        margin-top: 10px;
+        font-size: 0.78rem;
+        color: #3b82f6;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1><i class="bi bi-pencil-square me-2 text-warning"></i>Modifier le programme</h1>
-        <div class="page-sub">{{ program.title }}</div>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="{{ path('admin_program_show', {id: program.id}) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-eye me-1"></i>Voir
-        </a>
-        <a href="{{ path('admin_program_index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Liste
-        </a>
-    </div>
-</div>
+<div class="prog-page">
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header py-3">
-                <i class="bi bi-journal-bookmark-fill me-2 text-warning"></i>Modifier les informations
-            </div>
-            <div class="card-body p-4">
-                {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    {# ── Page Header ── #}
+    <div class="prog-page-header">
+        <div class="prog-page-header-left">
+            <h1>
+                <span class="icon-circle"><i class="bi bi-pencil-square"></i></span>
+                Modifier le programme
+            </h1>
+            <div class="subtitle">{{ program.title }}</div>
+        </div>
+        <a href="{{ path('admin_program_index') }}" class="btn-back-prog">
+            <i class="bi bi-arrow-left"></i> Retour à la liste
+        </a>
+    </div>
 
-                <div class="row g-3">
-                    <div class="col-12">
-                        {{ form_label(form.title) }}
-                        {{ form_widget(form.title) }}
-                        <div class="text-danger small mt-1">{{ form_errors(form.title) }}</div>
+    {# ── Form Card ── #}
+    <div class="prog-form-card">
+        <div class="prog-form-card-header">
+            <div class="header-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+            <span>Informations du programme</span>
+        </div>
+
+        <div class="prog-form-card-body">
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'id': 'program-form'}}) }}
+
+            <div class="prog-form-grid">
+
+                {# Title — full width #}
+                <div class="prog-field-group prog-col-full">
+                    <label for="{{ form.title.vars.id }}">
+                        <i class="bi bi-type-bold" style="color:#f59e0b;"></i>
+                        Titre du programme <span class="req">●</span>
+                    </label>
+                    {{ form_widget(form.title, {'attr': {'placeholder': 'Ex. Programme Perte de Poids 8 semaines…', 'list': 'title-suggestions', 'autocomplete': 'off'}}) }}
+                    <datalist id="title-suggestions">
+                        <option value="Programme Perte de Poids">
+                        <option value="Programme Prise de Masse">
+                        <option value="Programme Musculation Débutant">
+                        <option value="Programme Cardio Intense">
+                        <option value="Programme HIIT 30 jours">
+                        <option value="Programme Yoga Flexibilité">
+                        <option value="Programme Renforcement Musculaire">
+                        <option value="Programme Endurance Fondamentale">
+                        <option value="Programme Full Body">
+                        <option value="Programme Spécial Running">
+                    </datalist>
+                    <div class="prog-field-error">{{ form_errors(form.title) }}</div>
+                </div>
+
+                {# Goal — full width #}
+                <div class="prog-field-group prog-col-full">
+                    <label for="{{ form.goal.vars.id }}">
+                        <i class="bi bi-bullseye" style="color:#f59e0b;"></i>
+                        Objectif <span class="req">●</span>
+                    </label>
+                    {{ form_widget(form.goal, {'attr': {'placeholder': 'Ex. Perte de poids, Prise de masse, Cardio, Endurance…', 'list': 'goal-suggestions', 'autocomplete': 'off'}}) }}
+                    <datalist id="goal-suggestions">
+                        <option value="Perte de poids">
+                        <option value="Prise de masse">
+                        <option value="Prise de muscle">
+                        <option value="Cardio">
+                        <option value="Endurance">
+                        <option value="Souplesse">
+                        <option value="Flexibilité">
+                        <option value="HIIT">
+                        <option value="Musculation">
+                        <option value="Remise en forme">
+                        <option value="Renforcement musculaire">
+                        <option value="Condition physique">
+                    </datalist>
+                    <div class="prog-field-error">{{ form_errors(form.goal) }}</div>
+                </div>
+
+                {# Duration #}
+                <div class="prog-field-group">
+                    <label for="{{ form.durationWeeks.vars.id }}">
+                        <i class="bi bi-calendar3" style="color:#f59e0b;"></i>
+                        Durée <span class="req">●</span>
+                    </label>
+                    <div class="prog-input-wrap">
+                        {{ form_widget(form.durationWeeks, {'attr': {'placeholder': '8'}}) }}
+                        <span class="prog-input-suffix">semaines</span>
                     </div>
-                    <div class="col-12">
-                        {{ form_label(form.goal) }}
-                        {{ form_widget(form.goal) }}
-                        <div class="text-danger small mt-1">{{ form_errors(form.goal) }}</div>
-                    </div>
-                    <div class="col-md-6">
-                        {{ form_label(form.durationWeeks) }}
-                        <div class="input-group">
-                            {{ form_widget(form.durationWeeks) }}
-                            <span class="input-group-text">semaines</span>
-                        </div>
-                        <div class="text-danger small mt-1">{{ form_errors(form.durationWeeks) }}</div>
-                    </div>
-                    <div class="col-md-6">
-                        {{ form_label(form.level) }}
+                    <div class="prog-field-error">{{ form_errors(form.durationWeeks) }}</div>
+                </div>
+
+                {# Level #}
+                <div class="prog-field-group">
+                    <label for="{{ form.level.vars.id }}">
+                        <i class="bi bi-speedometer2" style="color:#f59e0b;"></i>
+                        Niveau <span class="req">●</span>
+                    </label>
+                    <div class="prog-select-wrap">
                         {{ form_widget(form.level) }}
-                        <div class="text-danger small mt-1">{{ form_errors(form.level) }}</div>
                     </div>
-                    <div class="col-12">
-                        {{ form_label(form.exercises) }}
-                        {{ form_widget(form.exercises) }}
-                        <div class="form-text">{{ form_help(form.exercises) }}</div>
-                        <div class="text-danger small mt-1">{{ form_errors(form.exercises) }}</div>
+                    <div class="level-pills">
+                        <span class="level-pill deb">Débutant</span>
+                        <span class="level-pill int">Intermédiaire</span>
+                        <span class="level-pill adv">Avancé</span>
                     </div>
-                    <div class="col-12">
-                        <div class="form-check form-switch p-3" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
-                            {{ form_widget(form.isPublished) }}
-                            {{ form_label(form.isPublished) }}
+                    <div class="prog-field-error">{{ form_errors(form.level) }}</div>
+                </div>
+
+                {# Exercises multi-select — full width #}
+                <div class="prog-field-group prog-col-full">
+                    <label>
+                        <i class="bi bi-collection-fill" style="color:#f59e0b;"></i>
+                        Exercices associés
+                        <span style="color:#475569;font-size:0.75rem;margin-left:4px;font-weight:400;text-transform:none;letter-spacing:0;">(optionnel)</span>
+                    </label>
+                    {{ form_widget(form.exercises, {'attr': {'class': 'prog-multi-select'}}) }}
+                    <div class="prog-multi-hint">
+                        <i class="bi bi-info-circle"></i>
+                        Maintenez <kbd style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:0.72rem;border:1px solid rgba(255,255,255,0.12);">Ctrl</kbd> (Windows) ou <kbd style="background:rgba(255,255,255,0.08);padding:1px 5px;border-radius:4px;font-size:0.72rem;border:1px solid rgba(255,255,255,0.12);">Cmd</kbd> (Mac) pour sélectionner plusieurs exercices
+                    </div>
+                    <div class="prog-field-error">{{ form_errors(form.exercises) }}</div>
+                </div>
+
+                {# isPublished toggle — full width #}
+                <div class="prog-col-full">
+                    <div class="prog-toggle-wrap">
+                        <div class="prog-toggle-info">
+                            <strong><i class="bi bi-globe2" style="color:#f59e0b;margin-right:6px;"></i>Publier le programme</strong>
+                            <small>Si activé, ce programme sera visible sur le site public</small>
                         </div>
+                        <label class="prog-switch-label">
+                            {{ form_widget(form.isPublished) }}
+                            <span class="prog-switch-slider"></span>
+                        </label>
                     </div>
+                    <div class="prog-field-error" style="margin-top:6px;">{{ form_errors(form.isPublished) }}</div>
                 </div>
 
-                <div class="d-flex gap-2 mt-4 pt-3" style="border-top:1px solid #e2e8f0;">
-                    <button type="submit" class="btn btn-warning px-4 text-dark fw-semibold">
-                        <i class="bi bi-check-lg me-1"></i>Enregistrer les modifications
-                    </button>
-                    <a href="{{ path('admin_program_index') }}" class="btn btn-outline-secondary">Annuler</a>
-                </div>
-
-                {{ form_end(form) }}
             </div>
+
+            {{ form_end(form) }}
+        </div>
+
+        {# ── Footer ── #}
+        <div class="prog-form-footer">
+            <button type="submit" form="program-form" class="btn-submit-prog">
+                <i class="bi bi-check-lg"></i> Enregistrer les modifications
+            </button>
+            <a href="{{ path('admin_program_index') }}" class="btn-cancel-prog">
+                <i class="bi bi-x"></i> Annuler
+            </a>
         </div>
     </div>
+
+    {# ── Assignment Card ── #}
+    <div class="assign-card">
+        <div class="assign-card-header">
+            <div class="header-icon"><i class="bi bi-people-fill"></i></div>
+            <span>Assignations existantes</span>
+        </div>
+        <div class="assign-card-body">
+
+            {# Stats Pills #}
+            {% set totalAssigned = assignments|length %}
+            {% set acceptedCount = assignments|filter(a => a.isAccepted())|length %}
+            {% set declinedCount = assignments|filter(a => a.isDeclined())|length %}
+            {% set pendingCount = assignments|filter(a => a.isPending())|length %}
+
+            {% if totalAssigned > 0 %}
+                <div class="assign-stats">
+                    <div class="assign-stat-pill total">
+                        <i class="bi bi-send-fill"></i> {{ totalAssigned }} envoyés
+                    </div>
+                    {% if acceptedCount > 0 %}
+                        <div class="assign-stat-pill accepted">
+                            <i class="bi bi-check-circle-fill"></i> {{ acceptedCount }} acceptés
+                        </div>
+                    {% endif %}
+                    {% if pendingCount > 0 %}
+                        <div class="assign-stat-pill pending">
+                            <i class="bi bi-hourglass-split"></i> {{ pendingCount }} en attente
+                        </div>
+                    {% endif %}
+                    {% if declinedCount > 0 %}
+                        <div class="assign-stat-pill declined">
+                            <i class="bi bi-x-circle-fill"></i> {{ declinedCount }} déclinés
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Assigned Users List #}
+                <div class="assigned-users-section">
+                    <div class="assigned-users-title">
+                        <i class="bi bi-list-check" style="color:#3b82f6;"></i>
+                        Utilisateurs assignés
+                    </div>
+
+                    {% for assignment in assignments %}
+                        <div class="assigned-user-item">
+                            <div class="assigned-user-avatar">
+                                {{ assignment.user.prenom|first|upper }}{{ assignment.user.nom|first|upper }}
+                            </div>
+                            <div class="assigned-user-info">
+                                <div class="assigned-user-name">{{ assignment.user.prenom }} {{ assignment.user.nom }}</div>
+                                <div class="assigned-user-email">{{ assignment.user.email }}</div>
+                            </div>
+                            {% if assignment.isPending() %}
+                                <span class="assigned-user-status pending">
+                                    <i class="bi bi-hourglass-split"></i> En attente
+                                </span>
+                            {% elseif assignment.isAccepted() %}
+                                <span class="assigned-user-status accepted">
+                                    <i class="bi bi-check-circle-fill"></i> Accepté
+                                </span>
+                            {% else %}
+                                <span class="assigned-user-status declined">
+                                    <i class="bi bi-x-circle-fill"></i> Décliné
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-assignments">
+                    <i class="bi bi-inbox"></i>
+                    <div>Aucun utilisateur assigné à ce programme</div>
+                </div>
+            {% endif %}
+
+            {# Divider #}
+            <div class="assign-divider">
+                <span><i class="bi bi-send-arrow-up" style="margin-right:4px;"></i> Ajouter des assignations</span>
+            </div>
+
+            {# Send Options #}
+            <div class="send-options" id="sendOptions">
+                {# Option: No send #}
+                <label class="send-option selected" id="opt-none" onclick="selectSend('none')">
+                    <input type="radio" name="sendTo" value="none" form="program-form" checked>
+                    <div class="send-option-check"></div>
+                    <div class="send-option-text">
+                        <strong>🚫 Ne pas ajouter d'assignations</strong>
+                        <small>Conserver les assignations existantes uniquement</small>
+                    </div>
+                </label>
+
+                {# Option: All users #}
+                <label class="send-option" id="opt-all" onclick="selectSend('all')">
+                    <input type="radio" name="sendTo" value="all" form="program-form">
+                    <div class="send-option-check"></div>
+                    <div class="send-option-text">
+                        <strong>🌍 Tous les utilisateurs non assignés</strong>
+                        <small>Envoyer à tous les utilisateurs qui n'ont pas encore reçu ce programme</small>
+                    </div>
+                </label>
+
+                {# Option: Specific #}
+                <label class="send-option" id="opt-specific" onclick="selectSend('specific')">
+                    <input type="radio" name="sendTo" value="specific" form="program-form">
+                    <div class="send-option-check"></div>
+                    <div class="send-option-text">
+                        <strong>🎯 Utilisateurs spécifiques</strong>
+                        <small>Choisir manuellement les utilisateurs à cibler</small>
+                    </div>
+                </label>
+            </div>
+
+            {# User list (shown only when specific) #}
+            <div id="userListSection">
+                <input type="text" class="user-search" id="userSearch" placeholder="🔍 Rechercher un utilisateur…" oninput="filterUsers()">
+                <div class="user-checklist" id="userChecklist">
+                    {% for user in allUsers %}
+                        <label class="user-check-item" id="ucb-{{ user.id }}" onclick="toggleUser({{ user.id }})">
+                            <input type="checkbox" name="targetUsers[]" value="{{ user.id }}" form="program-form" id="uc-{{ user.id }}" {% if user.id in assignedUserIds %}checked{% endif %}>
+                            <div class="user-check-box {% if user.id in assignedUserIds %}checked{% endif %}"></div>
+                            <div class="user-avatar-mini">{{ user.prenom|first|upper }}{{ user.nom|first|upper }}</div>
+                            <div class="user-name-wrap">
+                                <strong>{{ user.prenom }} {{ user.nom }}</strong>
+                                <small>{{ user.email }}</small>
+                            </div>
+                        </label>
+                    {% else %}
+                        <div style="color:#475569;font-size:0.82rem;grid-column:1/-1;">Aucun utilisateur trouvé.</div>
+                    {% endfor %}
+                </div>
+                <div class="selected-count" id="selectedCount">
+                    <i class="bi bi-people-fill"></i>
+                    <span id="selectedCountText">{{ assignedUserIds|length }} utilisateur(s) déjà assigné(s)</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // ── Publish toggle styling ──
+    const checkbox = document.querySelector('.prog-switch-label input[type="checkbox"]');
+    const toggleWrap = document.querySelector('.prog-toggle-wrap');
+    if (checkbox && toggleWrap) {
+        checkbox.addEventListener('change', function () {
+            toggleWrap.style.borderColor = this.checked ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.08)';
+            toggleWrap.style.background  = this.checked ? 'rgba(245,158,11,0.06)' : 'rgba(13,15,26,0.5)';
+        });
+        if (checkbox.checked) {
+            toggleWrap.style.borderColor = 'rgba(245,158,11,0.4)';
+            toggleWrap.style.background  = 'rgba(245,158,11,0.06)';
+        }
+    }
+
+    // ── Initialize user count for pre-checked users ──
+    updateCount();
+});
+
+// ── Send-to-users section ──
+function selectSend(value) {
+    ['none','all','specific'].forEach(v => {
+        const opt = document.getElementById('opt-' + v);
+        const radio = opt.querySelector('input[type="radio"]');
+        if (v === value) {
+            opt.classList.add('selected');
+            radio.checked = true;
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+    const listSection = document.getElementById('userListSection');
+    listSection.style.display = (value === 'specific') ? 'block' : 'none';
+}
+
+function toggleUser(userId) {
+    const label = document.getElementById('ucb-' + userId);
+    const cb    = document.getElementById('uc-' + userId);
+    cb.checked  = !cb.checked;
+    label.classList.toggle('checked', cb.checked);
+    updateCount();
+}
+
+function updateCount() {
+    const checked = document.querySelectorAll('#userChecklist input:checked').length;
+    const el = document.getElementById('selectedCountText');
+    if (el) el.textContent = checked + ' utilisateur' + (checked > 1 ? 's' : '') + ' sélectionné' + (checked > 1 ? 's' : '');
+}
+
+function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    document.querySelectorAll('.user-check-item').forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}
