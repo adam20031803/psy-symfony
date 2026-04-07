@@ -29,6 +29,19 @@ class ProgramRepository extends ServiceEntityRepository
     }
 
     /**
+     * Search programs by title or goal keyword.
+     */
+    public function searchByQuery(string $query): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.title LIKE :q OR p.goal LIKE :q')
+            ->setParameter('q', '%' . $query . '%')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Get last N programs ordered by creation date.
      */
     public function findLatest(int $limit = 5): array

@@ -22,14 +22,20 @@ class ProgramController extends AbstractController
     // ---------------------------------------------------------------
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(
-        ProgramRepository           $repo,
+        Request                   $request,
+        ProgramRepository         $repo,
         ProgramAssignmentRepository $assignRepo
     ): Response {
-        $programs = $repo->findAll();
+        $searchQuery = $request->query->get('q', '');
+        
+        $programs = $searchQuery
+            ? $repo->searchByQuery($searchQuery)
+            : $repo->findAll();
 
         return $this->render('admin/program/index.html.twig', [
             'programs'    => $programs,
             'stats'       => $assignRepo->buildStatsMap($programs),
+            'searchQuery' => $searchQuery,
         ]);
     }
 
@@ -55,15 +61,19 @@ class ProgramController extends AbstractController
             $sendTo      = $request->request->get('sendTo', 'none'); // none|all|specific
             $targetIds   = $request->request->all('targetUsers');    // array of user IDs
 
-            if ($sendTo === 'all') {
-                $users = $userRepo->findBy(['role' => 'user']);
-                $this->createAssignments($em, $program, $users);
-            } elseif ($sendTo === 'specific' && !empty($targetIds)) {
-                $users = $userRepo->findBy(['id' => $targetIds]);
-                $this->createAssignments($em, $program, $users);
-            }
+            try {
+                if ($sendTo === 'all') {
+                    $users = $userRepo->findBy(['role' => 'user']);
+                    $this->createAssignments($em, $program, $users);
+                } elseif ($sendTo === 'specific' && !empty($targetIds)) {
+                    $users = $userRepo->findBy(['id' => $targetIds]);
+                    $this->createAssignments($em, $program, $users);
+                }
 
-            $em->flush();
+                $em->flush();
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur lors de l\'assignation: ' . $e->getMessage());
+            }
 
             $this->addFlash('success', 'Programme créé avec succès !');
             return $this->redirectToRoute('admin_program_index');
@@ -99,21 +109,54 @@ class ProgramController extends AbstractController
     // EDIT — GET|POST /admin/program/{id}/edit
     // ---------------------------------------------------------------
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(Request $request, Program $program, EntityManagerInterface $em): Response
-    {
+    public function edit(
+        Request                $request,
+        Program                $program,
+        EntityManagerInterface $em,
+        UserRepository         $userRepo,
+        ProgramAssignmentRepository $assignRepo
+    ): Response {
         $form = $this->createForm(ProgramType::class, $program);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
 
+            // --- Handle user assignment ---
+            $sendTo      = $request->request->get('sendTo', 'none'); // none|all|specific
+            $targetIds   = $request->request->all('targetUsers');    // array of user IDs
+
+            try {
+                if ($sendTo === 'all') {
+                    $users = $userRepo->findBy(['role' => 'user']);
+                    $this->createAssignments($em, $program, $users);
+                } elseif ($sendTo === 'specific' && !empty($targetIds)) {
+                    $users = $userRepo->findBy(['id' => $targetIds]);
+                    $this->createAssignments($em, $program, $users);
+                }
+
+                $em->flush();
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Erreur lors de l\'assignation: ' . $e->getMessage());
+            }
+
             $this->addFlash('success', 'Programme modifié avec succès !');
             return $this->redirectToRoute('admin_program_index');
         }
 
+        // All regular users for the targeting select
+        $allUsers = $userRepo->findBy(['role' => 'user'], ['nom' => 'ASC']);
+        
+        // Get existing assignments for this program
+        $existingAssignments = $assignRepo->findByProgramWithUsers($program);
+        $assignedUserIds = array_map(fn($a) => $a->getUser()->getId(), $existingAssignments);
+
         return $this->render('admin/program/edit.html.twig', [
-            'program' => $program,
-            'form'    => $form->createView(),
+            'program'           => $program,
+            'form'              => $form->createView(),
+            'allUsers'          => $allUsers,
+            'assignments'       => $existingAssignments,
+            'assignedUserIds'   => $assignedUserIds,
         ]);
     }
 
@@ -194,6 +237,7 @@ class ProgramController extends AbstractController
             ->getQuery()
             ->getSingleColumnResult();
 
+        $createdCount = 0;
         foreach ($users as $user) {
             if (in_array($user->getId(), $existing, true)) {
                 continue;
@@ -202,6 +246,11 @@ class ProgramController extends AbstractController
                 ->setProgram($program)
                 ->setUser($user);
             $em->persist($assignment);
+            $createdCount++;
+        }
+        
+        if ($createdCount > 0) {
+            $this->addFlash('info', "{$createdCount} nouvelle(s) assignation(s) créée(s).");
         }
     }
 }

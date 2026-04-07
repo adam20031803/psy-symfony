@@ -545,7 +545,19 @@
                         <i class="bi bi-type-bold" style="color:#22d3a5;"></i>
                         Titre du programme <span class="req">●</span>
                     </label>
-                    {{ form_widget(form.title, {'attr': {'placeholder': 'Ex. Programme Perte de Poids 8 semaines…'}}) }}
+                    {{ form_widget(form.title, {'attr': {'placeholder': 'Ex. Programme Perte de Poids 8 semaines…', 'list': 'title-suggestions', 'autocomplete': 'off'}}) }}
+                    <datalist id="title-suggestions">
+                        <option value="Programme Perte de Poids">
+                        <option value="Programme Prise de Masse">
+                        <option value="Programme Musculation Débutant">
+                        <option value="Programme Cardio Intense">
+                        <option value="Programme HIIT 30 jours">
+                        <option value="Programme Yoga Flexibilité">
+                        <option value="Programme Renforcement Musculaire">
+                        <option value="Programme Endurance Fondamentale">
+                        <option value="Programme Full Body">
+                        <option value="Programme Spécial Running">
+                    </datalist>
                     <div class="prog-field-error">{{ form_errors(form.title) }}</div>
                 </div>
 
@@ -555,7 +567,21 @@
                         <i class="bi bi-bullseye" style="color:#22d3a5;"></i>
                         Objectif <span class="req">●</span>
                     </label>
-                    {{ form_widget(form.goal, {'attr': {'placeholder': 'Ex. Perte de poids, Prise de masse, Cardio, Endurance…'}}) }}
+                    {{ form_widget(form.goal, {'attr': {'placeholder': 'Ex. Perte de poids, Prise de masse, Cardio, Endurance…', 'list': 'goal-suggestions', 'autocomplete': 'off'}}) }}
+                    <datalist id="goal-suggestions">
+                        <option value="Perte de poids">
+                        <option value="Prise de masse">
+                        <option value="Prise de muscle">
+                        <option value="Cardio">
+                        <option value="Endurance">
+                        <option value="Souplesse">
+                        <option value="Flexibilité">
+                        <option value="HIIT">
+                        <option value="Musculation">
+                        <option value="Remise en forme">
+                        <option value="Renforcement musculaire">
+                        <option value="Condition physique">
+                    </datalist>
                     <div class="prog-field-error">{{ form_errors(form.goal) }}</div>
                 </div>
 
