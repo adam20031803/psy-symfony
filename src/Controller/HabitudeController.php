@@ -24,13 +24,16 @@ class HabitudeController extends AbstractController
     {
         $category = $request->query->get('category');
         $search = $request->query->get('search');
+        $userId = $this->getUser()?->getId();
         
-        $habitudes = $habitudeRepository->searchByCategoryAndText($category, $search);
-        $globalStats = $habitudeRepository->getGlobalStats($this->getUser()?->getId());
+        $habitudes = $habitudeRepository->searchByCategoryAndText($category, $search, $userId);
+        $globalStats = $habitudeRepository->getGlobalStats($userId);
+        $completedToday = count($habitudeRepository->findCompletedToday($userId));
         
         return $this->render('habitude/index.html.twig', [
             'habitudes' => $habitudes,
             'globalStats' => $globalStats,
+            'completedToday' => $completedToday,
         ]);
     }
 

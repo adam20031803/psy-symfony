@@ -1,0 +1,133 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}{{ program.title }} — FitLife{% endblock %}
+{% block meta_description %}Programme {{ program.level }} — {{ program.goal }} — {{ program.durationWeeks }} semaines.{% endblock %}
+
+{% block fitness_content %}
+
+{# ---- Breadcrumb ---- #}
+<div style="border-bottom:1px solid rgba(255,255,255,0.08); padding:12px 0; margin-bottom: 32px;">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0" style="font-size:0.85rem;">
+            <li class="breadcrumb-item"><a href="{{ path('front_home') }}" style="color: #64748b; text-decoration:none;">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('front_program_list') }}" style="color: #64748b; text-decoration:none;">Programmes</a></li>
+            <li class="breadcrumb-item active" style="color: #e2e8f0;">{{ program.title }}</li>
+        </ol>
+    </nav>
+</div>
+
+{# ---- Header Banner ---- #}
+<div class="table-card p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-lg-7">
+            <div class="mb-3 d-flex align-items-center gap-2">
+                {% if program.level == 'Débutant' %}
+                    <span class="badge bg-success">{{ program.level }}</span>
+                {% elseif program.level == 'Intermédiaire' %}
+                    <span class="badge bg-warning">{{ program.level }}</span>
+                {% else %}
+                    <span class="badge bg-danger">{{ program.level }}</span>
+                {% endif %}
+                <span style="font-size:0.75rem; color: #64748b; text-transform:uppercase; letter-spacing:1px;">PROGRAMME</span>
+            </div>
+            <h1 class="fw-bold mb-2 text-white">{{ program.title }}</h1>
+            <p style="color: #94a3b8; font-size:1rem;">
+                <i class="bi bi-bullseye me-2 text-primary"></i>{{ program.goal }}
+            </p>
+        </div>
+        <div class="col-lg-5 mt-4 mt-lg-0">
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="stat-badge w-100">
+                        <div class="stat-val">{{ program.durationWeeks }}</div>
+                        <div class="stat-lab">Semaines</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-badge w-100">
+                        <div class="stat-val">{{ program.exercises|length }}</div>
+                        <div class="stat-lab">Exercices</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="stat-badge w-100">
+                        {% if program.exercises|length > 0 %}
+                            {% set totalCals = 0 %}
+                            {% for ex in program.exercises %}{% set totalCals = totalCals + ex.calories %}{% endfor %}
+                            <div class="stat-val">{{ totalCals|round }}</div>
+                        {% else %}
+                            <div class="stat-val">—</div>
+                        {% endif %}
+                        <div class="stat-lab">Calories</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ---- Exercise List ---- #}
+<div>
+    <h2 class="section-title mb-1">Exercices du programme</h2>
+    <p class="section-sub mb-4">{{ program.exercises|length }} exercice(s) inclus dans ce programme</p>
+
+    {% if program.exercises|length > 0 %}
+        <div class="row g-4">
+            {% for i, exercise in program.exercises %}
+                <div class="col-md-6">
+                    <div class="fit-card h-100">
+                        <div class="d-flex gap-3 p-3 h-100">
+                            {# Number badge #}
+                            <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-3"
+                                 style="width:48px;height:48px;background:rgba(59,130,246,0.15);color:#60a5fa;font-weight:800;font-size:1.1rem; border: 1px solid rgba(59,130,246,0.25);">
+                                {{ i + 1 }}
+                            </div>
+                            {# Content #}
+                            <div class="flex-grow-1 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0 text-white">{{ exercise.name }}</h6>
+                                    {% if exercise.difficulty == 'Débutant' %}
+                                        <span class="badge bg-success" style="opacity: 0.8;">{{ exercise.difficulty }}</span>
+                                    {% elseif exercise.difficulty == 'Intermédiaire' %}
+                                        <span class="badge bg-warning" style="opacity: 0.8;">{{ exercise.difficulty }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger" style="opacity: 0.8;">{{ exercise.difficulty }}</span>
+                                    {% endif %}
+                                </div>
+                                <p style="font-size:0.8rem; color: #94a3b8; line-height:1.5;">
+                                    {{ exercise.description|length > 80 ? exercise.description|slice(0,80) ~ '…' : exercise.description }}
+                                </p>
+                                <div class="d-flex gap-3 align-items-center mt-auto pt-2" style="border-top: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-size:0.75rem;color:#64748b;">
+                                        <i class="bi bi-clock me-1 text-primary"></i>{{ exercise.duration }} min
+                                    </span>
+                                    <span style="font-size:0.75rem;color:#64748b;">
+                                        <i class="bi bi-fire me-1 text-danger"></i>{{ exercise.calories }} kcal
+                                    </span>
+                                    <span class="badge ms-auto" style="background: rgba(59,130,246,0.1); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2);">
+                                        {{ exercise.category }}
+                                    </span>
+                                    <a href="{{ path('front_exercise_show', {id: exercise.id}) }}" class="btn btn-sm" style="background: rgba(255,255,255,0.05); color: #e2e8f0; font-size: 0.75rem;">
+                                        Voir <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5" style="border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px; margin-top: 20px;">
+            <i class="bi bi-activity display-5 d-block mb-3" style="color: #475569;"></i>
+            <span style="color: #94a3b8;">Aucun exercice associé à ce programme.</span>
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ path('front_program_list') }}" class="btn" style="background: rgba(255,255,255,0.05); color: #e2e8f0;">
+            <i class="bi bi-arrow-left me-2"></i>Retour aux programmes
+        </a>
+    </div>
+</div>
+{% endblock %}

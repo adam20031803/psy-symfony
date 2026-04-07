@@ -91,7 +91,7 @@ class ForgotPasswordController extends AbstractController
                             $emailMessage = (new TemplatedEmail())
                                 ->from(Address::create($mailerFrom))
                                 ->to($recipient)
-                                ->subject('Réinitialisation de votre mot de passe — PsyApp')
+                                ->subject('Réinitialisation de votre mot de passe — Atomic You')
                                 ->htmlTemplate('emails/reset_password.html.twig')
                                 ->context([
                                     'resetUrl'            => $resetUrl,

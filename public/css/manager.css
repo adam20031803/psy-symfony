@@ -132,13 +132,6 @@ body.bg-recompense {
     padding: 12px 30px;
 }
 
-/* Layout Content */
-.main-content {
-    padding: 25px;
-    display: grid;
-    grid-template-columns: 65% 35%;
-    gap: 20px;
-}
 
 /* Stat Cards */
 .stats-grid {

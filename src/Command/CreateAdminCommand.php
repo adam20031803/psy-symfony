@@ -22,16 +22,16 @@ class CreateAdminCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $existing = $this->em->getRepository(User::class)->findOneBy(['email' => 'admin@psyapp.com']);
+        $existing = $this->em->getRepository(User::class)->findOneBy(['email' => 'admin@atomicyou.com']);
         if ($existing) {
-            $output->writeln('<comment>Admin already exists: admin@psyapp.com</comment>');
+            $output->writeln('<comment>Admin already exists: admin@atomicyou.com</comment>');
             return Command::SUCCESS;
         }
 
         $admin = new User();
         $admin->setPrenom('Admin');
-        $admin->setNom('PsyApp');
-        $admin->setEmail('admin@psyapp.com');
+        $admin->setNom('Atomic You');
+        $admin->setEmail('admin@atomicyou.com');
         $admin->setRole('admin');
         $admin->setPassword($this->hasher->hashPassword($admin, 'admin123'));
 
@@ -39,7 +39,7 @@ class CreateAdminCommand extends Command
         $this->em->flush();
 
         $output->writeln('<info>✅ Admin created successfully!</info>');
-        $output->writeln('  Email   : admin@psyapp.com');
+        $output->writeln('  Email   : admin@atomicyou.com');
         $output->writeln('  Password: admin123');
 
         return Command::SUCCESS;

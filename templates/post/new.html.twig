@@ -1,10 +1,10 @@
-{# templates/post/new.html.twig #}
+﻿{# templates/post/new.html.twig #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouveau Post — PsyApp</title>
+    <title>Nouveau Post â€” Atomic You</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -61,20 +61,20 @@
         .sidebar-pro-card p { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
         .main-content { flex: 1; padding: 36px 40px 80px; max-width: 720px; }
 
-        /* ── Back link ── */
+        /* â”€â”€ Back link â”€â”€ */
         .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; transition: color .2s; }
         .back-link:hover { color: var(--accent2); }
 
-        /* ── Page heading ── */
+        /* â”€â”€ Page heading â”€â”€ */
         .page-heading { margin-bottom: 28px; }
         .page-heading h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
         .page-heading h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .page-heading p { color: var(--muted); font-size: 0.82rem; }
 
-        /* ── Form card ── */
+        /* â”€â”€ Form card â”€â”€ */
         .form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 36px; }
 
-        /* ── Form fields ── */
+        /* â”€â”€ Form fields â”€â”€ */
         .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
         .field label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
         .field input[type="text"], .field textarea, .field select {
@@ -94,16 +94,16 @@
         }
         .field input[type="file"]:hover { border-color: var(--accent); }
 
-        /* ── Checkbox field ── */
+        /* â”€â”€ Checkbox field â”€â”€ */
         .field-check { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
         .field-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
         .field-check label { font-size: 0.84rem; color: var(--text); cursor: pointer; }
 
-        /* ── Error ── */
+        /* â”€â”€ Error â”€â”€ */
         .form-error { color: #ef4444; font-size: 0.75rem; margin-top: 2px; }
         ul.form-error { padding-left: 16px; list-style: disc; }
 
-        /* ── Submit ── */
+        /* â”€â”€ Submit â”€â”€ */
         .btn-submit {
             width: 100%; padding: 12px; border: none; border-radius: 11px; cursor: pointer;
             font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
@@ -121,8 +121,8 @@
 
 <nav class="top-nav">
     <div class="nav-logo">
-        <div class="icon">🧠</div>
-        <div><strong>Psy</strong><span>App</span></div>
+        <div class="icon">ðŸ§ </div>
+        <div><strong>Atomic</strong><span>You</span></div>
     </div>
     <div class="nav-actions">
         {% if app.user %}
@@ -131,51 +131,19 @@
             <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
         </div>
         {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
+        <a href="{{ path('app_logout') }}" class="btn-logout">ðŸšª DÃ©connexion</a>
     </div>
 </nav>
 
 <div class="app-layout">
-    <aside class="sidebar">
-        <div class="sidebar-section-label">🏠 Tableau de bord</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_dashboard') }}" class="sidebar-link">
-                <div class="sidebar-icon si-blue">📊</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Dashboard</span><span class="sidebar-link-sub">Vue d'ensemble</span></div>
-            </a>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">⚙️ Gestion</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_challenge_index') }}" class="sidebar-link">
-                <div class="sidebar-icon si-purple">🔥</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Motivation</span><span class="sidebar-link-sub">Challenges & objectifs</span></div>
-                <span class="sidebar-badge">PRO</span>
-            </a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-green">🔄</div><div class="sidebar-link-text"><span class="sidebar-link-title">Habitudes</span><span class="sidebar-link-sub">Suivi quotidien</span></div></a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-orange">🏋️</div><div class="sidebar-link-text"><span class="sidebar-link-title">Fitness</span><span class="sidebar-link-sub">Workouts & plans</span></div></a>
-            <a href="{{ path('post_index') }}" class="sidebar-link active">
-                <div class="sidebar-icon si-pink">💬</div>
-                <div class="sidebar-link-text"><span class="sidebar-link-title">Posts</span><span class="sidebar-link-sub">Communauté & partage</span></div>
-            </a>
-            <a href="#" class="sidebar-link"><div class="sidebar-icon si-teal">🧠</div><div class="sidebar-link-text"><span class="sidebar-link-title">Mentalité</span><span class="sidebar-link-sub">Journal & bien-être</span></div></a>
-        </div>
-        <div class="sidebar-divider"></div>
-        <div class="sidebar-section-label">📋 Support</div>
-        <div class="sidebar-nav">
-            <a href="{{ path('app_reclamation_index') }}" class="sidebar-link"><div class="sidebar-icon si-yellow">📬</div><div class="sidebar-link-text"><span class="sidebar-link-title">Réclamations</span><span class="sidebar-link-sub">Mes demandes</span></div></a>
-        </div>
-        <div class="sidebar-footer">
-            <div class="sidebar-pro-card"><span class="pro-emoji">🌟</span><h4>PsyApp Pro</h4><p>Votre bien-être mental est notre priorité quotidienne.</p></div>
-        </div>
-    </aside>
+    {% include 'components/sidebar.html.twig' %}
 
     <div class="main-content">
-        <a href="{{ path('post_index') }}" class="back-link">← Retour au forum</a>
+        <a href="{{ path('post_index') }}" class="back-link">â† Retour au forum</a>
 
         <div class="page-heading">
-            <h1>✏️ <span>Nouveau Post</span></h1>
-            <p>Partagez quelque chose avec la communauté PsyApp</p>
+            <h1>âœï¸ <span>Nouveau Post</span></h1>
+            <p>Partagez quelque chose avec la communautÃ© Atomic You</p>
         </div>
 
         <div class="form-card">
@@ -194,7 +162,7 @@
                 </div>
 
                 <div class="field">
-                    <label for="{{ form.categorie.vars.id }}">Catégorie</label>
+                    <label for="{{ form.categorie.vars.id }}">CatÃ©gorie</label>
                     {{ form_widget(form.categorie) }}
                     {{ form_errors(form.categorie) }}
                 </div>
@@ -210,7 +178,7 @@
                     <label for="{{ form.isAnonymous.vars.id }}">Poster anonymement</label>
                 </div>
 
-                <button type="submit" class="btn-submit">🚀 Publier le post</button>
+                <button type="submit" class="btn-submit">ðŸš€ Publier le post</button>
 
             {{ form_end(form) }}
         </div>
@@ -219,3 +187,4 @@
 
 </body>
 </html>
+

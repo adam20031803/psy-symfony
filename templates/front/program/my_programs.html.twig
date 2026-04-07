@@ -1,0 +1,398 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}Mes Programmes — Fitness{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .my-prog-header {
+        background: linear-gradient(135deg, rgba(34,211,165,0.08), rgba(59,130,246,0.06));
+        border: 1px solid rgba(34,211,165,0.12);
+        border-radius: 20px;
+        padding: 32px 36px;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .my-prog-header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .my-prog-header h1 .hd-icon {
+        width: 46px; height: 46px;
+        background: linear-gradient(135deg, #22d3a5, #3b82f6);
+        border-radius: 13px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem;
+        box-shadow: 0 4px 16px rgba(34,211,165,0.3);
+    }
+    .my-prog-header p { color: #64748b; font-size: 0.88rem; margin: 4px 0 0; }
+
+    /* Summary pills */
+    .my-prog-summary { display: flex; gap: 10px; flex-wrap: wrap; }
+    .sum-pill {
+        display: flex; align-items: center; gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        border: 1px solid;
+    }
+    .sum-pill.pending  { background: rgba(245,158,11,0.08); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+    .sum-pill.accepted { background: rgba(34,211,165,0.08); color: #22d3a5; border-color: rgba(34,211,165,0.25); }
+    .sum-pill.declined { background: rgba(100,116,139,0.08); color: #64748b; border-color: rgba(100,116,139,0.2); }
+
+    /* Section heading */
+    .section-heading {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #475569;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-heading::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+    }
+
+    /* Program assignment card */
+    .pa-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 14px;
+    }
+    .pa-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .pa-card.pending  { border-color: rgba(245,158,11,0.2); }
+    .pa-card.accepted { border-color: rgba(34,211,165,0.2); }
+    .pa-card.declined { border-color: rgba(100,116,139,0.12); }
+
+    .pa-card-inner {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 20px 22px;
+    }
+
+    .pa-icon {
+        width: 52px; height: 52px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .pa-icon.pending  { background: rgba(245,158,11,0.12); }
+    .pa-icon.accepted { background: rgba(34,211,165,0.12); }
+    .pa-icon.declined { background: rgba(100,116,139,0.08); }
+
+    .pa-info { flex: 1; min-width: 0; }
+    .pa-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #fff !important;
+        margin: 0 0 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pa-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .pa-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        color: #64748b !important;
+    }
+    .pa-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        border: 1px solid;
+    }
+    .pa-status-badge.pending  { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.3); }
+    .pa-status-badge.accepted { background: rgba(34,211,165,0.1); color: #22d3a5; border-color: rgba(34,211,165,0.3); }
+    .pa-status-badge.declined { background: rgba(100,116,139,0.1); color: #64748b; border-color: rgba(100,116,139,0.2); }
+
+    .pa-goal { font-size: 0.8rem; color: #475569 !important; margin-bottom: 8px; }
+
+    .level-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        padding: 2px 8px; border-radius: 6px;
+        font-size: 0.72rem; font-weight: 700;
+        border: 1px solid;
+    }
+    .lb-deb { background: rgba(34,211,165,0.1); color: #22d3a5; border-color: rgba(34,211,165,0.2); }
+    .lb-int { background: rgba(245,158,11,0.1); color: #f59e0b; border-color: rgba(245,158,11,0.2); }
+    .lb-adv { background: rgba(255,77,109,0.1); color: #ff4d6d; border-color: rgba(255,77,109,0.2); }
+
+    /* Action buttons */
+    .pa-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-accept {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 18px;
+        background: linear-gradient(135deg, #22d3a5, #3b82f6);
+        color: #fff !important;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(34,211,165,0.25);
+        text-decoration: none;
+    }
+    .btn-accept:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-decline {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 16px;
+        background: rgba(255,77,109,0.08);
+        color: #ff4d6d !important;
+        border: 1px solid rgba(255,77,109,0.25);
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-decline:hover { background: rgba(255,77,109,0.15); }
+    .btn-view-prog {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 16px;
+        background: rgba(59,130,246,0.1);
+        color: #60a5fa !important;
+        border: 1px solid rgba(59,130,246,0.2);
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-view-prog:hover { background: rgba(59,130,246,0.18); }
+    .btn-re-accept {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 9px 16px;
+        background: rgba(34,211,165,0.07);
+        color: #22d3a5 !important;
+        border: 1px solid rgba(34,211,165,0.2);
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-re-accept:hover { background: rgba(34,211,165,0.14); }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 64px 20px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+    }
+    .empty-state .empty-icon { font-size: 4rem; margin-bottom: 16px; display: block; }
+    .empty-state h3 { font-size: 1.1rem; font-weight: 700; color: #e2e8f0 !important; margin-bottom: 8px; }
+    .empty-state p { color: #475569 !important; font-size: 0.88rem; }
+</style>
+{% endblock %}
+
+{% block fitness_content %}
+<div class="container py-4">
+
+    {# ── Header ── #}
+    <div class="my-prog-header">
+        <div>
+            <h1>
+                <span class="hd-icon">💪</span>
+                Mes Programmes
+            </h1>
+            <p>Programmes fitness assignés par votre coach</p>
+        </div>
+        <div class="my-prog-summary">
+            {% set countPending  = assignments|filter(a => a.isPending())|length %}
+            {% set countAccepted = assignments|filter(a => a.isAccepted())|length %}
+            {% set countDeclined = assignments|filter(a => a.isDeclined())|length %}
+            {% if countPending > 0 %}
+                <div class="sum-pill pending"><i class="bi bi-hourglass-split"></i> {{ countPending }} en attente</div>
+            {% endif %}
+            {% if countAccepted > 0 %}
+                <div class="sum-pill accepted"><i class="bi bi-check-circle-fill"></i> {{ countAccepted }} accepté{{ countAccepted > 1 ? 's' : '' }}</div>
+            {% endif %}
+            {% if countDeclined > 0 %}
+                <div class="sum-pill declined"><i class="bi bi-x-circle"></i> {{ countDeclined }} décliné{{ countDeclined > 1 ? 's' : '' }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if assignments is empty %}
+        <div class="empty-state">
+            <span class="empty-icon">📭</span>
+            <h3>Aucun programme assigné</h3>
+            <p>Votre coach n'a pas encore assigné de programme fitness. Revenez bientôt !</p>
+            <a href="{{ path('front_program_list') }}" class="btn-view-prog mt-3" style="display:inline-flex;">
+                <i class="bi bi-grid-3x3-gap"></i> Parcourir les programmes
+            </a>
+        </div>
+    {% else %}
+
+        {# ── Pending ── #}
+        {% set pendingList = assignments|filter(a => a.isPending()) %}
+        {% if pendingList|length > 0 %}
+            <div class="section-heading">
+                <i class="bi bi-hourglass-split" style="color:#f59e0b;"></i>
+                En attente de votre réponse ({{ pendingList|length }})
+            </div>
+            {% for assignment in pendingList %}
+                <div class="pa-card pending">
+                    <div class="pa-card-inner">
+                        <div class="pa-icon pending">🏋️</div>
+                        <div class="pa-info">
+                            <div class="pa-title">{{ assignment.program.title }}</div>
+                            <div class="pa-meta">
+                                {% if assignment.program.level == 'Débutant' %}
+                                    <span class="level-badge lb-deb"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% elseif assignment.program.level == 'Intermédiaire' %}
+                                    <span class="level-badge lb-int"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% else %}
+                                    <span class="level-badge lb-adv"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% endif %}
+                                <span class="pa-meta-item"><i class="bi bi-calendar3"></i>{{ assignment.program.durationWeeks }} semaines</span>
+                                <span class="pa-meta-item"><i class="bi bi-activity"></i>{{ assignment.program.exercises|length }} exercices</span>
+                                <span class="pa-meta-item"><i class="bi bi-clock"></i>Reçu le {{ assignment.sentAt|date('d/m/Y') }}</span>
+                            </div>
+                            <div class="pa-goal">🎯 {{ assignment.program.goal }}</div>
+                            <span class="pa-status-badge pending"><i class="bi bi-hourglass-split"></i> En attente</span>
+                        </div>
+                        <div class="pa-actions">
+                            <form method="post" action="{{ path('front_program_accept', {id: assignment.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('assignment_' ~ assignment.id) }}">
+                                <button type="submit" class="btn-accept">
+                                    <i class="bi bi-check-lg"></i> Accepter
+                                </button>
+                            </form>
+                            <form method="post" action="{{ path('front_program_decline', {id: assignment.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('assignment_' ~ assignment.id) }}">
+                                <button type="submit" class="btn-decline">
+                                    <i class="bi bi-x"></i> Décliner
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {# ── Accepted ── #}
+        {% set acceptedList = assignments|filter(a => a.isAccepted()) %}
+        {% if acceptedList|length > 0 %}
+            <div class="section-heading mt-4">
+                <i class="bi bi-check-circle-fill" style="color:#22d3a5;"></i>
+                Programmes acceptés ({{ acceptedList|length }})
+            </div>
+            {% for assignment in acceptedList %}
+                <div class="pa-card accepted">
+                    <div class="pa-card-inner">
+                        <div class="pa-icon accepted">✅</div>
+                        <div class="pa-info">
+                            <div class="pa-title">{{ assignment.program.title }}</div>
+                            <div class="pa-meta">
+                                {% if assignment.program.level == 'Débutant' %}
+                                    <span class="level-badge lb-deb"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% elseif assignment.program.level == 'Intermédiaire' %}
+                                    <span class="level-badge lb-int"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% else %}
+                                    <span class="level-badge lb-adv"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% endif %}
+                                <span class="pa-meta-item"><i class="bi bi-calendar3"></i>{{ assignment.program.durationWeeks }} semaines</span>
+                                <span class="pa-meta-item"><i class="bi bi-activity"></i>{{ assignment.program.exercises|length }} exercices</span>
+                                {% if assignment.respondedAt %}
+                                    <span class="pa-meta-item"><i class="bi bi-check2"></i>Accepté le {{ assignment.respondedAt|date('d/m/Y') }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="pa-goal">🎯 {{ assignment.program.goal }}</div>
+                            <span class="pa-status-badge accepted"><i class="bi bi-check-circle-fill"></i> Accepté</span>
+                        </div>
+                        <div class="pa-actions">
+                            {% if assignment.program.isPublished %}
+                                <a href="{{ path('front_program_show', {id: assignment.program.id}) }}" class="btn-view-prog">
+                                    <i class="bi bi-play-circle-fill"></i> Voir le programme
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {# ── Declined ── #}
+        {% set declinedList = assignments|filter(a => a.isDeclined()) %}
+        {% if declinedList|length > 0 %}
+            <div class="section-heading mt-4">
+                <i class="bi bi-x-circle" style="color:#64748b;"></i>
+                Programmes déclinés ({{ declinedList|length }})
+            </div>
+            {% for assignment in declinedList %}
+                <div class="pa-card declined">
+                    <div class="pa-card-inner">
+                        <div class="pa-icon declined" style="opacity:0.6;">❌</div>
+                        <div class="pa-info" style="opacity:0.75;">
+                            <div class="pa-title">{{ assignment.program.title }}</div>
+                            <div class="pa-meta">
+                                {% if assignment.program.level == 'Débutant' %}
+                                    <span class="level-badge lb-deb"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% elseif assignment.program.level == 'Intermédiaire' %}
+                                    <span class="level-badge lb-int"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% else %}
+                                    <span class="level-badge lb-adv"><i class="bi bi-bar-chart"></i>{{ assignment.program.level }}</span>
+                                {% endif %}
+                                <span class="pa-meta-item"><i class="bi bi-calendar3"></i>{{ assignment.program.durationWeeks }} semaines</span>
+                                <span class="pa-meta-item"><i class="bi bi-activity"></i>{{ assignment.program.exercises|length }} exercices</span>
+                                {% if assignment.respondedAt %}
+                                    <span class="pa-meta-item"><i class="bi bi-calendar-x"></i>Décliné le {{ assignment.respondedAt|date('d/m/Y') }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="pa-status-badge declined"><i class="bi bi-x-circle"></i> Décliné</span>
+                        </div>
+                        <div class="pa-actions">
+                            <form method="post" action="{{ path('front_program_accept', {id: assignment.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('assignment_' ~ assignment.id) }}">
+                                <button type="submit" class="btn-re-accept">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Reconsidérer
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

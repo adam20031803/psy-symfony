@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Créer un compte — PsyApp{% endblock %}
+{% block skip_auth_layout %}true{% endblock %}
+{% block title %}Créer un compte — Atomic You{% endblock %}
 
 {% block stylesheets %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -298,11 +298,11 @@
 <div class="card">
     <div class="logo">
         <div class="logo-icon">🧠</div>
-        <div class="logo-text">Psy<span>App</span></div>
+        <div class="logo-text">Atomic<span>You</span></div>
     </div>
 
     <h1>Créer un compte</h1>
-    <p class="subtitle">Rejoignez PsyApp et prenez soin de votre bien-être</p>
+    <p class="subtitle">Rejoignez Atomic You et prenez soin de votre bien-être</p>
 
     {% if error %}
         <div class="alert-error">⚠️ {{ error }}</div>

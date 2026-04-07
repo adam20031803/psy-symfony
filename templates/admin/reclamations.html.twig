@@ -1,0 +1,185 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Réclamations — Atomic You Admin{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .badge-ouvert   { background: rgba(245,158,11,.15);  color: var(--warning); }
+    .badge-en_cours { background: rgba(0,210,255,.12);   color: #00d2ff; }
+    .badge-resolu   { background: rgba(34,211,165,.12);  color: var(--success); }
+    .badge-ferme    { background: rgba(100,116,139,.12); color: var(--muted); }
+
+    .statut-select {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        cursor: pointer;
+        outline: none;
+    }
+    .user-cell { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.8rem;
+        flex-shrink: 0;
+        color: #fff;
+    }
+    .user-name { font-weight: 500; color: var(--text); }
+    .user-email { font-size: 0.75rem; color: var(--muted); }
+    
+    .desc-cell {
+        max-width: 280px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--muted);
+        font-size: 0.8rem;
+    }
+    .search-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 14px;
+        color: var(--text);
+        font-size: 0.83rem;
+        font-family: inherit;
+        width: 200px;
+        outline: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <div>
+            <h1>Gestion des Réclamations</h1>
+            <p>Espace de traitement des plaintes et retours utilisateurs</p>
+        </div>
+        <span class="admin-badge">📬 {{ stats.total }} TOTAL</span>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon orange">📬</div>
+            <div>
+                <div class="stat-label">Total réclamations</div>
+                <div class="stat-value">{{ stats.total }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon pink">⏳</div>
+            <div>
+                <div class="stat-label">En attente / Ouvert</div>
+                <div class="stat-value">{{ stats.ouvert }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div>
+                <div class="stat-label">Résolues</div>
+                <div class="stat-value">{{ stats.resolu }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon blue">📊</div>
+            <div>
+                <div class="stat-label">Taux résolution</div>
+                <div class="stat-value">{{ stats.total > 0 ? (stats.resolu / stats.total * 100)|round : 0 }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Liste des réclamations</h2>
+            <input class="search-box" type="text" id="searchRec" placeholder="🔍 Rechercher…" onkeyup="filterRec()">
+        </div>
+        <table id="recTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Utilisateur</th>
+                    <th>Sujet</th>
+                    <th>Description</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for rec in reclamations %}
+                <tr>
+                    <td style="color:var(--muted)">{{ rec.id }}</td>
+
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar">
+                                {{ rec.user.prenom|slice(0,1)|upper }}{{ rec.user.nom|slice(0,1)|upper }}
+                            </div>
+                            <div>
+                                <div class="user-name">{{ rec.user.prenom }} {{ rec.user.nom }}</div>
+                                <div class="user-email">{{ rec.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td style="font-weight:500;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                        {{ rec.sujet }}
+                    </td>
+
+                    <td class="desc-cell">{{ rec.description }}</td>
+
+                    <td>
+                        <form method="post" action="{{ path('app_admin_reclamation_statut', {id: rec.id}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('statut_rec'~rec.id) }}">
+                            <select name="statut" class="statut-select" onchange="this.form.submit()">
+                                <option value="ouvert"   {% if rec.statut == 'ouvert'   %}selected{% endif %}>⏳ Ouvert</option>
+                                <option value="en_cours" {% if rec.statut == 'en_cours' %}selected{% endif %}>🔄 En cours</option>
+                                <option value="resolu"   {% if rec.statut == 'resolu'   %}selected{% endif %}>✅ Résolu</option>
+                                <option value="ferme"    {% if rec.statut == 'ferme'    %}selected{% endif %}>🔒 Fermé</option>
+                            </select>
+                        </form>
+                    </td>
+
+                    <td style="color:var(--muted)">{{ rec.createdAt|date('d/m/Y') }}</td>
+
+                    <td>
+                        <div class="actions">
+                            <form method="post" action="{{ path('app_admin_reclamation_delete', {id: rec.id}) }}"
+                                  onsubmit="return confirm('Supprimer cette réclamation ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_rec'~rec.id) }}">
+                                <button class="btn btn-danger" type="submit" style="padding: 5px 10px;">🗑️ Supprimer</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align:center;color:var(--muted);padding:40px">
+                        Aucune réclamation trouvée.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function filterRec() {
+    const q = document.getElementById('searchRec').value.toLowerCase();
+    document.querySelectorAll('#recTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

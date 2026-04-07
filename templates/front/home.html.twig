@@ -1,0 +1,74 @@
+{% extends 'front/base.html.twig' %}
+
+{% block title %}FitLife — Atteignez vos objectifs fitness{% endblock %}
+{% block meta_description %}Découvrez notre catalogue d'exercices et programmes fitness adaptés à tous les niveaux.{% endblock %}
+
+{% block fitness_content %}
+<div class="page-header" style="text-align: center; margin: 40px 0;">
+    <div style="display:inline-block; padding: 6px 14px; background: rgba(59,130,246,0.1); color: #3b82f6; border-radius: 50px; font-size: 0.8rem; font-weight: 700; margin-bottom: 20px;">
+        🏆 Votre partenaire fitness #1
+    </div>
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px;">
+        Atteignez vos objectifs 
+        <span style="color: #60a5fa;">fitness</span>
+    </h1>
+    <p style="color: #94a3b8; max-width: 600px; margin: 0 auto; font-size: 1.1rem; line-height: 1.6;">
+        Des exercices guidés et des programmes structurés pour tous les niveaux.
+    </p>
+    
+    <div style="margin-top: 32px; display: flex; gap: 16px; justify-content: center;">
+        <a href="{{ path('front_program_list') }}" class="btn btn-primary" style="padding: 12px 24px;">Voir les programmes</a>
+        <a href="{{ path('front_exercise_list') }}" class="btn btn-outline-primary" style="padding: 12px 24px;">Explorer les exercices</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-5 justify-content-center">
+    <div class="col-6 col-md-3">
+        <div class="fit-card text-center p-4">
+            <h3 style="color:#60a5fa; font-weight: 800;">{{ latestExercises|length }}+</h3>
+            <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Exercices</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="fit-card text-center p-4">
+            <h3 style="color:#a78bfa; font-weight: 800;">100%</h3>
+            <div style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase;">Gratuit</div>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title mb-4">Exercices récents</h2>
+<div class="row g-4">
+    {% for ex in latestExercises %}
+        <div class="col-md-6 col-lg-4">
+            <a href="{{ path('front_exercise_show', {id: ex.id}) }}" style="text-decoration: none;">
+                <div class="fit-card h-100">
+                    {% if ex.imageUrl %}
+                        <img src="{{ ex.imageUrl }}" alt="{{ ex.name }}" class="card-img-top">
+                    {% else %}
+                        <div class="img-placeholder" style="height: 200px;">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge" style="background: rgba(59,130,246,0.15); color: #60a5fa;">{{ ex.category }}</span>
+                            <span class="badge" style="background: rgba(34,211,165,0.15); color: #22d3a5;">{{ ex.difficulty }}</span>
+                        </div>
+                        <h5 style="color: #fff; font-weight: 600; margin-bottom: 8px;">{{ ex.name }}</h5>
+                        <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px;">
+                            {{ ex.description|length > 80 ? ex.description|slice(0,80) ~ '…' : ex.description }}
+                        </p>
+                        <div style="display: flex; gap: 16px; font-size: 0.8rem; color: #64748b;">
+                            <span><i class="bi bi-clock"></i> {{ ex.duration }} min</span>
+                            <span><i class="bi bi-fire"></i> {{ ex.calories }} kcal</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% else %}
+        <div class="col-12 text-center py-5" style="color: #64748b;">Aucun exercice disponible.</div>
+    {% endfor %}
+</div>
+{% endblock %}
