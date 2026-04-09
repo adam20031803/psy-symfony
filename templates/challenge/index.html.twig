@@ -479,6 +479,11 @@
       <div style="margin-top:40px;padding-top:25px;border-top:1px solid rgba(255,255,255,0.05);text-align:right;">
         <button class="btn btn-blue-purple" onclick="closeModal('modalDetails')" style="border-radius:10px;padding:12px 35px;">Compris ! 🚀</button>
       </div>
+
+      <div id="detailsMapContainer" style="margin-top:25px; display:none;">
+        <h4 style="color:#a8c0ff;text-transform:uppercase;font-size:12px;letter-spacing:1px;margin-bottom:10px;opacity:0.8;">🌍 Localisation (Google Maps)</h4>
+        <iframe id="detailsMapIframe" width="100%" height="200" style="border:1px solid rgba(255,255,255,0.1); border-radius:12px;" loading="lazy" allowfullscreen src=""></iframe>
+      </div>
     </div>
   </div>
 </div>
@@ -585,6 +590,7 @@
                data-media-url="{{ challenge.mediaUrl }}"
                data-media-type="{{ challenge.mediaType }}"
                data-cat-nom="{{ challenge.categorie ? challenge.categorie.nom : '--' }}"
+               data-adresse="{{ challenge.adresse|e('html_attr') }}"
                data-add-coach-url="{{ path('app_challenge_add_coach', {id: challenge.id}) }}"
                data-add-rec-url="{{ path('app_challenge_add_recompense', {id: challenge.id}) }}">
 
@@ -624,6 +630,7 @@
               {% if challenge.dateDebut %}<span>📅 <strong style="color:#a8c0ff;">{{ challenge.dateDebut|date('d/m/Y') }}</strong></span>{% endif %}
               {% if challenge.dateFin %}<span>⏳ <strong style="color:#ffd89b;">{{ challenge.dateFin|date('d/m/Y') }}</strong></span>{% endif %}
               {% if challenge.categorie %}<span>📂 <strong style="color:#c788f5;">{{ challenge.categorie.nom }}</strong></span>{% endif %}
+              {% if challenge.adresse %}<span>📍 <a href="https://maps.google.com/?q={{ challenge.adresse|url_encode }}" target="_blank" style="color:#00d2ff;text-decoration:none;"><strong style="color:#00d2ff;text-decoration:underline;">{{ challenge.adresse }}</strong></a></span>{% endif %}
             </div>
 
             <div class="d-flex gap-10" style="flex-wrap:wrap;">
@@ -673,6 +680,14 @@
           <div class="d-flex flex-column gap-5">
             <label class="cf-label">DESCRIPTION *</label>
             <textarea name="description" id="descField" class="form-control" rows="3" placeholder="Décrivez les objectifs..." required></textarea>
+          </div>
+
+          <div class="d-flex flex-column gap-5">
+            <label class="cf-label">🌍 LIEU / ADRESSE (GOOGLE MAPS)</label>
+            <div class="d-flex gap-10">
+              <input type="text" name="adresse" id="adresseField" class="form-control flex-grow-1" placeholder="Ex: Central Park, New York" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'white\'><path d=\'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z\'/></svg>'); background-size: 16px; background-repeat: no-repeat; background-position: 10px center; padding-left: 35px;">
+              <a id="testMapLink" href="https://maps.google.com/" target="_blank" class="btn btn-blue" style="border-radius:10px; display:none;" title="Tester l'adresse sur Google Maps">Google Maps 📍</a>
+            </div>
           </div>
 
           <div class="cf-grid-2">
@@ -785,10 +800,21 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ---- Challenge row click → fill form ---- */
   document.querySelectorAll('.challenge-row').forEach(row => {
     row.addEventListener('click', e => {
-      if (e.target.closest('button')) return;
+      if (e.target.closest('button') || e.target.closest('a')) return;
       idField.value = row.dataset.id;
       document.getElementById('titreField').value    = row.dataset.titre;
       document.getElementById('descField').value     = row.dataset.desc;
+      const adrField = document.getElementById('adresseField');
+      adrField.value = row.dataset.adresse || '';
+      
+      const testMapLink = document.getElementById('testMapLink');
+      if (row.dataset.adresse) {
+        testMapLink.href = 'https://maps.google.com/?q=' + encodeURIComponent(row.dataset.adresse);
+        testMapLink.style.display = 'inline-flex';
+      } else {
+        testMapLink.style.display = 'none';
+      }
+      
       document.getElementById('dateDebutField').value= row.dataset.dateDebut;
       document.getElementById('dateFinField').value  = row.dataset.dateFin;
       document.getElementById('statutField').value   = row.dataset.statut;
@@ -831,6 +857,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         container.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1c2c,#4a192c);"><span style="font-size:120px;opacity:0.2;">🏆</span></div>`;
+      }
+
+      // Map injection
+      const mapContainer = document.getElementById('detailsMapContainer');
+      const mapIframe = document.getElementById('detailsMapIframe');
+      const adresse = row.dataset.adresse;
+      if (adresse && adresse.trim() !== '') {
+        mapContainer.style.display = 'block';
+        mapIframe.src = "https://maps.google.com/maps?q=" + encodeURIComponent(adresse) + "&t=&z=13&ie=UTF8&iwloc=&output=embed";
+      } else {
+        mapContainer.style.display = 'none';
+        mapIframe.src = "";
       }
 
       document.getElementById('modalDetails').style.display = 'flex';

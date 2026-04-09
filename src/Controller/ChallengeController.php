@@ -113,6 +113,7 @@ class ChallengeController extends AbstractController
         $challenge = new Challenge();
         $challenge->setTitre($request->request->get('titre', ''));
         $challenge->setDescription($request->request->get('description', ''));
+        $challenge->setAdresse($request->request->get('adresse', ''));
 
         // Handling Media Upload
         $mediaFile = $request->files->get('media');
@@ -187,6 +188,7 @@ class ChallengeController extends AbstractController
     {
         $challenge->setTitre($request->request->get('titre', $challenge->getTitre()));
         $challenge->setDescription($request->request->get('description', $challenge->getDescription()));
+        $challenge->setAdresse($request->request->get('adresse', $challenge->getAdresse()));
 
         // Media Upload
         $mediaFile = $request->files->get('media');

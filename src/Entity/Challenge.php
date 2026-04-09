@@ -83,6 +83,9 @@ class Challenge
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $mediaUrl = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adresse = null;
+
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $mediaType = null; // image | video
 
@@ -134,6 +137,9 @@ class Challenge
 
     public function getMediaType(): ?string { return $this->mediaType; }
     public function setMediaType(?string $mediaType): static { $this->mediaType = $mediaType; return $this; }
+
+    public function getAdresse(): ?string { return $this->adresse; }
+    public function setAdresse(?string $adresse): static { $this->adresse = $adresse; return $this; }
 
     public function getChats(): Collection { return $this->chats; }
     public function getCoaches(): Collection { return $this->coaches; }
