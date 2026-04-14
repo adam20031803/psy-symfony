@@ -188,35 +188,99 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_reclamations');
     }
-    #[Route('/motivation', name: 'app_admin_motivation')]
-    public function motivationDashboard(
-        ChallengeRepository $challengeRepo,
-        UserRepository $userRepo,
-        RecompenseRepository $recompenseRepo,
-        EntityManagerInterface $em
-    ): Response {
-        $challenges  = $challengeRepo->findAll();
-        $coaches     = $userRepo->findBy(['role' => 'coach']);
-        $recompenses = $recompenseRepo->findAll();
+   #[Route('/motivation', name: 'app_admin_motivation')]
+public function motivationDashboard(
+    ChallengeRepository $challengeRepo,
+    UserRepository $userRepo,
+    RecompenseRepository $recompenseRepo,
+    EntityManagerInterface $em
+): Response {
+    $challenges  = $challengeRepo->findAll();
+    $coaches     = $userRepo->findBy(['role' => 'coach']);
+    $recompenses = $recompenseRepo->findAll();
 
-        $stats = [
-            'ch_total'    => count($challenges),
-            'ch_active'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'actif')),
-            'ch_done'     => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'termine')),
-            'co_total'    => count($coaches),
-            'co_active'   => count(array_filter($coaches, fn(User $u) => $u->isActive())),
-            'rec_total'   => count($recompenses),
-            'rec_points'  => array_reduce($recompenses, fn($carry, Recompense $r) => $carry + $r->getPoints(), 0),
-            'rec_ouvert'  => $em->getRepository(\App\Entity\Reclamation::class)->count(['statut' => 'ouvert']),
-        ];
+    // ── Stats de base ──
+    $stats = [
+        'ch_total'    => count($challenges),
+        'ch_active'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'actif')),
+        'ch_done'     => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'termine')),
+        'ch_annule'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'annule')),
+        'co_total'    => count($coaches),
+        'co_active'   => count(array_filter($coaches, fn(User $u) => $u->isActive())),
+        'rec_total'   => count($recompenses),
+        'rec_points'  => array_reduce($recompenses, fn($carry, Recompense $r) => $carry + $r->getPoints(), 0),
+        'rec_ouvert'  => $em->getRepository(\App\Entity\Reclamation::class)->count(['statut' => 'ouvert']),
+    ];
 
-        return $this->render('admin/motivation.html.twig', [
-            'stats'       => $stats,
-            'challenges'  => $challenges,
-            'coaches'     => $coaches,
-            'recompenses' => $recompenses,
-        ]);
+    // ── Chart 1 : Challenges par statut (Doughnut) ──
+    $chartStatuts = [
+        'labels' => ['Actifs', 'Terminés', 'Annulés'],
+        'data'   => [$stats['ch_active'], $stats['ch_done'], $stats['ch_annule']],
+        'colors' => ['#6c63ff', '#22d3a5', '#ef4444'],
+    ];
+
+    // ── Chart 2 : Challenges par catégorie (Bar) ──
+    $catData = [];
+    foreach ($challenges as $c) {
+        $cat = $c->getCategorie()?->getNom() ?? 'Sans catégorie';
+        $catData[$cat] = ($catData[$cat] ?? 0) + 1;
     }
+    arsort($catData);
+    $catData = array_slice($catData, 0, 8, true);
+    $chartCategories = [
+        'labels' => array_keys($catData),
+        'data'   => array_values($catData),
+    ];
+
+    // ── Chart 3 : Challenges créés par mois (Line, 6 derniers mois) ──
+    $monthData = [];
+    for ($i = 5; $i >= 0; $i--) {
+        $month = (new \DateTime("first day of -$i months"))->format('Y-m');
+        $monthData[$month] = 0;
+    }
+    foreach ($challenges as $c) {
+        $m = $c->getCreatedAt()->format('Y-m');
+        if (isset($monthData[$m])) {
+            $monthData[$m]++;
+        }
+    }
+    $chartTimeline = [
+        'labels' => array_map(fn($k) => (new \DateTime($k . '-01'))->format('M Y'), array_keys($monthData)),
+        'data'   => array_values($monthData),
+    ];
+
+    // ── Chart 4 : Récompenses par points (Horizontal Bar) ──
+    $sortedRecs = $recompenses;
+    usort($sortedRecs, fn($a, $b) => $b->getPoints() - $a->getPoints());
+    $topRecs = array_slice($sortedRecs, 0, 6);
+    $chartRecompenses = [
+        'labels' => array_map(fn($r) => mb_substr($r->getNom(), 0, 20), $topRecs),
+        'data'   => array_map(fn($r) => $r->getPoints(), $topRecs),
+    ];
+
+    // ── Chart 5 : Coaches actifs vs inactifs (Polar Area) ──
+    $chartCoaches = [
+        'labels' => ['Actifs', 'Inactifs'],
+        'data'   => [$stats['co_active'], $stats['co_total'] - $stats['co_active']],
+        'colors' => ['rgba(108,99,255,0.8)', 'rgba(239,68,68,0.6)'],
+    ];
+
+    return $this->render('admin/motivation.html.twig', [
+        'stats'              => $stats,
+        'challenges'         => $challenges,
+        'coaches'            => $coaches,
+        'recompenses'        => $recompenses,
+        'chartStatuts'       => $chartStatuts,
+        'chartCategories'    => $chartCategories,
+        'chartTimeline'      => $chartTimeline,
+        'chartRecompenses'   => $chartRecompenses,
+        'chartCoaches'       => $chartCoaches,
+    ]);
+}
+
+
+// Ce fichier est un guide — copiez la méthode ci-dessus dans AdminController.php
+// en remplacement de la méthode motivationDashboard() existante.
 
     #[Route('/posts', name: 'app_admin_posts')]
     public function postsDashboard(

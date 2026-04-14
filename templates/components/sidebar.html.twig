@@ -23,6 +23,14 @@
             <span class="sidebar-badge">PRO</span>
         </a>
 
+        <a href="{{ path('app_my_rewards') }}" class="sidebar-link {{ app.request.attributes.get('_route') == 'app_my_rewards' ? 'active' : '' }}">
+            <div class="sidebar-icon si-yellow">🎁</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Mes Récompenses</span>
+                <span class="sidebar-link-sub">Prix débloqués</span>
+            </div>
+        </a>
+
         <a href="{{ path('app_habitude_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_habitude_' ? 'active' : '' }}">
             <div class="sidebar-icon si-green">🔄</div>
             <div class="sidebar-link-text">
@@ -70,6 +78,17 @@
                 <span class="sidebar-link-sub">Programmes assignés</span>
             </div>
         </a>
+
+
+         <a href="{{ path('app_ai_messenger') }}"
+       class="sidebar-link {{ app.request.get('_route') starts with 'app_ai_messenger' ? 'active' : '' }}">
+        <div class="sidebar-icon si-purple">🧠</div>
+        <div class="sidebar-link-text">
+            <span class="sidebar-link-title">ARIA — Coach IA</span>
+            <span class="sidebar-link-sub">Messenger intelligent</span>
+        </div>
+    </a>
+    
     </div>
 
     <div class="sidebar-divider"></div>

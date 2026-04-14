@@ -313,9 +313,16 @@
         .form-control{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:9px 13px;color:#fff;font-size:.84rem;outline:none;font-family:inherit;}
         .form-control:focus{border-color:rgba(108,99,255,.5);}
         .flex-grow-1{flex:1;}
-    </style>
+           </style>
 {% endblock %}
+
 {% block body_class %}bg-challenge{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/chat_bubble.js') }}"></script>
+{% endblock %}
+
 {% block body %}
 
 <div class="challenge-page">
@@ -497,8 +504,14 @@
       <p class="challenge-page-sub">Gérez vos défis et votre communauté fitness</p>
     </div>
     <div class="d-flex gap-10">
+      <a href="{{ path('app_challenge_dashboard') }}" class="ch-btn" style="background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(0,210,255,.2));color:#00d2ff;border:1px solid rgba(0,210,255,.3);">📊 Dashboard</a>
+      <a href="{{ path('app_challenge_calendar') }}" class="ch-btn" style="background:rgba(236,72,153,.15);color:#f9a8d4;border:1px solid rgba(236,72,153,.3);">📅 Calendrier</a>
+      
+      {% if is_granted('ROLE_ADMIN') %}
+      <a href="{{ path('app_admin_participations') }}" class="ch-btn ch-btn-primary">📋 Demandes de Participation ({{ userParticipations|length }})</a>
       <a href="{{ path('app_coach_index') }}" class="ch-btn ch-btn-purple">👨‍🏫 Coachs</a>
       <a href="{{ path('app_recompense_index') }}" class="ch-btn ch-btn-pink">🎁 Prix</a>
+      {% endif %}
       <a href="{{ path('app_challenge_export_pdf') }}" target="_blank" class="ch-btn ch-btn-pdf">📄 PDF</a>
     </div>
   </div>
@@ -640,23 +653,53 @@
               <button class="btn btn-pink btn-small btn-recs-popup" onclick="event.stopPropagation()">
                 🎁 {{ challenge.recompenses|length }} Prix
               </button>
+              
+              {% if is_granted('ROLE_ADMIN') %}
               <button class="btn btn-blue-purple btn-small btn-add-coach" onclick="event.stopPropagation()">
                 ➕ Coach
               </button>
               <button class="btn btn-small btn-add-rec" style="background:linear-gradient(to right,#f7971e,#ffd200);" onclick="event.stopPropagation()">
                 ➕ Prix
               </button>
+              <a href="{{ path('app_challenge_tasks', {id: challenge.id}) }}"
+                 class="btn btn-small"
+                 style="background:linear-gradient(135deg,#6c63ff,#00d2ff);color:white;border-radius:8px;"
+                 onclick="event.stopPropagation()">
+                🤖 Tâches IA
+              </a>
+              {% else %}
+                  {% set p_status = userParticipations[challenge.id] ?? null %}
+                  {% if p_status == 'pending' %}
+                      <span class="btn btn-small btn-grey" style="cursor:not-allowed;" title="En attente de validation par un admin">⏳ En attente d'approbation</span>
+                  {% elseif p_status == 'approved' or p_status == 'completed' %}
+                      <a href="{{ path('app_challenge_tasks', {id: challenge.id}) }}" class="btn btn-small btn-blue-purple" onclick="event.stopPropagation()">🎯 Accéder aux Tâches</a>
+                  {% elseif p_status == 'rejected' %}
+                      <span class="btn btn-small btn-orange-red" style="cursor:not-allowed;">🚫 Participation refusée</span>
+                  {% else %}
+                      <form method="POST" action="{{ path('app_challenge_participate', {id: challenge.id}) }}" style="margin:0;" onclick="event.stopPropagation()">
+                          <button type="submit" class="btn btn-small" style="background:linear-gradient(135deg, #10b981, #34d399); color:white; border-radius:8px; border:none;">🙋‍♂️ Participer</button>
+                      </form>
+                  {% endif %}
+              {% endif %}
             </div>
+            
+            {% if is_granted('ROLE_ADMIN') %}
             <div style="padding:15px; border-top:1px solid rgba(255,255,255,0.05); text-align:center; color:rgba(255,255,255,0.3); font-size:0.8rem; margin-top:15px;">
                 👆 Cliquez pour modifier • Double-clic pour aperçu
             </div>
+            {% else %}
+            <div style="padding:15px; border-top:1px solid rgba(255,255,255,0.05); text-align:center; color:rgba(255,255,255,0.3); font-size:0.8rem; margin-top:15px;">
+                👆 Double-clic pour aperçu du challenge
+            </div>
+            {% endif %}
           </div>
           {% endfor %}
         {% endif %}
       </div>
     </div>
 
-    {# RIGHT COL: FORM #}
+    {# RIGHT COL: FORM (ADMIN ONLY) #}
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="d-flex flex-column gap-20">
       <div class="ch-form-panel card-glass" style="padding:25px; top:20px; position:sticky;">
         <div class="d-flex align-center gap-12" style="margin-bottom:20px;">
@@ -665,6 +708,7 @@
         </div>
 
         <form id="challengeForm" method="POST" action="{{ path('app_challenge_new') }}" class="d-flex flex-column gap-12" enctype="multipart/form-data">
+          <!-- Form content truncated for brevity since it remains the same -->
           <input type="hidden" name="id" id="challengeId" value="">
 
           <div class="d-flex flex-column gap-5">
@@ -746,12 +790,14 @@
         </p>
       </div>
     </div>
+    {% endif %}
   </div>
 
 
 
 
 <footer class="main-footer text-white" style="text-align:center; padding: 20px; opacity:0.5; font-size: 0.8rem;">© 2024 Atomic You — Challenge Manager Pro</footer>
+</div>
 
 {# ============================================================ STYLES MODAUX #}
 <style>
@@ -835,6 +881,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('detailsDesc').textContent  = row.dataset.desc;
       document.getElementById('detailsDates').textContent = row.dataset.dateDebut + " au " + row.dataset.dateFin;
       document.getElementById('detailsCat').textContent   = row.dataset.catNom;
+
+      
       
       // Statut badge style
       const st = row.dataset.statut;
@@ -872,6 +920,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       document.getElementById('modalDetails').style.display = 'flex';
+
+
+       const isAdminUser = {{ app.user is not null and (app.user.role == 'admin' or app.user.role == 'coach') ? 'true' : 'false' }};
+  window.openChallengeChat(
+    row.dataset.id,
+    row.dataset.titre,
+    isAdminUser,
+    row.dataset.catNom
+  );
     });
 
     /* ---- Bouton COACHES POPUP ---- */

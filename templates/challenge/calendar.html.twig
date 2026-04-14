@@ -1,0 +1,420 @@
+{% extends 'base.html.twig' %}
+{% block title %}Calendrier des Challenges — Atomic You{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {# FullCalendar CSS (via CDN) #}
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════
+           CALENDAR PAGE — DARK GLASSMORPHISM
+        ═══════════════════════════════════════ */
+        .calendar-page {
+            padding: 32px 36px 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ── Page header ── */
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .cal-title {
+            font-size: 1.7rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #fff 0%, #00d2ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+        .cal-subtitle { color: rgba(255,255,255,0.4); font-size: 0.82rem; margin-top: 3px; }
+
+        /* ── Stats strip ── */
+        .cal-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .cal-stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 14px 20px;
+            flex: 1;
+            min-width: 130px;
+            transition: border-color .2s;
+        }
+        .cal-stat:hover { border-color: rgba(108,99,255,.3); }
+        .cal-stat-icon {
+            width: 40px; height: 40px;
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0;
+        }
+        .cs-purple { background: rgba(108,99,255,.15); }
+        .cs-green  { background: rgba(34,211,165,.12); }
+        .cs-blue   { background: rgba(0,210,255,.12); }
+        .cs-red    { background: rgba(239,68,68,.12); }
+        .cal-stat-val { font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1; }
+        .cal-stat-lab { font-size: 0.65rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+
+        /* ── Legend ── */
+        .cal-legend {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,.6);
+        }
+        .legend-dot {
+            width: 12px; height: 12px;
+            border-radius: 4px;
+        }
+
+        /* ── Calendar wrapper ── */
+        .cal-wrapper {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 24px 60px rgba(0,0,0,.4);
+        }
+
+        /* ── FullCalendar overrides ── */
+        .fc {
+            --fc-border-color:            rgba(255,255,255,0.07);
+            --fc-button-bg-color:         rgba(108,99,255,0.2);
+            --fc-button-border-color:     rgba(108,99,255,0.3);
+            --fc-button-hover-bg-color:   rgba(108,99,255,0.35);
+            --fc-button-hover-border-color: rgba(108,99,255,0.5);
+            --fc-button-active-bg-color:  rgba(108,99,255,0.55);
+            --fc-today-bg-color:          rgba(108,99,255,0.07);
+            --fc-page-bg-color:           transparent;
+            --fc-neutral-bg-color:        rgba(255,255,255,0.03);
+            --fc-list-event-hover-bg-color: rgba(255,255,255,0.05);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* toolbar */
+        .fc .fc-toolbar-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .fc .fc-button {
+            color: #a78bfa !important;
+            font-weight: 700 !important;
+            font-size: 0.78rem !important;
+            border-radius: 10px !important;
+            padding: 7px 14px !important;
+            text-transform: uppercase !important;
+            letter-spacing: .04em !important;
+            border: 1px solid rgba(108,99,255,0.3) !important;
+            background: rgba(108,99,255,0.12) !important;
+            transition: all .2s !important;
+        }
+        .fc .fc-button:hover {
+            background: rgba(108,99,255,0.28) !important;
+            border-color: rgba(108,99,255,0.5) !important;
+        }
+        .fc .fc-button-active, .fc .fc-button:focus {
+            background: rgba(108,99,255,0.4) !important;
+            box-shadow: 0 0 0 2px rgba(108,99,255,0.3) !important;
+        }
+
+        /* grid headers */
+        .fc .fc-col-header-cell-cushion {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: 10px 0;
+            text-decoration: none;
+        }
+        .fc .fc-daygrid-day-number {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 6px 8px;
+        }
+        .fc .fc-day-today .fc-daygrid-day-number {
+            color: #fff;
+        }
+        .fc .fc-day-today {
+            background: rgba(108,99,255,0.08) !important;
+        }
+
+        /* events */
+        .fc-event {
+            border-radius: 8px !important;
+            border: none !important;
+            padding: 3px 7px !important;
+            font-size: 0.73rem !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+            transition: transform .15s, box-shadow .15s !important;
+        }
+        .fc-event:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+        }
+        .fc-event-title { font-weight: 700 !important; }
+
+        /* more link */
+        .fc .fc-daygrid-more-link {
+            color: #a78bfa;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* list view */
+        .fc .fc-list-event-title a {
+            color: #e2e8f0 !important;
+            text-decoration: none !important;
+            font-weight: 600;
+        }
+        .fc .fc-list-day-cushion {
+            background: rgba(108,99,255,0.12) !important;
+        }
+        .fc .fc-list-day-text, .fc .fc-list-day-side-text {
+            color: #a78bfa !important;
+            font-weight: 700;
+        }
+        .fc .fc-list-empty {
+            background: transparent;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* ── Tooltip popup ── */
+        #calTooltip {
+            position: fixed;
+            z-index: 99999;
+            pointer-events: none;
+            transition: opacity .2s;
+        }
+        .cal-tooltip-box {
+            background: #181b30;
+            border: 1px solid rgba(108,99,255,0.35);
+            border-radius: 16px;
+            padding: 18px 20px;
+            width: 260px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.7);
+        }
+        .ctt-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .ctt-dot {
+            width: 10px; height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .ctt-title { font-size: 0.88rem; font-weight: 800; color: #fff; line-height: 1.3; }
+        .ctt-row { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; font-size: 0.73rem; color: rgba(255,255,255,.6); }
+        .ctt-row strong { color: rgba(255,255,255,.85); }
+        .ctt-desc { font-size: 0.7rem; color: rgba(255,255,255,.45); line-height: 1.5; margin-top: 10px; border-top: 1px solid rgba(255,255,255,.06); padding-top: 10px; }
+
+        /* ── Back button ── */
+        .cal-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 12px;
+            background: rgba(108,99,255,.15);
+            color: #a78bfa;
+            border: 1px solid rgba(108,99,255,.3);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+            transition: all .2s;
+        }
+        .cal-back:hover { background: rgba(108,99,255,.28); transform: translateY(-1px); }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="calendar-page">
+
+    {# ── Header ── #}
+    <div class="cal-header">
+        <div>
+            <h1 class="cal-title">📅 Calendrier des Challenges</h1>
+            <p class="cal-subtitle">Vue temporelle de tous vos défis</p>
+        </div>
+        <a href="{{ path('app_challenge_index') }}" class="cal-back">← Retour aux Challenges</a>
+    </div>
+
+    {# ── Stats ── #}
+    <div class="cal-stats">
+        <div class="cal-stat">
+            <div class="cal-stat-icon cs-purple">📊</div>
+            <div><div class="cal-stat-val">{{ stats.total }}</div><div class="cal-stat-lab">Total</div></div>
+        </div>
+        <div class="cal-stat">
+            <div class="cal-stat-icon cs-green">🔥</div>
+            <div><div class="cal-stat-val">{{ stats.actifs }}</div><div class="cal-stat-lab">Actifs</div></div>
+        </div>
+        <div class="cal-stat">
+            <div class="cal-stat-icon cs-blue">✅</div>
+            <div><div class="cal-stat-val">{{ stats.termine }}</div><div class="cal-stat-lab">Terminés</div></div>
+        </div>
+        <div class="cal-stat">
+            <div class="cal-stat-icon cs-red">❌</div>
+            <div><div class="cal-stat-val">{{ stats.annule }}</div><div class="cal-stat-lab">Annulés</div></div>
+        </div>
+    </div>
+
+    {# ── Legend ── #}
+    <div class="cal-legend">
+        <span style="font-size:0.72rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-right:4px;">Légende :</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#6c63ff;"></div>Actif</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3a5;"></div>Terminé</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>Annulé</div>
+    </div>
+
+    {# ── Calendar container ── #}
+    <div class="cal-wrapper">
+        <div id="fullCalendar"></div>
+    </div>
+
+</div>
+
+{# ── Tooltip DOM ── #}
+<div id="calTooltip" style="display:none;">
+    <div class="cal-tooltip-box">
+        <div class="ctt-header">
+            <div class="ctt-dot" id="cttDot"></div>
+            <div class="ctt-title" id="cttTitle"></div>
+        </div>
+        <div class="ctt-row">📂 <strong id="cttCat"></strong></div>
+        <div class="ctt-row">📅 <strong id="cttDates"></strong></div>
+        <div class="ctt-row">👨‍🏫 <strong id="cttCoaches"></strong> coach(s) · 🎁 <strong id="cttRecs"></strong> récompense(s)</div>
+        <div class="ctt-desc" id="cttDesc"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{# FullCalendar JS — v6 ESM from CDN #}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const tooltip = document.getElementById('calTooltip');
+
+    const calendar = new FullCalendar.Calendar(document.getElementById('fullCalendar'), {
+
+        // ── Config ──
+        locale: 'fr',
+        initialView: 'dayGridMonth',
+        height: 'auto',
+        firstDay: 1, // Lundi
+        headerToolbar: {
+            left:   'prev,next today',
+            center: 'title',
+            right:  'dayGridMonth,timeGridWeek,listMonth'
+        },
+        buttonText: {
+            today:   "Aujourd'hui",
+            month:   'Mois',
+            week:    'Semaine',
+            list:    'Liste',
+        },
+        dayMaxEvents: 3,
+
+        // ── Source des events depuis CalendarBundle ──
+        events: {
+    url: '{{ path('fc_load_events') }}',
+    method: 'GET',
+    failure: function(error) {
+        console.error('Error loading events:', error);
+    }
+},
+
+        // ── Tooltip au survol ──
+        eventMouseEnter: function(info) {
+            const ev    = info.event;
+            const props = ev.extendedProps;
+            const color = ev.backgroundColor;
+
+            document.getElementById('cttDot').style.background   = color;
+            document.getElementById('cttTitle').textContent       = ev.title;
+            document.getElementById('cttCat').textContent         = props.categorie || '—';
+            document.getElementById('cttCoaches').textContent     = props.coaches ?? 0;
+            document.getElementById('cttRecs').textContent        = props.recompenses ?? 0;
+            document.getElementById('cttDesc').textContent        = props.description || '';
+
+            const start = ev.start ? ev.start.toLocaleDateString('fr-FR') : '';
+            const end   = ev.end   ? ev.end.toLocaleDateString('fr-FR')   : start;
+            document.getElementById('cttDates').textContent = start + (end !== start ? ' → ' + end : '');
+
+            tooltip.style.display = 'block';
+        },
+        eventMouseLeave: function() {
+            tooltip.style.display = 'none';
+        },
+        eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        },
+
+        // ── Rendu custom de l'event ──
+        eventContent: function(arg) {
+            const statut = arg.event.extendedProps.statut || 'actif';
+            const icon   = { actif: '🔥', termine: '✅', annule: '❌' }[statut] ?? '📋';
+            return {
+                html: `<div style="display:flex;align-items:center;gap:4px;padding:2px 6px;overflow:hidden;">
+                    <span>${icon}</span>
+                    <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.72rem;font-weight:700;">
+                        ${arg.event.title.replace(/^[^\s]+\s/, '')}
+                    </span>
+                </div>`
+            };
+        },
+    });
+
+    calendar.render();
+
+    // ── Tooltip suit la souris ──
+    document.addEventListener('mousemove', function(e) {
+        const pad = 14;
+        const tw  = 270;
+        const th  = 160;
+        let x = e.clientX + pad;
+        let y = e.clientY + pad;
+        if (x + tw > window.innerWidth)  x = e.clientX - tw - pad;
+        if (y + th > window.innerHeight) y = e.clientY - th - pad;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top  = y + 'px';
+    });
+});
+</script>
+{% endblock %}
