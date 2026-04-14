@@ -1,0 +1,210 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tâches IA — {{ challenge.titre }}{% endblock %}
+
+{% block body %}
+<div style="max-width:860px;margin:0 auto;padding:28px 24px;">
+
+  {# Flash messages #}
+  {% for type, msgs in app.flashes %}
+    <div style="padding:12px 20px;border-radius:10px;margin-bottom:16px;font-weight:600;color:white;
+      background:{% if type=='success' %}rgba(46,204,113,.9){% else %}rgba(231,76,60,.9){% endif %}">
+      {% for m in msgs %}{{ m }}{% endfor %}
+    </div>
+  {% endfor %}
+
+  {# Header #}
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;flex-wrap:wrap;">
+    <a href="{{ path('app_challenge_index') }}"
+       style="padding:8px 16px;border-radius:10px;background:rgba(108,99,255,.15);color:#a78bfa;
+              border:1px solid rgba(108,99,255,.3);text-decoration:none;font-size:13px;font-weight:600;">
+      ← Retour
+    </a>
+    <div style="flex:1;">
+      <h1 style="margin:0;font-size:1.4rem;font-weight:800;color:white;">
+        🤖 Tâches IA — {{ challenge.titre }}
+      </h1>
+      <p style="margin:4px 0 0;font-size:13px;color:rgba(255,255,255,.5);">
+        Catégorie : {{ challenge.categorie ? challenge.categorie.nom : '—' }} ·
+        {{ tasks|length }} tâche(s) générée(s)
+      </p>
+    </div>
+
+    {# Regenerate button #}
+    {% if is_granted('ROLE_ADMIN') %}
+    <form method="POST" action="{{ path('app_challenge_generate_tasks', {id: challenge.id}) }}">
+      <button type="submit"
+              style="padding:9px 20px;border-radius:10px;background:linear-gradient(135deg,#6c63ff,#00d2ff);
+                     color:white;border:none;font-weight:700;font-size:13px;cursor:pointer;"
+              onclick="return confirm('Regénérer les tâches ? Les tâches actuelles seront remplacées.')">
+        🔄 Regénérer les tâches
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  {# Stats row #}
+  {% set totalPts = 0 %}
+  {% set donePts  = 0 %}
+  {% set doneCount = 0 %}
+  {% for t in tasks %}
+    {% set totalPts = totalPts + t.points %}
+    {% if t.id in userDoneTaskIds %}
+      {% set donePts = donePts + t.points %}
+      {% set doneCount = doneCount + 1 %}
+    {% endif %}
+  {% endfor %}
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;">
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;">
+      <div style="font-size:28px;font-weight:800;color:white;">{{ tasks|length }}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Total tâches</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;">
+      <div style="font-size:28px;font-weight:800;color:#4ade80;" id="stat-done">{{ doneCount }}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Terminées</div>
+    </div>
+    <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 20px;">
+      <div style="font-size:28px;font-weight:800;color:#fcd34d;" id="stat-pts">{{ donePts }}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;">Points gagnés / {{ totalPts }}</div>
+    </div>
+  </div>
+
+  {# No tasks yet #}
+  {% if tasks is empty %}
+  <div style="text-align:center;padding:60px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:18px;">
+    <div style="font-size:56px;margin-bottom:16px;">🤖</div>
+    <h3 style="color:white;margin:0 0 10px;">Aucune tâche générée</h3>
+    <p style="color:rgba(255,255,255,.5);margin:0 0 24px;font-size:14px;">
+      L'IA n'a pas encore créé de plan pour ce challenge.
+    </p>
+    {% if is_granted('ROLE_ADMIN') %}
+    <form method="POST" action="{{ path('app_challenge_generate_tasks', {id: challenge.id}) }}">
+      <button type="submit"
+              style="padding:12px 28px;border-radius:12px;background:linear-gradient(135deg,#6c63ff,#00d2ff);
+                     color:white;border:none;font-weight:700;font-size:15px;cursor:pointer;">
+        🚀 Générer les tâches maintenant
+      </button>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+
+  {# Task cards #}
+  <div id="task-list" style="display:flex;flex-direction:column;gap:12px;">
+    {% for task in tasks %}
+      {% set isDone = (task.id in userDoneTaskIds) %}
+      {% set diffColor = task.difficulty <= 2 ? '#4ade80' : (task.difficulty == 3 or task.difficulty == 4 ? '#fcd34d' : '#f87171') %}
+      {% set diffLabel = task.difficulty <= 2 ? 'Facile' : (task.difficulty == 3 or task.difficulty == 4 ? 'Intermédiaire' : 'Difficile') %}
+
+      <div class="task-card" id="card-{{ task.id }}"
+           style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+                  border-radius:16px;padding:20px 22px;transition:border-color .2s;
+                  {% if isDone %}opacity:.6;{% endif %}">
+
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:12px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+              <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+                           background:rgba(108,99,255,.15);color:#a78bfa;border:1px solid rgba(108,99,255,.25);">
+                🤖 IA
+              </span>
+              <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+                           background:rgba(255,255,255,.06);color:{{ diffColor }};
+                           border:1px solid {{ diffColor }}40;">
+                {{ diffLabel }}
+              </span>
+              <span style="font-size:11px;color:rgba(255,255,255,.4);">
+                {{ task.estimatedMinutes }} min · {{ task.points }} pts
+              </span>
+            </div>
+            <h3 style="margin:0;font-size:16px;font-weight:700;color:white;">
+              {{ task.sortOrder + 1 }}. {{ task.title }}
+            </h3>
+          </div>
+
+          {# Checkbox #}
+          <button class="toggle-btn"
+                  data-task-id="{{ task.id }}"
+                  data-pts="{{ task.points }}"
+                  onclick="toggleTask(this)"
+                  style="width:32px;height:32px;border-radius:50%;flex-shrink:0;cursor:pointer;
+                         transition:all .2s;border:2px solid rgba(255,255,255,.25);
+                         background:{% if isDone %}#6c63ff{% else %}transparent{% endif %};
+                         color:white;font-size:14px;display:flex;align-items:center;justify-content:center;">
+            {% if isDone %}✓{% endif %}
+          </button>
+        </div>
+
+        <p style="color:rgba(255,255,255,.7);font-size:14px;margin:0 0 12px;line-height:1.6;">
+          {{ task.description }}
+        </p>
+
+        {% if task.whyRecommended %}
+        <div style="border-left:3px solid rgba(108,99,255,.5);padding:8px 12px;
+                    background:rgba(108,99,255,.07);border-radius:0 8px 8px 0;margin-bottom:12px;">
+          <p style="margin:0;font-size:12px;color:rgba(255,255,255,.6);font-style:italic;">
+            💡 {{ task.whyRecommended }}
+          </p>
+        </div>
+        {% endif %}
+
+        {% if task.completionCriteria %}
+        <p style="font-size:12px;color:rgba(255,255,255,.45);margin:0 0 14px;">
+          ✅ Critère : {{ task.completionCriteria }}
+        </p>
+        {% endif %}
+
+        {# Progress bar #}
+        <div style="height:5px;background:rgba(255,255,255,.08);border-radius:3px;">
+          <div class="progress-bar" id="bar-{{ task.id }}"
+               style="height:5px;border-radius:3px;background:linear-gradient(90deg,#6c63ff,#00d2ff);
+                      width:{{ isDone ? 100 : 0 }}%;transition:width .6s ease;">
+          </div>
+        </div>
+        <p style="font-size:11px;color:rgba(255,255,255,.3);margin:5px 0 0;" id="pct-{{ task.id }}">
+          {{ isDone ? '100' : '0' }}%
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const toggleUrl = '{{ path("app_challenge_task_toggle", {id: 0}) }}';
+let totalDone = {{ doneCount }};
+let totalPts  = {{ donePts }};
+
+function toggleTask(btn) {
+    const taskId = btn.dataset.taskId;
+    const pts    = parseInt(btn.dataset.pts);
+    const url    = toggleUrl.replace('/0/', '/' + taskId + '/');
+
+    fetch(url, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            const card = document.getElementById('card-' + taskId);
+            const bar  = document.getElementById('bar-' + taskId);
+            const pct  = document.getElementById('pct-' + taskId);
+
+            card.style.opacity  = data.done ? '0.6' : '1';
+            bar.style.width     = data.progressPct + '%';
+            pct.textContent     = data.progressPct + '%';
+            btn.innerHTML       = data.done ? '✓' : '';
+            btn.style.background = data.done ? '#6c63ff' : 'transparent';
+
+            if (data.done) { totalDone++; totalPts += pts; }
+            else           { totalDone--; totalPts -= pts; }
+
+            document.getElementById('stat-done').textContent = totalDone;
+            document.getElementById('stat-pts').textContent  = totalPts;
+
+            if (data.unlockedRewards) {
+                alert('🎉 Félicitations ! Vous avez complété toutes les tâches et débloqué vos récompenses !');
+                window.location.href = '/my-rewards';
+            }
+        })
+        .catch(() => alert('Erreur réseau, réessayez.'));
+}
+</script>
+{% endblock %}

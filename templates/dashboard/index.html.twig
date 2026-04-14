@@ -164,54 +164,53 @@
         </div>
     </div>
 
-    <!-- Fitness Section -->
-    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <div class="section-title" style="margin-bottom: 0;">💪 Mon Fitness</div>
-        <a href="#" style="font-size: 0.75rem; color: var(--accent); text-decoration: none; font-weight: 600;">En développement →</a>
+    <!-- 🤖 AICO: Sessions Collaborative IA -->
+    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; margin-top: 36px;">
+        <div class="section-title" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+            <span style="background: linear-gradient(90deg, #6C63FF, #00D2FF); padding: 4px 8px; border-radius: 6px; color: white; font-size: 0.65rem; font-weight: 800;">IA</span> 
+            AICO: IA Collaborative Orchestrator
+        </div>
+        <span style="font-size: 0.7rem; color: var(--muted); font-weight: 500;">Analyse en temps réel ✨</span>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 36px;">
-        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-            <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 8px;">
-                <span style="color: var(--accent);">🏋️</span> Derniers entraînements
-            </h4>
-            {% if recentWorkouts is empty %}
-                <p style="font-size: 0.75rem; color: var(--muted);">Aucun entraînement récent.</p>
-            {% else %}
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    {% for p in recentWorkouts %}
-                        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-size: 0.8rem; font-weight: 500;">{{ p.workout.nom }}</div>
-                                <div style="font-size: 0.65rem; color: var(--muted);">{{ p.date|date('d/m/Y') }}</div>
-                            </div>
-                            <span style="font-size: 0.7rem; background: rgba(34,211,165,.1); color: var(--success); padding: 2px 8px; border-radius: 4px;">{{ p.dureeReelle|default(p.workout.duree) }} min</span>
+    <div class="aico-container" style="background: linear-gradient(135deg, rgba(108,99,255,0.05), rgba(0,210,255,0.05)); border: 1px solid rgba(108,99,255,0.15); border-radius: var(--radius); padding: 24px; margin-bottom: 36px; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -20px; right: -20px; font-size: 8rem; opacity: 0.03; filter: blur(2px);">🤖</div>
+        
+        {% if aiMeetings is empty %}
+            <div style="text-align: center; padding: 20px;">
+                <p style="font-size: 0.85rem; color: var(--muted); font-style: italic;">"L'IA orchestre actuellement vos prochains pas... Aucune session collaborative requise pour l'instant."</p>
+            </div>
+        {% else %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                {% for meeting in aiMeetings %}
+                    <div style="background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); border: 1px solid rgba(108,99,255,0.2); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; transition: transform 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <span style="font-size: 0.65rem; font-weight: 700; background: rgba(108,99,255,0.1); color: var(--accent); padding: 4px 10px; border-radius: 999px; text-transform: uppercase;">
+                                {{ meeting.type }}
+                            </span>
+                            <span style="font-size: 0.6rem; color: var(--muted);">Déclenché {{ meeting.createdAt|date('H:i') }}</span>
                         </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+                        
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text);">{{ meeting.challenge.titre }}</div>
+                            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 4px; line-height: 1.4;">
+                                <strong style="color: var(--accent2);">IA :</strong> {{ meeting.triggerReason }}
+                            </div>
+                        </div>
 
-        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
-            <h4 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 8px;">
-                <span style="color: var(--warning);">📅</span> Sessions planifiées
-            </h4>
-            {% if plannedWorkouts is empty %}
-                <p style="font-size: 0.75rem; color: var(--muted);">Aucune session planifiée.</p>
-            {% else %}
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    {% for w in plannedWorkouts %}
-                        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-size: 0.8rem; font-weight: 500;">{{ w.workout.nom }}</div>
-                                <div style="font-size: 0.65rem; color: var(--muted);">{{ w.datePlanifie|date('d/m/Y') }}</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+                            <div style="display: flex; -webkit-mask-image: linear-gradient(to right, black 80%, transparent); mask-image: linear-gradient(to right, black 80%, transparent);">
+                                <div style="width: 24px; height: 24px; border-radius: 50%; background: #ddd; border: 2px solid var(--card); overflow: hidden; font-size: 0.6rem; display: flex; align-items: center; justify-content: center;">👤</div>
+                                <div style="width: 24px; height: 24px; border-radius: 50%; background: #ccc; border: 2px solid var(--card); margin-left: -8px; overflow: hidden; font-size: 0.6rem; display: flex; align-items: center; justify-content: center;">👤</div>
                             </div>
-                            <span style="font-size: 0.7rem; background: rgba(245,158,11,.1); color: var(--warning); padding: 2px 8px; border-radius: 4px;">À venir</span>
+                            <a href="{{ meeting.meetingUrl }}" target="_blank" style="background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(108,99,255,0.2);">
+                                Rejoindre le Live
+                            </a>
                         </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
 
     <!-- Challenges Section -->

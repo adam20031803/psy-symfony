@@ -25,7 +25,9 @@ class DashboardController extends AbstractController
         PostLikeRepository $postLikeRepo,
         HabitudeRepository $habitudeRepo,
         WorkoutProgressRepository $workoutProgressRepo,
-        WorkoutPlanRepository $workoutPlanRepo
+        WorkoutPlanRepository $workoutPlanRepo,
+        \App\Repository\SmartMeetingRepository $meetingRepo,
+        \App\Service\SmartMeetingTriggerService $triggerService
     ): Response {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -41,13 +43,25 @@ class DashboardController extends AbstractController
         $recentPosts = $postRepo->findBy([], ['createdAt' => 'DESC'], 3);
 
         // 2 challenges actifs
-        $activeChallenges = $challengeRepo->findBy(['statut' => 'actif'], ['dateDebut' => 'DESC'], 2);
+        $activeChallenges = $challengeRepo->findBy(['statut' => 'actif'], ['dateDebut' => 'DESC'], 3);
+
+        // AI ORCHESTRATOR: Évaluation en temps réel des besoins de meetings pour les challenges actifs
+        foreach ($activeChallenges as $challenge) {
+            $triggerService->checkAndTrigger($challenge);
+        }
+
+        // Récupérer les meetings suggérés par l'IA (AICO)
+        $aiMeetings = [];
+        foreach ($activeChallenges as $challenge) {
+            $meetings = $meetingRepo->findBy(['challenge' => $challenge, 'status' => 'SCHEDULED']);
+            $aiMeetings = array_merge($aiMeetings, $meetings);
+        }
 
         // Statistiques utilisateur
         $userStats = [
             'posts_count' => $postRepo->count(['user' => $user]),
             'likes_received' => $postLikeRepo->countTotalLikesOnUserPosts($user),
-            'challenges_count' => count($activeChallenges), // On pourrait faire mieux avec une relation de participation
+            'challenges_count' => count($activeChallenges),
         ];
 
         // Habitude data
@@ -71,6 +85,7 @@ class DashboardController extends AbstractController
             'reclamations'     => $reclamations,
             'recentPosts'      => $recentPosts,
             'activeChallenges' => $activeChallenges,
+            'aiMeetings'       => $aiMeetings, // Transmis à la vue
             'userStats'        => $userStats,
             'habitudeStats'    => $habitudeStats,
             'habitsToday'      => $habitsToday,

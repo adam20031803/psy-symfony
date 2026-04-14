@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+{% block title %}Demandes de Participation{% endblock %}
+
+{% block body_class %}bg-challenge{% endblock %}
+
+{% block body %}
+<div style="max-width:960px;margin:0 auto;padding:28px 24px;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">
+    <div>
+      <a href="{{ path('app_challenge_index') }}" class="btn btn-grey btn-small" style="margin-bottom:10px;">← Retour aux Challenges</a>
+      <h1 class="text-glow m-0" style="color:white;font-size:1.8rem;">📋 Demandes de Participation</h1>
+      <p style="color:rgba(255,255,255,0.5);margin-top:5px;">Gérez les inscriptions des utilisateurs aux défis</p>
+    </div>
+  </div>
+
+  {% for type, msgs in app.flashes %}
+    <div style="padding:14px 20px;border-radius:10px;margin-bottom:20px;font-weight:600;color:white;
+      background:{% if type=='success' %}rgba(46,204,113,.9){% else %}rgba(231,76,60,.9){% endif %}">
+      {% for m in msgs %}{{ m }}{% endfor %}
+    </div>
+  {% endfor %}
+
+  <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:20px;">
+    {% if participations is empty %}
+      <div style="text-align:center;padding:40px;">
+        <span style="font-size:40px;">📭</span>
+        <p style="color:rgba(255,255,255,0.6);margin-top:10px;">Aucune demande de participation pour le moment.</p>
+      </div>
+    {% else %}
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);text-align:left;">
+            <th style="padding:12px;color:rgba(255,255,255,0.5);font-size:13px;text-transform:uppercase;">Date</th>
+            <th style="padding:12px;color:rgba(255,255,255,0.5);font-size:13px;text-transform:uppercase;">Utilisateur</th>
+            <th style="padding:12px;color:rgba(255,255,255,0.5);font-size:13px;text-transform:uppercase;">Challenge</th>
+            <th style="padding:12px;color:rgba(255,255,255,0.5);font-size:13px;text-transform:uppercase;">Statut</th>
+            <th style="padding:12px;color:rgba(255,255,255,0.5);font-size:13px;text-transform:uppercase;text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in participations %}
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:16px 12px;color:white;font-size:14px;">{{ p.createdAt|date('d/m/Y H:i') }}</td>
+              <td style="padding:16px 12px;">
+                <div style="font-weight:bold;color:white;">{{ p.user.nom }} {{ p.user.prenom }}</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.4);">{{ p.user.email }}</div>
+              </td>
+              <td style="padding:16px 12px;color:#c788f5;font-weight:bold;font-size:14px;">
+                {{ p.challenge.titre }}
+              </td>
+              <td style="padding:16px 12px;">
+                {% if p.statut == 'pending' %}
+                  <span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;background:rgba(245,158,11,0.15);color:#fcd34d;">En attente</span>
+                {% elseif p.statut == 'approved' %}
+                  <span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;background:rgba(52,211,153,0.15);color:#6ee7b7;">Approuvé</span>
+                {% elseif p.statut == 'completed' %}
+                  <span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;background:rgba(96,165,250,0.15);color:#93c5fd;">Complété</span>
+                {% else %}
+                  <span style="padding:4px 10px;border-radius:20px;font-size:11px;font-weight:bold;background:rgba(248,113,113,0.15);color:#fca5a5;">Refusé</span>
+                {% endif %}
+              </td>
+              <td style="padding:16px 12px;text-align:right;">
+                {% if p.statut == 'pending' %}
+                  <div style="display:flex;gap:8px;justify-content:flex-end;">
+                    <form method="POST" action="{{ path('app_admin_participations_status', {id: p.id}) }}" style="margin:0;">
+                      <input type="hidden" name="status" value="approved">
+                      <button type="submit" class="btn btn-small" style="background:#10b981;color:white;">Approuver</button>
+                    </form>
+                    <form method="POST" action="{{ path('app_admin_participations_status', {id: p.id}) }}" style="margin:0;">
+                      <input type="hidden" name="status" value="rejected">
+                      <button type="submit" class="btn btn-small" style="background:#ef4444;color:white;">Refuser</button>
+                    </form>
+                  </div>
+                {% else %}
+                  <span style="color:rgba(255,255,255,0.3);font-size:12px;">Aucune action</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
