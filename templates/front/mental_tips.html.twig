@@ -1,0 +1,99 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Mental Tips — Atomic You{% endblock %}
+
+{% block body %}
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <div class="glass-card p-4">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+                <div>
+                    <h1 class="h4 fw-bold mb-1">Mental Tips</h1>
+                    <p class="muted mb-0">Conseils associés à une humeur (ajout / modification / suppression).</p>
+                </div>
+                <a class="btn btn-sm btn-outline-light" href="{{ path('app_mental_entry_index') }}">
+                    Aller aux entries <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <form method="get" action="{{ path('app_mental_tip_index') }}" class="row g-2 mb-3">
+                <div class="col-12 col-md-6">
+                    <input type="text" id="search" name="q" value="{{ filter.q|default('') }}" class="form-control" placeholder="Recherche (mood / tip)">
+                </div>
+                <input type="hidden" name="sort" value="{{ filter.sort|default('mood') }}">
+                <input type="hidden" name="dir" value="{{ filter.dir|default('ASC') }}">
+                <div class="col-6 col-md-3">
+                    <button type="submit" class="btn btn-brand w-100">Rechercher</button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <a href="{{ path('app_mental_tip_index') }}" class="btn btn-secondary w-100">Réinitialiser</a>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th style="width: 160px;">
+                            <a class="text-decoration-none text-white" href="{{ path('app_mental_tip_index', { q: filter.q|default(''), sort: 'mood', dir: (filter.sort|default('mood') == 'mood' and filter.dir|default('ASC') == 'ASC') ? 'DESC' : 'ASC' }) }}">
+                                Mood {% if filter.sort|default('mood') == 'mood' %}{{ filter.dir|default('ASC') == 'ASC' ? '↑' : '↓' }}{% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a class="text-decoration-none text-white" href="{{ path('app_mental_tip_index', { q: filter.q|default(''), sort: 'tip', dir: (filter.sort|default('mood') == 'tip' and filter.dir|default('ASC') == 'ASC') ? 'DESC' : 'ASC' }) }}">
+                                Conseil {% if filter.sort|default('mood') == 'tip' %}{{ filter.dir|default('ASC') == 'ASC' ? '↑' : '↓' }}{% endif %}
+                            </a>
+                        </th>
+                        <th style="width: 90px;"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="all">
+                    {% for t in tips %}
+                        <tr>
+                            <td class="fw-bold">{{ t.mood.moodName }}</td>
+                            <td>{{ t.tipText|length > 120 ? t.tipText|slice(0, 117) ~ '…' : t.tipText }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-light" href="{{ path('app_mental_tip_edit', { id: t.id }) }}">Modifier</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center muted py-4">Aucun conseil pour le moment.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="glass-card p-4">
+            <h2 class="h5 fw-bold mb-1">{% if editing %}Modifier le tip{% else %}Nouveau tip{% endif %}</h2>
+            <p class="muted mb-3">Choisis un mood et écris un conseil.</p>
+
+            {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+                {% include 'form/bootstrap_field.html.twig' with { field: form.mood } %}
+                {% include 'form/bootstrap_field.html.twig' with { field: form.tipText } %}
+                {{ form_rest(form) }}
+
+                <button type="submit" class="btn btn-brand w-100">
+                    {% if editing %}Enregistrer les modifications{% else %}Ajouter le tip{% endif %}
+                </button>
+            {{ form_end(form, { render_rest: false }) }}
+
+            <div class="d-flex gap-2 mt-3">
+                {% if editing %}
+                    <form method="post" action="{{ path('app_mental_tip_delete', { id: edit_id }) }}" class="m-0 flex-fill" onsubmit="return confirm('Supprimer ce conseil ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ edit_id) }}">
+                        <button type="submit" class="btn btn-danger w-100 fw-bold">Supprimer</button>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn btn-danger w-100 fw-bold flex-fill" disabled>Supprimer</button>
+                {% endif %}
+                <a href="{{ path('app_mental_tip_index') }}" class="btn btn-secondary w-100 fw-bold flex-fill">Réinitialiser</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

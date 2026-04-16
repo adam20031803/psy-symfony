@@ -8,11 +8,15 @@ use App\Repository\ReclamationRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Challenge;
+use App\Entity\MentalEntry;
 use App\Entity\Recompense;
 use App\Entity\Post;
 use App\Entity\Commentaire;
 use App\Entity\Habitude;
 use App\Repository\ChallengeRepository;
+use App\Repository\MentalEntryRepository;
+use App\Repository\MentalTipRepository;
+use App\Repository\MoodRepository;
 use App\Repository\RecompenseRepository;
 use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
@@ -188,8 +192,45 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('app_admin_reclamations');
     }
-   #[Route('/motivation', name: 'app_admin_motivation')]
-public function motivationDashboard(
+
+    #[Route('/sante-mentale', name: 'app_admin_sante_mentale')]
+    public function santeMentale(
+        MoodRepository $moodRepository,
+        MentalTipRepository $mentalTipRepository,
+        MentalEntryRepository $mentalEntryRepository,
+    ): Response {
+        $entries = $mentalEntryRepository->findForDashboard();
+        $tips = $mentalTipRepository->findForDashboard();
+
+        $stats = [
+            'moods' => $moodRepository->count([]),
+            'tips' => $mentalTipRepository->count([]),
+            'entries' => count($entries),
+            'high_stress' => count(array_filter($entries, static fn (MentalEntry $e): bool => ($e->getEmotionLevel() ?? 0) >= 8)),
+        ];
+
+        $entriesByMood = [];
+        foreach ($entries as $entry) {
+            $name = $entry->getMood()?->getMoodName() ?? '—';
+            $entriesByMood[$name] = ($entriesByMood[$name] ?? 0) + 1;
+        }
+
+        $tipsByMood = [];
+        foreach ($tips as $tip) {
+            $name = $tip->getMood()?->getMoodName() ?? '—';
+            $tipsByMood[$name] = ($tipsByMood[$name] ?? 0) + 1;
+        }
+
+        return $this->render('admin/sante_mentale.html.twig', [
+            'entries' => $entries,
+            'stats' => $stats,
+            'entries_by_mood' => $entriesByMood,
+            'tips_by_mood' => $tipsByMood,
+        ]);
+    }
+
+    #[Route('/motivation', name: 'app_admin_motivation')]
+    public function motivationDashboard(
     ChallengeRepository $challengeRepo,
     UserRepository $userRepo,
     RecompenseRepository $recompenseRepo,
@@ -276,11 +317,7 @@ public function motivationDashboard(
         'chartRecompenses'   => $chartRecompenses,
         'chartCoaches'       => $chartCoaches,
     ]);
-}
-
-
-// Ce fichier est un guide — copiez la méthode ci-dessus dans AdminController.php
-// en remplacement de la méthode motivationDashboard() existante.
+    }
 
     #[Route('/posts', name: 'app_admin_posts')]
     public function postsDashboard(

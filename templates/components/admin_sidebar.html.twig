@@ -22,8 +22,8 @@
     </a>
 
     <div class="nav-label">Bien-être</div>
-    <a href="{{ path('app_mood_index') }}" class="nav-item {{ app.request.attributes.get('_route') in ['app_mood_index', 'app_mental_tip_index', 'app_mental_entry_index'] ? 'active' : '' }}">
-        <span class="nav-icon">🧠</span> Santé Mentale
+    <a href="{{ path('app_admin_sante_mentale') }}" class="nav-item {{ app.request.attributes.get('_route') in ['app_admin_sante_mentale', 'app_mood_index', 'app_mental_tip_index', 'app_mental_entry_index', 'app_chatbot', 'app_weekly_analysis'] ? 'active' : '' }}">
+        <span class="nav-icon">🧠</span> Santé mentale
     </a>
 
     <div class="nav-label">Fitness</div>

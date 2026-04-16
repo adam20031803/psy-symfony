@@ -1,0 +1,280 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion Santé Mentale — Atomic You Admin{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .sm-page { --sm-accent: #8b5cf6; --sm-accent2: #22d3a5; }
+    .sm-page .admin-badge {
+        background: linear-gradient(135deg, var(--sm-accent), var(--sm-accent2));
+    }
+    .stats-grid.stats-grid--3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    @media (max-width: 1024px) {
+        .stats-grid.stats-grid--3 { grid-template-columns: 1fr; }
+    }
+    .sm-page .stat-icon.violet { background: rgba(139, 92, 246, .18); }
+    .sm-page .stat-icon.teal { background: rgba(34, 211, 165, .18); }
+    .sm-page .stat-icon.rose { background: rgba(236, 72, 153, .18); }
+    .stat-sublabel { font-size: 0.72rem; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+
+    .breakdown-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+    .breakdown-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        text-align: center;
+    }
+    .breakdown-card .bc-emoji { font-size: 1.45rem; display: block; margin-bottom: 4px; }
+    .breakdown-card .bc-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: .04em; }
+    .breakdown-card .bc-count { font-size: 1.35rem; font-weight: 700; color: #a78bfa; margin-top: 4px; }
+
+    .section-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 12px;
+    }
+
+    .mental-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 28px;
+        align-items: center;
+    }
+    .mental-toolbar a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        transition: transform .15s, border-color .2s, background .2s;
+    }
+    .mental-toolbar a:hover {
+        transform: translateY(-1px);
+        border-color: rgba(139, 92, 246, .45);
+        background: rgba(139, 92, 246, .1);
+    }
+
+    .search-box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 14px;
+        color: var(--text);
+        font-size: 0.83rem;
+        font-family: inherit;
+        width: min(280px, 100%);
+        outline: none;
+        transition: border-color .2s;
+    }
+    .search-box:focus { border-color: #8b5cf6; }
+
+    .table-card .table-header { flex-wrap: wrap; gap: 12px; }
+
+    .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .btn-see {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 7px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        background: rgba(59, 130, 246, .15);
+        color: #60a5fa;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .btn-see:hover { opacity: .9; }
+    .btn-delete {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        border-radius: 7px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(255, 77, 109, .15);
+        color: var(--danger);
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .btn-delete:hover { opacity: .9; }
+
+    .badge-level {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+    .badge-level.low { background: rgba(34, 211, 165, .12); color: var(--success); border: 1px solid rgba(34, 211, 165, .25); }
+    .badge-level.mid { background: rgba(245, 158, 11, .12); color: var(--warning); border: 1px solid rgba(245, 158, 11, .25); }
+    .badge-level.high { background: rgba(255, 77, 109, .12); color: var(--danger); border: 1px solid rgba(255, 77, 109, .25); }
+
+    .cell-note { max-width: 220px; color: var(--muted); font-size: 0.8rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sm-page">
+    <div class="page-header">
+        <div>
+            <h1>🧠 Gestion Santé Mentale</h1>
+            <p>Supervisez les humeurs, les conseils et le journal des entrées mentales.</p>
+        </div>
+        <span class="admin-badge">⚡ ADMIN</span>
+    </div>
+
+    <div class="stats-grid stats-grid--3">
+        <div class="stat-card">
+            <div class="stat-icon violet">🧠</div>
+            <div>
+                <div class="stat-label">Moods (catalogue)</div>
+                <div class="stat-value">{{ stats.moods }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon teal">💡</div>
+            <div>
+                <div class="stat-label">Conseils (tips)</div>
+                <div class="stat-value">{{ stats.tips }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon rose">📓</div>
+            <div>
+                <div class="stat-label">Entrées journal</div>
+                <div class="stat-value">{{ stats.entries }}</div>
+                {% if stats.high_stress > 0 %}
+                    <div class="stat-sublabel">À surveiller : {{ stats.high_stress }} entrée(s) avec niveau ≥ 8</div>
+                {% else %}
+                    <div class="stat-sublabel">Aucune entrée à fort niveau (≥ 8) pour l’instant.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if entries_by_mood|length > 0 %}
+        <div class="section-label">Répartition des entrées par mood</div>
+        <div class="breakdown-grid" style="margin-bottom: 28px;">
+            {% for name, count in entries_by_mood %}
+                <div class="breakdown-card">
+                    <span class="bc-emoji">📊</span>
+                    <div class="bc-label">{{ name }}</div>
+                    <div class="bc-count">{{ count }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if tips_by_mood|length > 0 %}
+        <div class="section-label">Répartition des conseils par mood</div>
+        <div class="breakdown-grid">
+            {% for name, count in tips_by_mood %}
+                <div class="breakdown-card">
+                    <span class="bc-emoji">✨</span>
+                    <div class="bc-label">{{ name }}</div>
+                    <div class="bc-count">{{ count }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="mental-toolbar">
+        <a href="{{ path('app_mood_index') }}">🎭 Moods</a>
+        <a href="{{ path('app_mental_tip_index') }}">💡 Mental Tips</a>
+        <a href="{{ path('app_mental_entry_index') }}">📓 Mental Entries</a>
+        <a href="{{ path('app_weekly_analysis') }}">📈 Analyse hebdo</a>
+    </div>
+
+    <div class="table-card">
+        <div class="table-header">
+            <h2>Journal des entrées mentales</h2>
+            <input class="search-box" type="text" id="mentalSearchInput" placeholder="🔍 Rechercher (mood, activité, note…)" onkeyup="filterMentalTable()">
+        </div>
+        <table id="mentalEntriesTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Mood</th>
+                    <th>Date</th>
+                    <th>Niveau</th>
+                    <th>Intensité</th>
+                    <th>Activité</th>
+                    <th>Note</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for e in entries %}
+                <tr>
+                    <td style="color:var(--muted)">{{ e.id }}</td>
+                    <td><strong>{{ e.mood.moodName }}</strong></td>
+                    <td style="color:var(--muted); font-size:0.8rem;">{{ e.entryDate|date('d/m/Y') }}</td>
+                    <td style="font-weight:700;">{{ e.emotionLevel }}</td>
+                    <td>
+                        {% set lvl = e.emotionLevel ?? 0 %}
+                        {% if lvl <= 3 %}
+                            <span class="badge-level low">Calme</span>
+                        {% elseif lvl <= 7 %}
+                            <span class="badge-level mid">Modéré</span>
+                        {% else %}
+                            <span class="badge-level high">Élevé</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ e.activity }}</td>
+                    <td class="cell-note">{% set n = e.note|default('') %}{% if n is empty %}—{% elseif n|length > 80 %}{{ n|slice(0, 77) }}…{% else %}{{ n }}{% endif %}</td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ path('app_mental_entry_index', { edit: e.id }) }}" target="_blank" class="btn-see">👁️ Voir</a>
+                            <form method="post" action="{{ path('app_mental_entry_delete', { id: e.id }) }}" onsubmit="return confirm('Supprimer cette entrée ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ e.id) }}">
+                                <button type="submit" class="btn-delete">🗑️</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align:center; color:var(--muted); padding:40px;">
+                        <span style="font-size:2rem; display:block; margin-bottom:8px;">🧠</span>
+                        Aucune entrée pour le moment.
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterMentalTable() {
+    const q = document.getElementById('mentalSearchInput').value.toLowerCase();
+    document.querySelectorAll('#mentalEntriesTable tbody tr').forEach(function (row) {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

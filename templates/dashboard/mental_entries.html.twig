@@ -2,16 +2,71 @@
 
 {% block title %}Mental Entries — Atomic You{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .mood-cell-clickable {
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .mood-cell-clickable:hover { color: #a5b4fc !important; }
+    tr.mood-row-selected td {
+        background: rgba(99, 102, 241, 0.12) !important;
+        box-shadow: inset 0 0 0 1px rgba(129, 140, 248, 0.35);
+    }
+    /* Conseils et résultats : texte lisible sur fond sombre */
+    .mental-advice-body {
+        color: #f1f5f9 !important;
+        font-size: 0.95rem;
+        line-height: 1.55;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+    .mental-advice-body strong {
+        color: #ffffff;
+        font-weight: 700;
+    }
+    .mental-advice-hint {
+        color: #cbd5e1 !important;
+        font-size: 0.85rem;
+    }
+    .mental-advice-hint strong {
+        color: #e0e7ff;
+    }
+    .mental-media-body {
+        color: #e2e8f0 !important;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    .mental-media-body a {
+        color: #7dd3fc;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .mental-media-body a:hover {
+        color: #bae6fd;
+    }
+</style>
+{% endblock %}
+
 {% block dashboard_main %}
 <div class="panel-table">
     <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
         <div>
             <h2 class="h5 fw-bold mb-1">Liste des Entries</h2>
-            <p class="text-muted small mb-0">Gérez et organisez vos entries</p>
+            <p class="text-muted small mb-0">Clique sur un <strong>Mood</strong> dans le tableau pour le sélectionner, puis utilise <strong>IA Conseil</strong>, Spotify ou YouTube.</p>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-export-pdf fw-semibold">Export PDF</button>
-            <button type="button" class="btn btn-light border btn-sm text-secondary px-2 py-1" title="Paramètres" aria-label="Paramètres"><i class="bi bi-gear fs-5"></i></button>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <a class="btn btn-sm btn-export-pdf fw-semibold" href="{% if editing is defined and editing and edit_id is defined and edit_id %}{{ path('app_mental_entry_export_pdf', { entry: edit_id }) }}{% else %}{{ path('app_mental_entry_export_pdf') }}{% endif %}"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
+            <button type="button" id="ia-advice-btn" class="btn btn-sm btn-export-pdf fw-semibold">IA Conseil</button>
+            <button type="button" id="weather-advice-btn" class="btn btn-sm btn-export-pdf fw-semibold">Meteo+Conseil</button>
+            <button type="button" id="spotify-suggest-btn" class="btn btn-sm btn-export-pdf fw-semibold">Spotify</button>
+            <button type="button" id="youtube-suggest-btn" class="btn btn-sm btn-export-pdf fw-semibold">YouTube</button>
         </div>
     </div>
     <table class="table data-table table-hover">
@@ -28,7 +83,7 @@
         <tbody>
         {% for e in entries %}
             <tr>
-                <td><strong>{{ e.mood.moodName }}</strong></td>
+                <td class="mood-cell-clickable" role="button" tabindex="0" title="Cliquer pour utiliser ce mood (IA, Spotify, YouTube, météo)"><strong>{{ e.mood.moodName }}</strong></td>
                 <td>{{ e.entryDate|date('d/m/Y') }}</td>
                 <td>{{ e.emotionLevel }}</td>
                 <td>{{ e.activity }}</td>
@@ -42,6 +97,20 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+        <div class="small mb-1">Mood actif pour meteo: <strong id="weather-mood-active">—</strong></div>
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-8">
+                <label class="form-label mb-1 small">Ville</label>
+                <input type="text" id="weather-city-input" class="form-control form-control-sm" placeholder="Ex: Tunis">
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="button" id="weather-advice-submit" class="btn btn-sm btn-form-add w-100">Afficher meteo</button>
+            </div>
+        </div>
+        <div id="weather-advice-box" class="small mt-2 mental-advice-body">Clique sur un mood du tableau.</div>
+    </div>
 </div>
 
 <div class="panel-form">
@@ -76,5 +145,244 @@
         {% endif %}
         <a href="{{ path('app_mental_entry_index') }}" class="btn btn-secondary btn-form-reset fw-semibold text-center w-100">Réinitialiser</a>
     </div>
+
+    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+        <h4 class="h6 mb-2">Conseil IA</h4>
+        <p id="ia-mood-hint" class="small mental-advice-hint mb-2">Mood utilisé : <strong id="ia-mood-label">—</strong> (clique une ligne du tableau)</p>
+        <div id="ia-advice-box" class="mental-advice-body">Aucun conseil pour le moment.</div>
+    </div>
+
+    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+        <h4 class="h6 mb-2">Spotify</h4>
+        <div id="spotify-results" class="small mental-media-body">Aucune suggestion.</div>
+    </div>
+
+    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+        <h4 class="h6 mb-2">YouTube</h4>
+        <div id="youtube-results" class="small mental-media-body">Aucune suggestion.</div>
+    </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const adviceButton = document.getElementById('ia-advice-btn');
+    const adviceBox = document.getElementById('ia-advice-box');
+    const iaMoodLabel = document.getElementById('ia-mood-label');
+    const spotifyButton = document.getElementById('spotify-suggest-btn');
+    const youtubeButton = document.getElementById('youtube-suggest-btn');
+    const spotifyResults = document.getElementById('spotify-results');
+    const youtubeResults = document.getElementById('youtube-results');
+    const moodSelect = document.getElementById('mental_entry_mood');
+    const emotionLevelInput = document.getElementById('mental_entry_emotionLevel');
+    const activityInput = document.getElementById('mental_entry_activity');
+    const noteInput = document.getElementById('mental_entry_note');
+    const weatherAdviceBtn = document.getElementById('weather-advice-btn');
+    const weatherAdviceSubmit = document.getElementById('weather-advice-submit');
+    const weatherCityInput = document.getElementById('weather-city-input');
+    const weatherAdviceBox = document.getElementById('weather-advice-box');
+    const weatherMoodActive = document.getElementById('weather-mood-active');
+    const entriesTableBody = document.querySelector('.data-table tbody');
+    let tableContext = null;
+
+    const MOOD_PLACEHOLDERS = ['choisir…', 'choisir...', 'choisir', ''];
+
+    function isPlaceholderMood(text) {
+        const t = String(text || '').trim().toLowerCase();
+        return !t || MOOD_PLACEHOLDERS.includes(t);
+    }
+
+    function currentMoodFromForm() {
+        const opt = moodSelect && moodSelect.selectedIndex >= 0 ? moodSelect.options[moodSelect.selectedIndex] : null;
+        const text = opt ? opt.text.trim() : '';
+        return isPlaceholderMood(text) ? '' : text;
+    }
+
+    function moodForMediaAndWeather() {
+        if (tableContext && tableContext.mood) {
+            return tableContext.mood;
+        }
+        return currentMoodFromForm();
+    }
+
+    function updateIaMoodLabel() {
+        if (iaMoodLabel) {
+            iaMoodLabel.textContent = tableContext ? tableContext.mood : (currentMoodFromForm() || '—');
+        }
+    }
+
+    function clearRowHighlight() {
+        document.querySelectorAll('tr.mood-row-selected').forEach(function (r) { r.classList.remove('mood-row-selected'); });
+    }
+
+    function setActiveMoodFromTable(cell) {
+        const row = cell.closest('tr');
+        const mood = cell.textContent.trim();
+        if (!mood) {
+            return;
+        }
+        clearRowHighlight();
+        if (row) {
+            row.classList.add('mood-row-selected');
+        }
+        const cells = row ? row.querySelectorAll('td') : [];
+        let emotionLevel = 5;
+        let activity = '';
+        let note = '';
+        if (cells.length >= 5) {
+            const lvl = parseInt(String(cells[2].textContent).trim(), 10);
+            emotionLevel = Number.isFinite(lvl) ? lvl : 5;
+            activity = cells[3] ? cells[3].textContent.trim() : '';
+            note = cells[4] ? cells[4].textContent.trim() : '';
+            if (note === '—') {
+                note = '';
+            }
+        }
+        tableContext = { mood: mood, emotionLevel: emotionLevel, activity: activity, note: note };
+        if (weatherMoodActive) {
+            weatherMoodActive.textContent = mood;
+        }
+        updateIaMoodLabel();
+    }
+
+    if (entriesTableBody) {
+        entriesTableBody.addEventListener('click', function (event) {
+            const cell = event.target.closest('.mood-cell-clickable');
+            if (!cell) {
+                return;
+            }
+            setActiveMoodFromTable(cell);
+        });
+        entriesTableBody.addEventListener('keydown', function (event) {
+            const cell = event.target.closest('.mood-cell-clickable');
+            if (!cell || (event.key !== 'Enter' && event.key !== ' ')) {
+                return;
+            }
+            event.preventDefault();
+            setActiveMoodFromTable(cell);
+        });
+    }
+
+    if (moodSelect) {
+        moodSelect.addEventListener('change', function () {
+            if (!tableContext) {
+                updateIaMoodLabel();
+            }
+        });
+    }
+
+    async function fetchJson(url, body) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(body)
+        });
+        return response.json();
+    }
+
+    function getAdvicePayload() {
+        if (tableContext) {
+            return {
+                mood: tableContext.mood,
+                emotionLevel: tableContext.emotionLevel,
+                activity: tableContext.activity,
+                note: tableContext.note
+            };
+        }
+        const mood = currentMoodFromForm();
+        if (!mood) {
+            return null;
+        }
+        return {
+            mood: mood,
+            emotionLevel: emotionLevelInput ? parseInt(emotionLevelInput.value || '5', 10) : 5,
+            activity: activityInput ? activityInput.value : '',
+            note: noteInput ? noteInput.value : ''
+        };
+    }
+
+    if (adviceButton && adviceBox) {
+        adviceButton.addEventListener('click', async function () {
+            const payload = getAdvicePayload();
+            if (!payload) {
+                adviceBox.textContent = 'Clique d’abord sur un Mood dans le tableau (ligne surlignée), ou choisis un mood dans le formulaire à droite.';
+                return;
+            }
+            adviceButton.disabled = true;
+            adviceBox.textContent = 'Génération du conseil pour « ' + payload.mood + ' »…';
+            try {
+                const data = await fetchJson('{{ path('api_mental_entries_advice') }}', payload);
+                let text = data.advice || 'Aucun conseil.';
+                if (tableContext) {
+                    text = 'Pour la ligne sélectionnée (« ' + tableContext.mood + ' », niveau ' + tableContext.emotionLevel + ') : ' + text;
+                }
+                adviceBox.textContent = text;
+            } catch (error) {
+                adviceBox.textContent = 'Erreur IA.';
+            } finally {
+                adviceButton.disabled = false;
+            }
+        });
+    }
+
+    async function loadMedia(type) {
+        const mood = moodForMediaAndWeather();
+        if (!mood) {
+            if (spotifyResults) spotifyResults.textContent = 'Clique sur un mood dans le tableau, ou choisis un mood dans le formulaire.';
+            if (youtubeResults) youtubeResults.textContent = 'Clique sur un mood dans le tableau, ou choisis un mood dans le formulaire.';
+            return;
+        }
+
+        const data = await fetchJson('{{ path('api_mental_entries_media') }}', { mood: mood });
+        if (type === 'spotify' && spotifyResults) {
+            spotifyResults.innerHTML = (data.spotify || []).map(item => '<div class="py-1"><a href="' + item.url + '" target="_blank" rel="noopener">' + item.title + '</a> - ' + item.artist + '</div>').join('') || 'Aucune suggestion.';
+        }
+        if (type === 'youtube' && youtubeResults) {
+            youtubeResults.innerHTML = (data.youtube || []).map(item => '<div class="py-1"><a href="' + item.url + '" target="_blank" rel="noopener">' + item.title + '</a> - ' + item.channel + '</div>').join('') || 'Aucune suggestion.';
+        }
+    }
+
+    if (spotifyButton) {
+        spotifyButton.addEventListener('click', function () { loadMedia('spotify'); });
+    }
+    if (youtubeButton) {
+        youtubeButton.addEventListener('click', function () { loadMedia('youtube'); });
+    }
+
+    async function runWeather() {
+        const mood = moodForMediaAndWeather();
+        if (!mood) {
+            weatherAdviceBox.textContent = 'Clique sur un mood du tableau ou choisis un mood dans le formulaire.';
+            return;
+        }
+
+        weatherAdviceBox.textContent = 'Chargement meteo...';
+        const data = await fetchJson('{{ path('api_mental_entries_weather_advice') }}', {
+            city: weatherCityInput ? weatherCityInput.value : '',
+            mood: mood
+        });
+
+        if (!data.success) {
+            weatherAdviceBox.textContent = data.message || 'Erreur meteo.';
+            return;
+        }
+
+        const weather = data.weather || {};
+        weatherAdviceBox.innerHTML = '<strong>' + (weather.city || '') + '</strong>: ' + (weather.description || '') + ', ' + (weather.temp ?? '—') + ' deg C. ' + (data.advice || '');
+        if (weatherMoodActive) {
+            weatherMoodActive.textContent = mood;
+        }
+    }
+
+    if (weatherAdviceBtn) {
+        weatherAdviceBtn.addEventListener('click', runWeather);
+    }
+    if (weatherAdviceSubmit) {
+        weatherAdviceSubmit.addEventListener('click', runWeather);
+    }
+});
+</script>
 {% endblock %}
