@@ -1,0 +1,11 @@
+﻿ALTER TABLE categorie CHANGE icon icon VARCHAR(100) DEFAULT NULL;
+ALTER TABLE challenge CHANGE statut statut VARCHAR(50) DEFAULT 'actif' NOT NULL;
+ALTER TABLE habit_streaks CHANGE last_completed last_completed DATE DEFAULT NULL;
+ALTER TABLE mental_entries CHANGE humeur humeur VARCHAR(50) DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL;
+ALTER TABLE post CHANGE image image VARCHAR(255) DEFAULT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL;
+ALTER TABLE reclamation CHANGE statut statut VARCHAR(50) DEFAULT 'ouvert' NOT NULL, CHANGE updated_at updated_at DATETIME DEFAULT NULL;
+ALTER TABLE recompense CHANGE image image VARCHAR(255) DEFAULT NULL;
+ALTER TABLE team_member CHANGE role role VARCHAR(50) DEFAULT 'member' NOT NULL;
+ALTER TABLE user CHANGE role role VARCHAR(20) DEFAULT 'user' NOT NULL, CHANGE photo photo VARCHAR(255) DEFAULT NULL;
+ALTER TABLE workout CHANGE image image VARCHAR(255) DEFAULT NULL;
+ALTER TABLE workout_plan CHANGE statut statut VARCHAR(50) DEFAULT 'planifie' NOT NULL;
