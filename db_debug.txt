@@ -1,0 +1,87 @@
+--- TABLE: user ---
+CREATE TABLE `user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) NOT NULL,
+  `prenom` varchar(100) NOT NULL,
+  `email` varchar(180) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` varchar(20) NOT NULL DEFAULT 'user',
+  `photo` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `is_active` tinyint(4) NOT NULL DEFAULT 1,
+  `age` int(11) DEFAULT NULL,
+  `telephone` varchar(20) DEFAULT NULL,
+  `password_reset_token` varchar(100) DEFAULT NULL,
+  `password_reset_requested_at` datetime DEFAULT NULL,
+  `cv` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UNIQ_8D93D649E7927C74` (`email`),
+  UNIQUE KEY `UNIQ_8D93D6496B7BA4B6` (`password_reset_token`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+--- TABLE: challenge ---
+CREATE TABLE `challenge` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `titre` varchar(255) NOT NULL,
+  `description` longtext NOT NULL,
+  `date_debut` date NOT NULL,
+  `date_fin` date NOT NULL,
+  `statut` varchar(50) NOT NULL DEFAULT 'actif',
+  `created_at` datetime NOT NULL,
+  `categorie_id` int(11) DEFAULT NULL,
+  `created_by_id` int(11) NOT NULL,
+  `media_url` varchar(255) DEFAULT NULL,
+  `media_type` varchar(20) DEFAULT NULL,
+  `adresse` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_D7098951BCF5E72D` (`categorie_id`),
+  KEY `IDX_D7098951B03A8386` (`created_by_id`),
+  CONSTRAINT `FK_D7098951B03A8386` FOREIGN KEY (`created_by_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `FK_D7098951BCF5E72D` FOREIGN KEY (`categorie_id`) REFERENCES `categorie` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+--- TABLE: challenge_task ---
+CREATE TABLE `challenge_task` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` longtext NOT NULL,
+  `why_recommended` longtext DEFAULT NULL,
+  `completion_criteria` longtext DEFAULT NULL,
+  `difficulty` int(11) NOT NULL,
+  `estimated_minutes` int(11) NOT NULL,
+  `points` int(11) NOT NULL,
+  `sort_order` int(11) NOT NULL,
+  `progress_pct` int(11) NOT NULL,
+  `done` tinyint(1) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `challenge_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+--- TABLE: user_challenge_task ---
+CREATE TABLE `user_challenge_task` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `is_done` tinyint(1) NOT NULL,
+  `completed_at` datetime NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `task_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_305403FAA76ED395` (`user_id`),
+  KEY `IDX_305403FA8DB60186` (`task_id`),
+  CONSTRAINT `FK_305403FAA76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
+--- TABLE: smart_meeting ---
+CREATE TABLE `smart_meeting` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` varchar(50) NOT NULL,
+  `trigger_reason` varchar(255) NOT NULL,
+  `meeting_url` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `ai_context` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`ai_context`)),
+  `challenge_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `IDX_94616A8798A21AC6` (`challenge_id`),
+  CONSTRAINT `FK_94616A8798A21AC6` FOREIGN KEY (`challenge_id`) REFERENCES `challenge` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+
