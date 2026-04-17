@@ -24,10 +24,13 @@ class DailyCheckinType extends AbstractType
             ],
         ];
 
+        $isEdit = $builder->getData() instanceof \App\Entity\DailyCheckin && $builder->getData()->getId() !== null;
+
         $builder
             ->add('checkinDate', DateType::class, [
                 'widget' => 'single_text',
                 'label' => 'Date',
+                'disabled' => $isEdit,
             ])
             ->add('moodRating', RangeType::class, array_merge($rangeOpts, [
                 'label' => 'Humeur (1–10)',

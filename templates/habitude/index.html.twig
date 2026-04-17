@@ -530,6 +530,8 @@
         <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
             <a href="{{ path('app_dashboard') }}" class="btn-secondary">🔙 Dashboard</a>
             <a href="{{ path('app_daily_checkin_index') }}" class="btn-checkin">🧠 Check-in quotidien</a>
+            <a href="{{ path('app_youtube_index') }}" class="btn-checkin" style="background: rgba(255, 0, 0, 0.1); border-color: rgba(255, 0, 0, 0.45); color: #ff8888;">🎬 Vidéos Motivation</a>
+            <a href="{{ path('app_habitude_insights') }}" class="btn-secondary" style="background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.3);color:#86efac;">🌿 Insights</a>
             <a href="{{ path('app_habitude_new') }}" class="btn-primary">➕ Nouvelle Habitude</a>
         </div>
     </div>
@@ -571,7 +573,8 @@
 
     <div class="habitudes-grid" id="habitudes-grid">
         {% for habitude in habitudes %}
-            <div class="hab-card" data-id="{{ habitude.id }}" data-category="{{ habitude.category }}" data-delete-token="{{ csrf_token('delete' ~ habitude.id) }}">
+            {% set isCompletedToday = habitude.id in completedTodayIds %}
+            <div class="hab-card {{ isCompletedToday ? 'completed-today' : '' }}" data-id="{{ habitude.id }}" data-category="{{ habitude.category }}" data-delete-token="{{ csrf_token('delete' ~ habitude.id) }}">
                 <div class="hab-status {{ habitude.active ? 'active' : '' }}"></div>
                 
                 <button class="context-menu-trigger" onclick="event.stopPropagation(); toggleContextMenu({{ habitude.id }})">⋮</button>
@@ -785,7 +788,14 @@
 
             if (result.success) {
                 alert('✅ Habitude complétée!');
-                location.reload();
+                // Update UI locally before reload or instead of it
+                const card = document.querySelector(`.hab-card[data-id="${id}"]`);
+                if (card) {
+                    card.classList.add('completed-today');
+                }
+                loadCompletedToday();
+                // We reload to update all stats properly, but a smooth update is better
+                location.reload(); 
             } else {
                 alert('⚠️ ' + result.message);
             }
@@ -866,7 +876,7 @@
                 weekDiv.innerHTML = `
                     <div class="week-history-label">
                         <span>Semaine ${week.week}</span>
-                        <span>${week.completed}/7 jours (${week.percentage}%)</span>
+                        <span>${week.completed}/${week.target} (${week.percentage}%)</span>
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" style="width: ${week.percentage}%"></div>

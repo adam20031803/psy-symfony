@@ -38,7 +38,11 @@ class Habitude
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'The frequency type is required.')]
-    #[Assert\PositiveOrZero(message: 'The frequency type must be zero or a positive number.')]
+    #[Assert\Range(
+        min: 1,
+        max: 7,
+        notInRangeMessage: 'La fréquence doit être entre {{ min }} et {{ max }} fois par semaine.',
+    )]
     private ?int $frequencyType = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]

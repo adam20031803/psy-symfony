@@ -1,16 +1,178 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Suggestions — Atomic You{% endblock %}
+{% block title %}Suggestions personnalisées — Atomic You{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b27;
+  --surface2: #1e2536;
+  --border: rgba(255,255,255,0.07);
+  --accent: #6c63ff;
+  --accent2: #00d2ff;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); }
+
+.sugg-page { max-width: 900px; margin: 0 auto; padding: 28px 20px 64px; color: var(--text); }
+
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .9rem; margin-bottom: 24px; transition: color .2s; }
+.back-link:hover { color: var(--text); }
+
+.page-header { margin-bottom: 36px; }
+.page-header h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px;
+  background: linear-gradient(90deg, #fde68a, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.page-header p { color: var(--muted); font-size: .95rem; margin: 0; }
+
+/* ── Metric mini-bar ── */
+.metrics-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+.mbar-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: .78rem; }
+.mbar-chip .mbc-label { color: var(--muted); }
+.mbar-chip .mbc-val { font-weight: 700; }
+
+/* ── Category cards ── */
+.category-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 20px; overflow: hidden; transition: transform .2s; }
+.category-card:hover { transform: translateY(-2px); }
+.cat-header { display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.cat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.cat-title { font-size: 1rem; font-weight: 700; flex: 1; }
+.cat-count { font-size: .72rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+.cat-body { padding: 0; max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1), padding .3s; }
+.cat-body.open { max-height: 600px; padding: 16px 22px 22px; }
+.cat-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.cat-body li { display: flex; align-items: flex-start; gap: 10px; font-size: .9rem; color: var(--muted); line-height: 1.6; padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 10px; border: 1px solid rgba(255,255,255,.05); }
+.cat-body li .bullet { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 800; color: #fff; margin-top: 2px; }
+
+/* ── Daily challenge card ── */
+.challenge-card { background: linear-gradient(135deg, rgba(108,99,255,.2), rgba(0,210,255,.1)); border: 1px solid rgba(108,99,255,.35); border-radius: 20px; padding: 24px; margin-top: 28px; position: relative; overflow: hidden; }
+.challenge-card::before { content: ''; position: absolute; right: -20px; top: -20px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(0,210,255,.15), transparent 70%); pointer-events: none; }
+.challenge-card .ch-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: #7dd3fc; font-weight: 700; margin-bottom: 10px; }
+.challenge-card .ch-title { font-size: 1.25rem; font-weight: 800; margin-bottom: 6px; color: var(--text); }
+.challenge-card .ch-sub { font-size: .85rem; color: var(--muted); }
+.challenge-card .ch-icon { font-size: 2.5rem; position: absolute; right: 24px; bottom: 20px; opacity: .6; }
+
+/* ── Buttons ── */
+.action-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: .88rem; text-decoration: none; border: none; cursor: pointer; transition: all .2s; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn:hover { opacity: .88; transform: translateY(-1px); }
+
+/* chevron */
+.chevron { margin-left: auto; color: var(--muted); transition: transform .3s; font-size: .8rem; }
+.cat-header.open .chevron { transform: rotate(180deg); }
+</style>
+{% endblock %}
 
 {% block body %}
-<div style="font-family:inherit;max-width:720px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
-    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;">← Retour</a>
-    <h1 style="margin:20px 0 12px;font-size:1.6rem;">Suggestions d’amélioration</h1>
-    <p style="color:#94a3b8;margin-bottom:24px;">Conseils dérivés de vos moyennes récentes et d’un défi quotidien aléatoire (sans IA).</p>
-    <ul style="line-height:1.75;padding-left:1.2rem;">
-        {% for tip in tips %}
-            <li style="margin-bottom:10px;">{{ tip }}</li>
+<div class="sugg-page">
+
+  <a href="{{ path('app_daily_checkin_index') }}" class="back-link">← Retour aux check-ins</a>
+
+  <div class="page-header">
+    <h1>💡 Suggestions personnalisées</h1>
+    <p>Conseils ciblés selon vos données — Analyse augmentée par Groq (Llama 3.3).</p>
+  </div>
+
+  <div class="action-bar">
+    <a href="{{ path('app_daily_checkin_analysis') }}" class="btn btn-secondary">📊 Voir l'analyse complète</a>
+    <a href="{{ path('app_daily_checkin_new') }}" class="btn btn-primary">➕ Nouveau check-in</a>
+  </div>
+
+  {# ── AI Feedback Section ── #}
+  {% if ai_feedback is defined and ai_feedback is not empty %}
+  <div style="margin-bottom: 40px;">
+    <h2 style="font-size: 1.2rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+      <span style="background: linear-gradient(135deg, #6c63ff, #00d2ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✨ Revue de votre journal par IA</span>
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+      {% for item in ai_feedback %}
+        {% if item.user_text != 'Non renseigné' %}
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; border-left: 4px solid {{ item.color }};">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+              <span>{{ item.icon }}</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: {{ item.color }}">{{ item.label }}</span>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--muted); font-style: italic; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; margin-bottom: 10px;">
+              "{{ item.user_text|length > 100 ? item.user_text|slice(0, 100) ~ '...' : item.user_text }}"
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text); line-height: 1.5; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px;">
+              {{ item.feedback }}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Metric summary bar ── #}
+  {% if averages is not null %}
+  <div class="metrics-bar">
+    <div class="mbar-chip"><span class="mbc-label">😊 Humeur</span><span class="mbc-val" style="color:#6c63ff">{{ averages.avgMood|number_format(1) }}/10</span></div>
+    <div class="mbar-chip"><span class="mbc-label">😤 Stress</span><span class="mbc-val" style="color:{% if averages.avgStress > 7 %}#f43f5e{% elseif averages.avgStress > 5 %}#f59e0b{% else %}#22c55e{% endif %}">{{ averages.avgStress|number_format(1) }}/10</span></div>
+    <div class="mbar-chip"><span class="mbc-label">⚡ Énergie</span><span class="mbc-val" style="color:#00d2ff">{{ averages.avgEnergy|number_format(1) }}/10</span></div>
+    <div class="mbar-chip"><span class="mbc-label">📈 Productivité</span><span class="mbc-val" style="color:#22c55e">{{ averages.avgProd|number_format(1) }}/10</span></div>
+    <div class="mbar-chip"><span class="mbc-label">🌙 Sommeil</span><span class="mbc-val" style="color:#a855f7">{{ averages.avgSleepH|number_format(1) }}h</span></div>
+  </div>
+  {% endif %}
+
+  {# ── Category cards ── #}
+  {% for cat in categories %}
+  <div class="category-card">
+    <div class="cat-header" onclick="toggleCat(this)" role="button" aria-expanded="false">
+      <div class="cat-icon" style="background: {{ cat.color }}22; border: 1px solid {{ cat.color }}44;">{{ cat.icon }}</div>
+      <span class="cat-title" style="color: {{ cat.color }}">{{ cat.label }}</span>
+      <span class="cat-count">{{ cat.items|length }} conseil{{ cat.items|length > 1 ? 's' : '' }}</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="cat-body{% if loop.first %} open{% endif %}">
+      <ul>
+        {% for item in cat.items %}
+        <li>
+          <div class="bullet" style="background: {{ cat.color }}">{{ loop.index }}</div>
+          <span>{{ item }}</span>
+        </li>
         {% endfor %}
-    </ul>
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+
+  {# ── Daily challenge ── #}
+  {% if challenge is not null %}
+  <div class="challenge-card">
+    <div class="ch-label">⚡ Défi du jour</div>
+    <div class="ch-title">{{ challenge }}</div>
+    <div class="ch-sub">Relevez ce petit défi aujourd'hui pour créer une dynamique positive.</div>
+    <div class="ch-icon">🎯</div>
+  </div>
+  {% endif %}
+
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function toggleCat(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  header.classList.toggle('open', !isOpen);
+  header.setAttribute('aria-expanded', !isOpen);
+}
+// Open first card by default
+document.addEventListener('DOMContentLoaded', function () {
+  const first = document.querySelector('.cat-header');
+  if (first) {
+    first.classList.add('open');
+    first.setAttribute('aria-expanded', 'true');
+  }
+});
+</script>
 {% endblock %}

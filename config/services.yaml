@@ -30,6 +30,14 @@ services:
         arguments:
             $geminiApiKey: '%env(GEMINI_API_KEY)%'
 
+    App\Service\GeminiService:
+        arguments:
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
+
+    App\Service\GroqService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
     App\Service\SpotifySuggestionService:
         arguments:
             $spotifyClientId: ''
