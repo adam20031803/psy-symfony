@@ -24,4 +24,30 @@ class MoodRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /** @return Mood[] */
+    public function findForListing(?string $search, string $sort, string $dir): array
+    {
+        $allowedSorts = [
+            'name' => 'm.moodName',
+            'createdAt' => 'm.createdAt',
+            'id' => 'm.id',
+        ];
+
+        $sortField = $allowedSorts[$sort] ?? $allowedSorts['name'];
+        $direction = 'DESC' === strtoupper($dir) ? 'DESC' : 'ASC';
+
+        $qb = $this->createQueryBuilder('m');
+        $term = mb_strtolower(trim((string) $search));
+        if ('' !== $term) {
+            $qb->andWhere('LOWER(m.moodName) LIKE :term')
+                ->setParameter('term', '%'.$term.'%');
+        }
+
+        return $qb
+            ->orderBy($sortField, $direction)
+            ->addOrderBy('m.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

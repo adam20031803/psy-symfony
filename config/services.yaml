@@ -1,4 +1,9 @@
 parameters:
+    app.env_empty_string: ''
+    twilio.accountSid: '%env(default:app.env_empty_string:TWILIO_ACCOUNT_SID)%'
+    twilio.authToken: '%env(default:app.env_empty_string:TWILIO_AUTH_TOKEN)%'
+    twilio.fromNumber: '%env(default:app.env_empty_string:TWILIO_FROM_NUMBER)%'
+    twilio.toNumber: '%env(default:app.env_empty_string:TWILIO_TO_NUMBER)%'
 
 services:
     _defaults:
@@ -24,3 +29,24 @@ services:
     App\Service\AiMessengerService:
         arguments:
             $geminiApiKey: '%env(GEMINI_API_KEY)%'
+
+    App\Service\GeminiService:
+        arguments:
+            $geminiApiKey: '%env(GEMINI_API_KEY)%'
+
+    App\Service\GroqService:
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
+
+    App\Service\SpotifySuggestionService:
+        arguments:
+            $spotifyClientId: ''
+            $spotifyClientSecret: ''
+
+    App\Service\TwilioSmsService:
+        arguments:
+            $accountSid: '%twilio.accountSid%'
+            $authToken: '%twilio.authToken%'
+            $fromNumber: '%twilio.fromNumber%'
+            $toNumber: '%twilio.toNumber%'
+            $connection: '@doctrine.dbal.default_connection'

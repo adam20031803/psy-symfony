@@ -1,46 +1,291 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Analyse check-ins — Atomic You{% endblock %}
+{% block title %}Analyse 30 jours — Atomic You{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b27;
+  --surface2: #1e2536;
+  --border: rgba(255,255,255,0.07);
+  --accent: #6c63ff;
+  --accent2: #00d2ff;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #f43f5e;
+  --purple: #a855f7;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); }
+
+.analysis-page { max-width: 1100px; margin: 0 auto; padding: 28px 20px 64px; }
+
+/* ── Nav ── */
+.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .9rem; margin-bottom: 24px; transition: color .2s; }
+.back-link:hover { color: var(--text); }
+
+/* ── Header ── */
+.page-header { margin-bottom: 36px; }
+.page-header h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px;
+  background: linear-gradient(90deg, #c4b5fd, #7dd3fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.page-header p { color: var(--muted); font-size: .95rem; margin: 0; }
+.page-header .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; background: rgba(108,99,255,.15); border: 1px solid rgba(108,99,255,.3); color: #c4b5fd; font-size: .75rem; font-weight: 700; margin-top: 12px; }
+
+/* ── Section titles ── */
+.section-title { font-size: 1.05rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; margin: 0 0 16px; }
+
+/* ── Average cards ── */
+.averages-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 36px; }
+.avg-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 16px; position: relative; overflow: hidden; transition: transform .2s; }
+.avg-card:hover { transform: translateY(-2px); }
+.avg-card::before { content: ''; position: absolute; inset: 0; opacity: 0; background: radial-gradient(circle at 50% 0%, rgba(108,99,255,.15), transparent 60%); transition: opacity .3s; }
+.avg-card:hover::before { opacity: 1; }
+.avg-card .label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
+.avg-card .value { font-size: 2rem; font-weight: 800; line-height: 1; }
+.avg-card .sub { font-size: .7rem; color: var(--muted); margin-top: 4px; }
+.avg-card .bar { height: 4px; border-radius: 999px; background: rgba(255,255,255,.08); margin-top: 12px; overflow: hidden; }
+.avg-card .bar-fill { height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+
+/* ── Trend cards ── */
+.trends-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; margin-bottom: 36px; }
+.trend-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+.trend-card .t-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.trend-card .t-label { font-size: .8rem; color: var(--muted); font-weight: 600; }
+.trend-card .t-icon { font-size: 1.1rem; font-weight: 800; }
+.trend-card .t-val { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+.trend-card .t-compare { font-size: .72rem; color: var(--muted); }
+.trend-card .t-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: .65rem; font-weight: 700; margin-top: 10px; }
+
+/* ── Report card ── */
+.report-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 36px; overflow: hidden; }
+.report-card .report-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+.report-card .report-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(108,99,255,.25), rgba(0,210,255,.1)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.report-card .report-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+.report-card .report-sub { font-size: .75rem; color: var(--muted); }
+.report-body { padding: 24px; }
+.report-body h2 { font-size: 1rem; font-weight: 700; margin: 0 0 8px; color: #c4b5fd; display: flex; align-items: center; gap: 6px; }
+.report-body p, .report-body li { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+.report-body strong { color: var(--text); }
+.report-body ul { padding-left: 1.2rem; margin: 6px 0; }
+.report-body .section-block { padding: 16px; background: rgba(255,255,255,.03); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 14px; }
+
+/* ── Sentiment ── */
+.sentiment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-bottom: 36px; }
+.sentiment-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+.sentiment-chip .s-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.sentiment-chip .s-label { font-size: .75rem; color: var(--muted); margin-bottom: 4px; }
+.sentiment-chip .s-pct { font-size: 1.2rem; font-weight: 800; }
+.sentiment-chip .s-bar { height: 3px; border-radius: 999px; background: rgba(255,255,255,.08); margin-top: 8px; overflow: hidden; }
+.sentiment-chip .s-bar-fill { height: 100%; border-radius: 999px; }
+
+/* ── Correlations ── */
+.corr-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 36px; }
+.corr-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; }
+.corr-card .c-title { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+.corr-card .c-value { font-size: 1.8rem; font-weight: 800; }
+.corr-card .c-desc { font-size: .8rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+/* ── Recommendations ── */
+.reco-list { list-style: none; padding: 0; margin: 0 0 36px; display: flex; flex-direction: column; gap: 10px; }
+.reco-list li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 20px; display: flex; align-items: flex-start; gap: 12px; font-size: .9rem; color: var(--muted); line-height: 1.6; }
+.reco-list li::before { content: '✦'; color: var(--accent); flex-shrink: 0; font-size: .85rem; margin-top: 2px; }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 60px 20px; background: var(--surface); border: 1px dashed var(--border); border-radius: 20px; }
+.empty-state .e-icon { font-size: 3rem; margin-bottom: 16px; }
+.empty-state h2 { font-size: 1.2rem; margin-bottom: 8px; }
+.empty-state p { color: var(--muted); }
+
+/* ── Action bar ── */
+.action-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: .88rem; text-decoration: none; border: none; cursor: pointer; transition: all .2s; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn:hover { opacity: .88; transform: translateY(-1px); }
+
+@media (max-width: 640px) {
+  .corr-row { grid-template-columns: 1fr; }
+  .averages-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+{% endblock %}
 
 {% block body %}
-<div style="font-family:inherit;max-width:800px;margin:0 auto;padding:28px 20px 48px;color:#e2e8f0;">
-    <a href="{{ path('app_daily_checkin_index') }}" style="color:#94a3b8;text-decoration:none;">← Retour</a>
-    <h1 style="margin:20px 0 12px;font-size:1.6rem;">Analyse sur 30 jours</h1>
-    <p style="color:#94a3b8;margin-bottom:24px;">Synthèse basée sur vos données (pas d’IA) : moyennes, motifs simples et corrélations.</p>
+<div class="analysis-page">
 
-    {% if count == 0 %}
-        <p>Pas assez de données. Ajoutez des check-ins pour voir une analyse.</p>
-    {% else %}
-        <p><strong>{{ count }}</strong> entrée(s) sur la période analysée.</p>
-        {% if averages %}
-            <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Moyennes</h2>
-            <ul style="line-height:1.8;color:#e2e8f0;">
-                <li>Humeur : {{ averages.mood }}</li>
-                <li>Énergie : {{ averages.energy }}</li>
-                <li>Productivité : {{ averages.productivity }}</li>
-                <li>Stress : {{ averages.stress }}</li>
-                <li>Qualité sommeil : {{ averages.sleepQuality }}</li>
-                <li>Heures de sommeil : {{ averages.sleepHours }} h</li>
-            </ul>
-        {% endif %}
+  <a href="{{ path('app_daily_checkin_index') }}" class="back-link">← Retour aux check-ins</a>
 
-        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Corrélations (Pearson, si assez de points)</h2>
-        <ul style="line-height:1.8;color:#e2e8f0;">
-            <li>Sommeil (h) vs humeur : {{ correlations.sleep_hours_vs_mood is not null ? correlations.sleep_hours_vs_mood : 'n/a' }}</li>
-            <li>Stress vs énergie : {{ correlations.stress_vs_energy is not null ? correlations.stress_vs_energy : 'n/a' }}</li>
-        </ul>
-
-        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Motifs</h2>
-        {% for line in patterns %}
-            <p style="color:#cbd5e1;line-height:1.6;">{{ line }}</p>
-        {% endfor %}
-
-        <h2 style="font-size:1.1rem;margin:24px 0 12px;color:#cbd5e1;">Recommandations (5 max.)</h2>
-        <ol style="line-height:1.7;color:#e2e8f0;">
-            {% for r in recommendations %}
-                <li>{{ r }}</li>
-            {% endfor %}
-        </ol>
+  <div class="page-header">
+    <h1>🔍 Analyse sur 30 jours</h1>
+    <p>Tendances, corrélations et insights personnalisés — basés uniquement sur vos données.</p>
+    {% if count > 0 %}
+      <span class="badge">📊 {{ count }} entrée{{ count > 1 ? 's' : '' }} analysée{{ count > 1 ? 's' : '' }}</span>
     {% endif %}
+  </div>
+
+  <div class="action-bar">
+    <a href="{{ path('app_daily_checkin_suggestions') }}" class="btn btn-primary">💡 Voir les suggestions</a>
+    <a href="{{ path('app_daily_checkin_new') }}" class="btn btn-secondary">➕ Nouveau check-in</a>
+    <a href="{{ path('app_daily_checkin_export_pdf') }}" class="btn btn-secondary">📄 Export PDF</a>
+  </div>
+
+  {% if count == 0 %}
+    <div class="empty-state">
+      <div class="e-icon">📭</div>
+      <h2>Aucun check-in trouvé</h2>
+      <p>Ajoutez des check-ins réguliers pour voir votre analyse personnalisée ici.</p>
+      <a href="{{ path('app_daily_checkin_new') }}" class="btn btn-primary" style="margin-top:20px;display:inline-flex;">Commencer maintenant</a>
+    </div>
+
+  {% else %}
+
+    {# ── Averages ─────────────────────────────────────────────────────── #}
+    <p class="section-title">📊 Moyennes sur 30 jours</p>
+    <div class="averages-grid">
+      {% set avgItems = [
+        { key: 'mood',         label: 'Humeur',       icon: '😊', unit: '/10', color: '#6c63ff' },
+        { key: 'energy',       label: 'Énergie',      icon: '⚡', unit: '/10', color: '#00d2ff' },
+        { key: 'productivity', label: 'Productivité', icon: '📈', unit: '/10', color: '#22c55e' },
+        { key: 'stress',       label: 'Stress',       icon: '😤', unit: '/10', color: '#f43f5e' },
+        { key: 'sleepQuality', label: 'Qualité sommeil', icon: '💤', unit: '/10', color: '#a855f7' },
+        { key: 'sleepHours',   label: 'Heures sommeil',  icon: '🌙', unit: 'h',   color: '#3b82f6' }
+      ] %}
+      {% for item in avgItems %}
+        {% set val = attribute(averages, item.key) %}
+        {% set pct = item.unit == 'h' ? (val / 10 * 100)|round : (val * 10)|round %}
+        <div class="avg-card">
+          <div class="label">{{ item.icon }} {{ item.label }}</div>
+          <div class="value" style="color:{{ item.color }}">{{ val|number_format(1) }}</div>
+          <div class="sub">{{ item.unit == 'h' ? val ~ 'h par nuit' : val ~ ' / 10' }}</div>
+          <div class="bar"><div class="bar-fill" style="width:{{ pct }}%;background:{{ item.color }};"></div></div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {# ── Trends ───────────────────────────────────────────────────────── #}
+    {% if trends is not empty %}
+    <p class="section-title">📈 Tendances — 7 derniers jours vs 7 jours précédents</p>
+    <div class="trends-grid">
+      {% for trend in trends %}
+        <div class="trend-card" style="border-color: {{ trend.color }}22;">
+          <div class="t-header">
+            <span class="t-label">{{ trend.label }}</span>
+            <span class="t-icon" style="color:{{ trend.color }}">{{ trend.icon }}</span>
+          </div>
+          <div class="t-val" style="color:{{ trend.color }}">{{ trend.last7avg }}</div>
+          <div class="t-compare">Avant : {{ trend.prev7avg }} · Δ {{ trend.diff > 0 ? '+' : '' }}{{ trend.diff }}</div>
+          <div class="t-badge" style="background:{{ trend.color }}22;color:{{ trend.color }};border:1px solid {{ trend.color }}44;">
+            {{ trend.icon }}
+            {% if trend.direction == 'up' %}En hausse{% elseif trend.direction == 'down' %}En baisse{% else %}Stable{% endif %}
+            ({{ trend.pct > 0 ? '+' : '' }}{{ trend.pct }}%)
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Narrative report ─────────────────────────────────────────────── #}
+    {% if summary_report is not empty %}
+    <div class="report-card">
+      <div class="report-header">
+        <div class="report-icon">🤖</div>
+        <div>
+          <div class="report-title">Rapport d'analyse personnalisé</div>
+          <div class="report-sub">Synthèse intelligente de vos {{ count }} check-ins</div>
+        </div>
+      </div>
+      <div class="report-body">
+        {# Parse sections from markdown-like format #}
+        {% set sections = summary_report|split('\n\n') %}
+        {% for section in sections %}
+          {% if section starts with '## ' %}
+            {% set lines = section|split('\n') %}
+            {% set heading = lines[0]|replace({'## ': ''}) %}
+            {% set body = lines|slice(1)|join('\n') %}
+            <div class="section-block">
+              <h2>{{ heading }}</h2>
+              <p>{{ body|replace({'**': ''})|nl2br }}</p>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Sentiment ────────────────────────────────────────────────────── #}
+    {% if sentiment is not empty %}
+    <p class="section-title">💬 Analyse émotionnelle du journal</p>
+    <div class="sentiment-grid">
+      {% for em in sentiment %}
+        <div class="sentiment-chip">
+          <div class="s-icon">{{ em.icon }}</div>
+          <div class="s-label">{{ em.label }}</div>
+          <div class="s-pct" style="color:{{ em.color }}">{{ em.pct }}%</div>
+          <div class="s-bar"><div class="s-bar-fill" style="width:{{ em.pct }}%;background:{{ em.color }};"></div></div>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ── Correlations ─────────────────────────────────────────────────── #}
+    <p class="section-title">🔗 Corrélations (Pearson)</p>
+    <div class="corr-row">
+      <div class="corr-card">
+        <div class="c-title">Sommeil (h) → Humeur</div>
+        {% if correlations.sleep_hours_vs_mood is not null %}
+          {% set c = correlations.sleep_hours_vs_mood %}
+          <div class="c-value" style="color: {{ c > 0.2 ? '#22c55e' : (c < -0.2 ? '#f43f5e' : '#f59e0b') }}">{{ c }}</div>
+          <div class="c-desc">
+            {% if c > 0.3 %}Plus de sommeil = meilleure humeur (corrélation positive).
+            {% elseif c < -0.3 %}Relation inverse inattendue — analysez d'autres facteurs.
+            {% else %}Corrélation faible ou neutre.{% endif %}
+          </div>
+        {% else %}
+          <div class="c-value" style="color:var(--muted)">n/a</div>
+          <div class="c-desc">Pas assez de points pour calculer.</div>
+        {% endif %}
+      </div>
+      <div class="corr-card">
+        <div class="c-title">Stress → Énergie</div>
+        {% if correlations.stress_vs_energy is not null %}
+          {% set c = correlations.stress_vs_energy %}
+          <div class="c-value" style="color: {{ c < -0.2 ? '#f43f5e' : (c > 0.2 ? '#22c55e' : '#f59e0b') }}">{{ c }}</div>
+          <div class="c-desc">
+            {% if c < -0.3 %}Plus de stress = moins d'énergie (corrélation négative).
+            {% elseif c > 0.3 %}Corrélation positive atypique — peut indiquer une mobilisation sous pression.
+            {% else %}Corrélation modérée.{% endif %}
+          </div>
+        {% else %}
+          <div class="c-value" style="color:var(--muted)">n/a</div>
+          <div class="c-desc">Pas assez de points pour calculer.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── Patterns ─────────────────────────────────────────────────────── #}
+    {% if patterns is not empty %}
+    <p class="section-title">🔎 Motifs détectés</p>
+    <ul class="reco-list" style="margin-bottom:24px;">
+      {% for p in patterns %}
+        <li>{{ p }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {# ── Recommendations ──────────────────────────────────────────────── #}
+    {% if recommendations is not empty %}
+    <p class="section-title">🎯 Recommandations personnalisées</p>
+    <ul class="reco-list">
+      {% for r in recommendations %}
+        <li>{{ r }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+  {% endif %}
 </div>
 {% endblock %}

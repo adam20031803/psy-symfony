@@ -26,4 +26,31 @@ class MentalTipRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /** @return MentalTip[] */
+    public function findForListing(?string $search, string $sort, string $dir): array
+    {
+        $allowedSorts = [
+            'mood' => 'm.moodName',
+            'tip' => 't.tipText',
+            'id' => 't.id',
+        ];
+        $sortField = $allowedSorts[$sort] ?? $allowedSorts['mood'];
+        $direction = 'DESC' === strtoupper($dir) ? 'DESC' : 'ASC';
+
+        $qb = $this->createQueryBuilder('t')
+            ->join('t.mood', 'm')->addSelect('m');
+
+        $term = mb_strtolower(trim((string) $search));
+        if ('' !== $term) {
+            $qb->andWhere('LOWER(t.tipText) LIKE :term OR LOWER(m.moodName) LIKE :term')
+                ->setParameter('term', '%'.$term.'%');
+        }
+
+        return $qb
+            ->orderBy($sortField, $direction)
+            ->addOrderBy('t.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

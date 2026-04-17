@@ -79,10 +79,19 @@ class DailyCheckinController extends AbstractController
     {
         $user = $this->getAppUser();
         $checkins = $repo->findLastDaysForUser($user, 30);
-        $tips = $this->analyticsService->buildSuggestions($checkins);
+        $result = $this->analyticsService->buildSuggestions($checkins);
+
+        $latestFeedback = [];
+        if (!empty($checkins)) {
+            // Checkins are newest first
+            $latestFeedback = $this->analyticsService->getAIFeedbackForJournal($checkins[0]);
+        }
 
         return $this->render('daily_checkin/suggestions.html.twig', [
-            'tips' => $tips,
+            'categories' => $result['categories'],
+            'averages'   => $result['averages'] ?? null,
+            'challenge'  => $result['challenge'] ?? null,
+            'ai_feedback' => $latestFeedback,
         ]);
     }
 

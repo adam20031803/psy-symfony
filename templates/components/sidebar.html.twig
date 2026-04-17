@@ -55,11 +55,11 @@
             </div>
         </a>
 
-        <a href="{{ path('app_mental_entry_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') in ['app_mental_entry_index', 'app_mental_tip_index'] ? 'active' : '' }}">
+        <a href="{{ path('app_mental_tip_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_mental_tip' or app.request.attributes.get('_route') starts with 'app_mental_entry' or app.request.attributes.get('_route') == 'app_chatbot' or app.request.attributes.get('_route') == 'app_weekly_analysis' ? 'active' : '' }}">
             <div class="sidebar-icon si-purple">🧠</div>
             <div class="sidebar-link-text">
-                <span class="sidebar-link-title">Santé Mentale</span>
-                <span class="sidebar-link-sub">Humeurs &amp; bien-être</span>
+                <span class="sidebar-link-title">Santé mentale</span>
+                <span class="sidebar-link-sub">Tips, journal &amp; chat IA</span>
             </div>
         </a>
 

@@ -45,6 +45,7 @@ class HabitudeType extends AbstractType
                 'attr' => [
                     'min' => 1,
                     'max' => 7,
+                    'class' => 'form-control',
                 ],
             ])
             ->add('startDate', DateType::class, [

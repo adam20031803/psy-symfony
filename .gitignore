@@ -8,3 +8,22 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+/.env
+db_debug.txt
+debug_db_final.php
+dump.sql
+dump2.sql
+inspect_db.php
+fix*.php
+generate_views.php
+psy_db.sql
+schema_diff*.txt
+schema_update.sql
+validate.txt
+output.txt
+migrate_output.txt
+migrate.txt
+*.sql
+*.ps1
+

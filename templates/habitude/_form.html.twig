@@ -47,3 +47,22 @@
     <button class="btn-submit">{{ button_label|default('Enregistrer mon habitude') }}</button>
     {{ form_rest(form) }}
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[name="habitude"]');
+    const frequencyInput = document.querySelector('input[id$="_frequencyType"]');
+    
+    if (form && frequencyInput) {
+        form.addEventListener('submit', function(e) {
+            const val = parseInt(frequencyInput.value);
+            if (val > 7) {
+                e.preventDefault();
+                alert('La fréquence ne peut pas dépasser 7 fois par semaine.');
+                frequencyInput.focus();
+                return false;
+            }
+        });
+    }
+});
+</script>

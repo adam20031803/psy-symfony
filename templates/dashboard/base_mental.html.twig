@@ -67,43 +67,93 @@
             flex-flow: row wrap;
             align-items: flex-start;
             align-content: flex-start;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
         .panel-table, .panel-form {
-            background: #ffffff;
-            color: #1f2937;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
             border-radius: var(--card-radius);
-            box-shadow: var(--card-shadow);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .panel-table { padding: 15px; flex: 1 1 62%; min-width: min(100%, 320px); }
-        .panel-form { padding: 18px; flex: 0 1 34%; min-width: min(100%, 300px); max-width: 420px; }
+        .panel-table:hover, .panel-form:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .panel-table { padding: 24px; flex: 1 1 62%; min-width: min(100%, 320px); }
+        .panel-form { padding: 24px; flex: 0 1 34%; min-width: min(100%, 300px); max-width: 420px; }
         
-        .panel-table h2.h5 { font-size: 16px; font-weight: 700; }
-        .panel-table .text-muted.small { font-size: 12px; color: var(--subtitle-gray) !important; }
-        .panel-form h3.h6 { font-size: 18px; font-weight: 700; }
-        .panel-form p.text-muted.small { font-size: 12px; color: var(--subtitle-gray) !important; }
-        .panel-form .form-label { font-weight: 700; color: var(--label-dark); }
+        .panel-table h2.h5 { font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; }
+        .panel-table .text-muted.small { font-size: 13px; color: #94a3b8 !important; }
+        .panel-form h3.h6 { font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; }
+        .panel-form p.text-muted.small { font-size: 13px; color: #94a3b8 !important; }
+        .panel-form .form-label { font-weight: 600; color: #cbd5e1; font-size: 0.85rem; letter-spacing: 0.01em; }
         
-        .data-table { width: 100%; font-size: 0.875rem; }
+        .data-table { width: 100%; font-size: 0.9rem; color: #e2e8f0; margin-bottom: 0; }
         .data-table thead th {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            color: #475569;
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
-            border-bottom: 1px solid #e2e8f0;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 16px;
+            font-weight: 600;
+        }
+        .data-table tbody td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            transition: background 0.2s;
+        }
+        .data-table tbody tr { transition: all 0.2s ease; }
+        .data-table tbody tr:hover td { 
+            background: rgba(255, 255, 255, 0.03); 
+            color: #ffffff;
         }
         
         .btn-export-pdf, .btn-form-add, .btn-form-modify, .btn-form-danger, .btn-form-reset {
             font-weight: 700;
-            border-radius: var(--btn-radius);
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
-        .btn-form-add { background: var(--btn-primary); color: #fff; }
-        .btn-form-add:hover { background: var(--btn-primary-hover); color: #fff; }
-        .btn-form-modify { background: var(--btn-pink); color: #fff; }
-        .btn-form-modify:hover { background: var(--btn-pink-hover); color: #fff; }
-        .btn-form-danger { background: linear-gradient(to right, var(--grad-red-start), var(--grad-red-end)) !important; border: none !important; color: #fff !important; }
-        .btn-form-reset { background: var(--btn-gray) !important; color: #fff !important; }
+        .btn-form-add { background: linear-gradient(135deg, #4f46e5, #8b5cf6); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-form-add:hover { background: linear-gradient(135deg, #4338ca, #7c3aed); color: #fff; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); }
+        .btn-form-add:active { transform: scale(0.96); }
+
+        .btn-form-modify { background: linear-gradient(135deg, #ec4899, #f43f5e); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-form-modify:hover { background: linear-gradient(135deg, #db2777, #e11d48); color: #fff; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(236, 72, 153, 0.4); }
+        .btn-form-modify:active { transform: scale(0.96); }
+
+        .btn-form-danger { background: linear-gradient(135deg, #ef4444, #f97316) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #fff !important; }
+        .btn-form-danger:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); }
+        .btn-form-danger:active { transform: scale(0.96); }
+
+        .btn-form-reset { background: rgba(255, 255, 255, 0.08) !important; color: #e2e8f0 !important; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(8px); }
+        .btn-form-reset:hover { background: rgba(255, 255, 255, 0.15) !important; color: #ffffff !important; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); }
+        .btn-form-reset:active { transform: scale(0.96); }
+
+        .btn-export-pdf {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            padding: 6px 12px;
+        }
+        .btn-export-pdf:hover { background: rgba(255, 255, 255, 0.15); color: #ffffff; transform: translateY(-1px); }
+        .btn-light.border {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #cbd5e1 !important;
+        }
+        .btn-light.border:hover { background: rgba(255, 255, 255, 0.12) !important; color: #ffffff !important; transform: translateY(-1px); }
 
         .nav-pill {
             display: inline-flex;
@@ -129,9 +179,64 @@
             border-color: var(--accent);
         }
         
-        .nav-pill.moods { background: linear-gradient(135deg, #6c63ff, #00d2ff); }
-        .nav-pill.tips { background: linear-gradient(135deg, #ec4899, #f97316); }
-        .nav-pill.entries { background: linear-gradient(135deg, #22d3a5, #00d2ff); }
+        .nav-pill.moods { background: linear-gradient(135deg, #6c63ff, #00d2ff); border: none; }
+        .nav-pill.tips { background: linear-gradient(135deg, #ec4899, #f97316); border: none; }
+        .nav-pill.entries { background: linear-gradient(135deg, #22d3a5, #00d2ff); border: none; }
+        .nav-pill.chatbot { background: linear-gradient(135deg, #7c3aed, #ec4899); border: none; }
+        .nav-pill.analysis { background: linear-gradient(135deg, #2563eb, #0ea5e9); border: none; }
+
+        /* Form Inputs for Mental Dashboard */
+        .panel-form .form-label {
+            font-weight: 600; 
+            color: #e2e8f0; 
+            font-size: 0.9rem; 
+            letter-spacing: 0.02em; 
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .panel-form .form-control, .panel-form .form-select {
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.08); /* Thicker border */
+            color: #ffffff;
+            border-radius: 16px; /* Rounder corners */
+            padding: 16px 20px; /* Thicker height */
+            font-size: 1.05rem; /* Larger text */
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.1); /* Deeper shadow */
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+        }
+        
+        .panel-form .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23CBD5E1' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.25rem center;
+            background-size: 1.5em;
+            padding-right: 3rem;
+        }
+
+        .panel-form .form-select option {
+            background-color: #0f172a;
+            color: #ffffff;
+            font-size: 1rem;
+            padding: 10px;
+        }
+
+        .panel-form .form-control:focus, .panel-form .form-select:focus {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: #00d2ff;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 210, 255, 0.5); /* Massive cyan glow */
+            color: #ffffff;
+            outline: none;
+            transform: translateY(-2px); /* Makes the input jump up slightly to feel interactive */
+        }
+        
+        .panel-form .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 400;
+        }
     </style>
 {% endblock %}
 
@@ -145,6 +250,8 @@
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <a href="{{ path('app_mental_tip_index') }}" class="nav-pill tips {{ active_section|default('') == 'tips' ? 'active' : '' }}">Mental Tips</a>
             <a href="{{ path('app_mental_entry_index') }}" class="nav-pill entries {{ active_section|default('') == 'entries' ? 'active' : '' }}">Mental Entries</a>
+            <a href="{{ path('app_chatbot') }}" class="nav-pill chatbot {{ active_section|default('') == 'chatbot' ? 'active' : '' }}">Chatbot</a>
+            <a href="{{ path('app_weekly_analysis') }}" class="nav-pill analysis {{ active_section|default('') == 'analysis' ? 'active' : '' }}">Analyse hebdo</a>
         </div>
     </div>
     
@@ -171,9 +278,12 @@
             <span style="font-size: 2.2rem; margin-right: 10px;">🧠</span> Santé Mentale
         </h1>
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <a href="{{ path('app_admin_sante_mentale') }}" class="nav-pill" style="background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);">← Tableau de bord</a>
             <a href="{{ path('app_mood_index') }}" class="nav-pill moods {{ active_section|default('') == 'moods' ? 'active' : '' }}">Moods</a>
             <a href="{{ path('app_mental_tip_index') }}" class="nav-pill tips {{ active_section|default('') == 'tips' ? 'active' : '' }}">Mental Tips</a>
             <a href="{{ path('app_mental_entry_index') }}" class="nav-pill entries {{ active_section|default('') == 'entries' ? 'active' : '' }}">Mental Entries</a>
+            <a href="{{ path('app_chatbot') }}" class="nav-pill chatbot {{ active_section|default('') == 'chatbot' ? 'active' : '' }}">Chatbot</a>
+            <a href="{{ path('app_weekly_analysis') }}" class="nav-pill analysis {{ active_section|default('') == 'analysis' ? 'active' : '' }}">Analyse hebdo</a>
         </div>
     </div>
     

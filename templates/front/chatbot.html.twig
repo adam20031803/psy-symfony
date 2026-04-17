@@ -1,0 +1,120 @@
+{% extends 'front/base_front.html.twig' %}
+
+{% block title %}Chat IA — Atomic You{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-12 col-xl-10">
+        <div class="glass-card p-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                <div>
+                    <h1 class="h4 fw-bold mb-1">Chat IA</h1>
+                    <p class="muted mb-0">Discute librement. Le bot adapte le fil après ton mood.</p>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="p-3 rounded-3 mb-3 border" style="background: rgba(255,255,255,.05); min-height: 320px; max-height: 460px; overflow-y: auto; border-color: rgba(255,255,255,.18) !important;">
+                <div class="mb-2"><strong>Assistant:</strong> Salut 👋 On avance étape par étape. Quel est ton mood actuel en 1 ou 2 mots ?</div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="chat-input" class="form-control" placeholder="Écris ton message...">
+                <button type="button" id="chat-send" class="btn btn-brand">Envoyer</button>
+                <button type="button" id="chat-reset" class="btn btn-secondary">Réinitialiser chat</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const chatSend = document.getElementById('chat-send');
+    const chatReset = document.getElementById('chat-reset');
+    const askUrl = {{ path('api_chatbot_ask')|json_encode|raw }};
+    const resetUrl = {{ path('api_chatbot_reset')|json_encode|raw }};
+
+    function escapeHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+
+    function appendMessage(sender, text) {
+        const div = document.createElement('div');
+        div.className = 'mb-2';
+        const strong = document.createElement('strong');
+        strong.textContent = sender + ': ';
+        div.appendChild(strong);
+        const span = document.createElement('span');
+        span.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        div.appendChild(span);
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function updateInputHint(phase) {
+        const map = {
+            awaiting_checkin: 'Dis simplement comment tu vas...',
+            awaiting_mood: 'Ex: stressé, calme, fatigué...',
+            awaiting_goal: 'Écris ton objectif principal...',
+            awaiting_obstacle: 'Écris ton blocage principal...',
+            coaching: 'Écris ce que tu ressens maintenant...'
+        };
+        chatInput.setAttribute('placeholder', map[phase] || 'Écris ton message...');
+    }
+
+    async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message === '') return;
+
+        appendMessage('Vous', message);
+        chatInput.value = '';
+        chatSend.disabled = true;
+        chatSend.textContent = 'Envoi...';
+
+        try {
+            const response = await fetch(askUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ message: message })
+            });
+            const data = await response.json();
+            appendMessage('Assistant', data.answer || 'Pas de réponse.');
+            updateInputHint(data.phase || '');
+        } catch (e) {
+            appendMessage('Assistant', 'Erreur: impossible de contacter le chatbot.');
+        } finally {
+            chatSend.disabled = false;
+            chatSend.textContent = 'Envoyer';
+            chatInput.focus();
+        }
+    }
+
+    chatSend.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    chatReset.addEventListener('click', async function () {
+        try {
+            await fetch(resetUrl, { method: 'POST', credentials: 'same-origin' });
+            chatMessages.innerHTML = '<div class="mb-2"><strong>Assistant:</strong> Historique vidé ✅ Quel est ton mood actuel en 1 ou 2 mots ?</div>';
+            chatInput.value = '';
+            chatInput.focus();
+            updateInputHint('awaiting_mood');
+        } catch (e) {
+            appendMessage('Assistant', 'Impossible de réinitialiser pour le moment.');
+        }
+    });
+});
+</script>
+{% endblock %}

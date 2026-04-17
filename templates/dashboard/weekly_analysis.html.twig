@@ -1,0 +1,151 @@
+{% extends 'dashboard/base_mental.html.twig' %}
+
+{% block title %}Analyse hebdomadaire — Atomic You{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .analysis-layout {
+        flex: 1 1 100%;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .analysis-head {
+        background: linear-gradient(125deg, #1e293b, #0b1736);
+        color: #fff;
+        border-radius: 14px;
+        padding: 1rem;
+        border: 1px solid rgba(255,255,255,.12);
+    }
+    .analysis-cards {
+        display: grid;
+        gap: .85rem;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+    .analysis-card {
+        background: #f8fafc;
+        color: #0f172a;
+        border: 1px solid #dbe3ef;
+        border-radius: 12px;
+        padding: .8rem .9rem;
+        box-shadow: var(--card-shadow);
+    }
+    .analysis-card small {
+        display: block;
+        color: #64748b;
+        margin-bottom: .2rem;
+    }
+    .analysis-value {
+        font-weight: 800;
+        font-size: 1.25rem;
+        line-height: 1.2;
+    }
+    .analysis-subtle {
+        color: #64748b;
+        font-size: .8rem;
+    }
+    .analysis-panel {
+        background: #f8fafc;
+        color: #0f172a;
+        border-radius: 14px;
+        border: 1px solid #dbe3ef;
+        padding: 1rem;
+    }
+    .analysis-chart-wrap {
+        position: relative;
+        width: 100%;
+        height: 340px;
+    }
+    .analysis-insights {
+        margin: 0;
+        padding-left: 1rem;
+        color: #334155;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_main %}
+<section class="analysis-layout">
+    <div class="analysis-head">
+        <h2 class="h5 fw-bold mb-1">Analyse hebdomadaire</h2>
+        <div class="opacity-75 small">Semaine: {{ current_week_range }}</div>
+    </div>
+
+    <div class="analysis-cards">
+        <article class="analysis-card">
+            <small>Moyenne semaine</small>
+            <div class="analysis-value">{{ current_average|number_format(2, ',', ' ') }} / 10</div>
+        </article>
+        <article class="analysis-card">
+            <small>Jour le plus stressant</small>
+            <div class="analysis-value" style="font-size:1rem;">{{ stressful_day }}</div>
+            <div class="analysis-subtle">
+                {% if stressful_level is not null %}Niveau {{ stressful_level }}/10{% else %}Aucune donnée{% endif %}
+            </div>
+        </article>
+        <article class="analysis-card">
+            <small>Évolution</small>
+            <div class="analysis-value">{{ delta >= 0 ? '+' : '' }}{{ delta|number_format(2, ',', ' ') }}</div>
+        </article>
+        <article class="analysis-card">
+            <small>Index mental</small>
+            <div class="analysis-value">{{ mental_index|number_format(2, ',', ' ') }} / 10</div>
+        </article>
+    </div>
+
+    <div class="analysis-panel">
+        <h3 class="mb-3">Graphique comparatif</h3>
+        <div class="analysis-chart-wrap">
+            <canvas id="weeklyChart"></canvas>
+        </div>
+    </div>
+
+    <div class="analysis-panel">
+        <h3 class="mb-2">Conseils personnalisés</h3>
+        <ul class="analysis-insights">
+            {% for insight in insights %}
+                <li>{{ insight }}</li>
+            {% else %}
+                <li>Aucun conseil disponible.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const canvas = document.getElementById('weeklyChart');
+    if (!canvas) {
+        return;
+    }
+
+    const labels = {{ chart_labels|json_encode|raw }};
+    const currentData = {{ chart_current_values|json_encode|raw }}.map(value => Number(value) || 0);
+    const previousData = {{ chart_previous_values|json_encode|raw }}.map(value => Number(value) || 0);
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Semaine actuelle', data: currentData, borderColor: '#f97316', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                { label: 'Semaine précédente', data: previousData, borderColor: '#a3a3a3', borderWidth: 2, tension: 0.3, pointRadius: 3 }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, min: 0, max: 10, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'dashboard/base_mental.html.twig' %}
+
+{% block title %}Chatbot Mental — Atomic You{% endblock %}
+
+{% block dashboard_main %}
+<div class="panel-table" style="flex: 1 1 100%;">
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 fw-bold mb-1">Chatbot mental</h2>
+            <p class="text-muted small mb-0">Flow guidé: mood, objectif, blocage, coaching.</p>
+        </div>
+    </div>
+
+    <div id="chat-messages" class="p-3 rounded-3 mb-3 border" style="background: rgba(255,255,255,.05); min-height: 320px; max-height: 460px; overflow-y: auto; border-color: rgba(255,255,255,.18) !important;">
+        <div class="mb-2"><strong>Assistant:</strong> Salut. Quel est ton mood actuel en 1-2 mots ?</div>
+    </div>
+
+    <div class="input-group">
+        <input type="text" id="chat-input" class="form-control" placeholder="Ecris ton message...">
+        <button id="chat-send" class="btn btn-form-add">Envoyer</button>
+        <button id="chat-reset" class="btn btn-form-reset">Reinitialiser</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const messages = document.getElementById('chat-messages');
+    const input = document.getElementById('chat-input');
+    const send = document.getElementById('chat-send');
+    const reset = document.getElementById('chat-reset');
+    const hintMap = {
+        awaiting_mood: 'Ex: stresse, calme, fatigue...',
+        awaiting_goal: 'Ton objectif principal...',
+        awaiting_obstacle: 'Ton blocage principal...',
+        coaching: 'Ecris ce que tu ressens maintenant...'
+    };
+
+    function append(sender, text) {
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        row.innerHTML = '<strong>' + sender + ':</strong> ' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+        messages.appendChild(row);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function setHint(phase) {
+        input.setAttribute('placeholder', hintMap[phase] || 'Ecris ton message...');
+    }
+
+    async function reply() {
+        const value = input.value.trim();
+        if (!value) {
+            return;
+        }
+
+        append('Vous', value);
+        input.value = '';
+        send.disabled = true;
+        send.textContent = 'Envoi...';
+
+        try {
+            const response = await fetch('{{ path('api_chatbot_ask') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ message: value })
+            });
+            const data = await response.json();
+            append('Assistant', data.answer || 'Pas de reponse.');
+            setHint(data.phase || '');
+        } catch (error) {
+            append('Assistant', 'Erreur: impossible de contacter le chatbot.');
+        } finally {
+            send.disabled = false;
+            send.textContent = 'Envoyer';
+            input.focus();
+        }
+    }
+
+    send.addEventListener('click', reply);
+    input.addEventListener('keypress', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            reply();
+        }
+    });
+    reset.addEventListener('click', function () {
+        fetch('{{ path('api_chatbot_reset') }}', { method: 'POST', credentials: 'same-origin' })
+            .finally(function () {
+                messages.innerHTML = '<div class="mb-2"><strong>Assistant:</strong> Chat reinitialise. Quel est ton mood actuel en 1-2 mots ?</div>';
+                input.value = '';
+                setHint('awaiting_mood');
+                input.focus();
+            });
+    });
+});
+</script>
+{% endblock %}

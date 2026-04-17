@@ -26,4 +26,33 @@ class MentalEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /** @return MentalEntry[] */
+    public function findForListing(?string $search, string $sort, string $dir): array
+    {
+        $allowedSorts = [
+            'mood' => 'm.moodName',
+            'date' => 'e.entryDate',
+            'level' => 'e.emotionLevel',
+            'activity' => 'e.activity',
+            'id' => 'e.id',
+        ];
+        $sortField = $allowedSorts[$sort] ?? $allowedSorts['date'];
+        $direction = 'DESC' === strtoupper($dir) ? 'DESC' : 'ASC';
+
+        $qb = $this->createQueryBuilder('e')
+            ->join('e.mood', 'm')->addSelect('m');
+
+        $term = mb_strtolower(trim((string) $search));
+        if ('' !== $term) {
+            $qb->andWhere('LOWER(m.moodName) LIKE :term OR LOWER(e.activity) LIKE :term OR LOWER(COALESCE(e.note, \'\')) LIKE :term')
+                ->setParameter('term', '%'.$term.'%');
+        }
+
+        return $qb
+            ->orderBy($sortField, $direction)
+            ->addOrderBy('e.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
