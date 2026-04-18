@@ -25,7 +25,10 @@ use App\Form\AdminUserType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin')]
@@ -38,11 +41,14 @@ class AdminController extends AbstractController
         ReclamationRepository $reclamationRepo,
         ChallengeRepository $challengeRepo,
         PostRepository $postRepo,
-        HabitudeRepository $habitudeRepo
+        HabitudeRepository $habitudeRepo,
+        \App\Repository\ProgramRepository $programRepo,
+        \App\Repository\WorkoutProgressRepository $workoutProgressRepo
     ): Response
     {
         $users = $userRepository->findAll();
         $reclamations = $reclamationRepo->findAll();
+        $clients = $userRepository->findClientsWithFitnessStats();
 
         $stats = [
             'users_total'  => count($users),
@@ -53,11 +59,119 @@ class AdminController extends AbstractController
             'challenges'   => $challengeRepo->count([]),
             'posts'        => $postRepo->count([]),
             'habitudes'    => $habitudeRepo->count([]),
+            'total_programs' => $programRepo->count([]),
+            'published_programs' => $programRepo->count(['isPublished' => true]),
+            'total_workouts' => $workoutProgressRepo->count([]),
+            'active_clients' => count(array_filter($clients, fn($c) => $c['total_workouts'] > 0)),
         ];
 
         return $this->render('admin/index.html.twig', [
             'stats' => $stats,
+            'clients' => $clients,
         ]);
+    }
+
+    #[Route('/fitness/export', name: 'app_admin_fitness_export')]
+    public function exportFitnessData(
+        UserRepository $userRepo,
+        \App\Repository\ProgramRepository $programRepo,
+        \App\Repository\ExerciseRepository $exerciseRepo
+    ): Response {
+        $clients = $userRepo->findClientsWithFitnessStats();
+        $programs = $programRepo->findAll();
+        $exercises = $exerciseRepo->findAll();
+
+        $spreadsheet = new Spreadsheet();
+        
+        // --- SHEET 1: Clients ---
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('Clients & Suivi');
+        
+        $sheet1->setCellValue('A1', 'ID');
+        $sheet1->setCellValue('B1', 'Nom');
+        $sheet1->setCellValue('C1', 'Prénom');
+        $sheet1->setCellValue('D1', 'Email');
+        $sheet1->setCellValue('E1', 'Téléphone');
+        $sheet1->setCellValue('F1', 'Âge');
+        $sheet1->setCellValue('G1', 'Workouts Trackés');
+        $sheet1->setCellValue('H1', 'Last Activity');
+        $sheet1->getStyle('A1:H1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($clients as $client) {
+            $sheet1->setCellValue('A' . $row, $client['id']);
+            $sheet1->setCellValue('B' . $row, $client['nom']);
+            $sheet1->setCellValue('C' . $row, $client['prenom']);
+            $sheet1->setCellValue('D' . $row, $client['email']);
+            $sheet1->setCellValue('E' . $row, $client['telephone']);
+            $sheet1->setCellValue('F' . $row, $client['age']);
+            $sheet1->setCellValue('G' . $row, $client['total_workouts']);
+            $sheet1->setCellValue('H' . $row, $client['last_workout_date']);
+            $row++;
+        }
+        foreach (range('A', 'H') as $col) { $sheet1->getColumnDimension($col)->setAutoSize(true); }
+
+        // --- SHEET 2: Programmes ---
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Programmes');
+        
+        $sheet2->setCellValue('A1', 'ID');
+        $sheet2->setCellValue('B1', 'Titre');
+        $sheet2->setCellValue('C1', 'Objectif');
+        $sheet2->setCellValue('D1', 'Durée (Semaines)');
+        $sheet2->setCellValue('E1', 'Niveau');
+        $sheet2->setCellValue('F1', 'Statut');
+        $sheet2->getStyle('A1:F1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($programs as $prog) {
+            $sheet2->setCellValue('A' . $row, $prog->getId());
+            $sheet2->setCellValue('B' . $row, $prog->getTitle());
+            $sheet2->setCellValue('C' . $row, $prog->getGoal());
+            $sheet2->setCellValue('D' . $row, $prog->getDurationWeeks());
+            $sheet2->setCellValue('E' . $row, $prog->getLevel());
+            $sheet2->setCellValue('F' . $row, $prog->isIsPublished() ? 'Publié' : 'Brouillon');
+            $row++;
+        }
+        foreach (range('A', 'F') as $col) { $sheet2->getColumnDimension($col)->setAutoSize(true); }
+
+        // --- SHEET 3: Exercices ---
+        $sheet3 = $spreadsheet->createSheet();
+        $sheet3->setTitle('Exercices');
+        
+        $sheet3->setCellValue('A1', 'ID');
+        $sheet3->setCellValue('B1', 'Nom');
+        $sheet3->setCellValue('C1', 'Catégorie');
+        $sheet3->setCellValue('D1', 'Difficulté');
+        $sheet3->setCellValue('E1', 'Durée (min)');
+        $sheet3->setCellValue('F1', 'Calories');
+        $sheet3->getStyle('A1:F1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($exercises as $ex) {
+            $sheet3->setCellValue('A' . $row, $ex->getId());
+            $sheet3->setCellValue('B' . $row, $ex->getName());
+            $sheet3->setCellValue('C' . $row, $ex->getCategory());
+            $sheet3->setCellValue('D' . $row, $ex->getDifficulty());
+            $sheet3->setCellValue('E' . $row, $ex->getDuration());
+            $sheet3->setCellValue('F' . $row, $ex->getCalories());
+            $row++;
+        }
+        foreach (range('A', 'F') as $col) { $sheet3->getColumnDimension($col)->setAutoSize(true); }
+
+        // Reset view to the first sheet
+        $spreadsheet->setActiveSheetIndex(0);
+
+        $writer = new Xls($spreadsheet);
+        $response = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+
+        $response->headers->set('Content-Type', 'application/vnd.ms-excel');
+        $response->headers->set('Content-Disposition', 'attachment;filename="fitness_complet_export.xls"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
 
     #[Route('/users', name: 'app_admin_users')]

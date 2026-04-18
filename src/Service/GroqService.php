@@ -64,4 +64,42 @@ class GroqService
             return "Erreur Groq: " . $e->getMessage();
         }
     }
+
+    /**
+     * Free-form text response (no JSON constraint) — for AI advice, analysis, etc.
+     */
+    public function generateResponseFreeform(string $prompt): string
+    {
+        if (!$this->apiKey || $this->apiKey === '') {
+            return "Groq API Key is missing.";
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                ],
+                'json' => [
+                    'model'       => 'llama-3.3-70b-versatile',
+                    'messages'    => [
+                        ['role' => 'system', 'content' => 'Tu es un expert en coaching sportif. Réponds en français de façon claire et structurée.'],
+                        ['role' => 'user',   'content' => $prompt],
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens'  => 1500,
+                ]
+            ]);
+
+            $data = $response->toArray();
+
+            if (isset($data['choices'][0]['message']['content'])) {
+                return $data['choices'][0]['message']['content'];
+            }
+
+            return "Je n'ai pas pu générer de conseils pour le moment.";
+
+        } catch (\Exception $e) {
+            return "Erreur Groq (freeform): " . $e->getMessage();
+        }
+    }
 }

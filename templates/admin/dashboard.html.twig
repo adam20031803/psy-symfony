@@ -143,4 +143,255 @@
         </div>
     </div>
 </div>
+
+{# ---- AI Coach Analysis Panel (Premium Redesign) ---- #}
+<div class="table-card" style="margin-top: 32px; overflow: visible;">
+    <div style="padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(108,99,255,0.5));">🤖</span> Analyse IA — Intelligence Fitness
+            </h2>
+            <p style="color: var(--muted); font-size: 0.8rem; margin: 4px 0 0;">Analyse prédictive et recommandations automatiques basées sur vos actifs.</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            {# Export Dropdown Group - shown after analysis #}
+            <div id="ai-export-group" style="display: none; gap: 8px; align-items: center;">
+                <span style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600;">Exporter :</span>
+                
+                {# Excel button #}
+                <button id="ai-excel-btn" onclick="exportAnalysisToExcel()" title="Télécharger l'analyse en format Excel (.xlsx)" style="
+                    background: linear-gradient(135deg, #16a34a, #22c55e);
+                    color: white; border: none; padding: 9px 18px; border-radius: 10px;
+                    font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex;
+                    align-items: center; gap: 7px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+                    position: relative; overflow: hidden;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(34,197,94,0.45)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(34,197,94,0.3)'">
+                    <i class="bi bi-file-earmark-spreadsheet-fill" style="font-size: 1rem;"></i>
+                    Excel
+                    <span style="background: rgba(255,255,255,0.2); font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; font-weight: 700;">.xlsx</span>
+                </button>
+
+                {# PDF button #}
+                <button id="ai-pdf-btn" onclick="exportAnalysisToPdf()" title="Télécharger l'analyse en format PDF" style="
+                    background: linear-gradient(135deg, #dc2626, #ef4444);
+                    color: white; border: none; padding: 9px 18px; border-radius: 10px;
+                    font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex;
+                    align-items: center; gap: 7px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(239,68,68,0.45)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(239,68,68,0.3)'">
+                    <i class="bi bi-file-earmark-pdf-fill" style="font-size: 1rem;"></i>
+                    PDF
+                    <span style="background: rgba(255,255,255,0.2); font-size: 0.65rem; padding: 1px 5px; border-radius: 4px; font-weight: 700;">.pdf</span>
+                </button>
+
+                <div style="width: 1px; height: 28px; background: var(--border); margin: 0 4px;"></div>
+            </div>
+
+            {# Main Analyse button #}
+            <button id="ai-analyse-btn" onclick="runAiAnalysis()" style="
+                background: linear-gradient(135deg, #6366f1, #a855f7);
+                color: white; border: none; padding: 10px 24px; border-radius: 10px;
+                font-size: 0.9rem; font-weight: 600; cursor: pointer; display: inline-flex;
+                align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(99,102,241,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(99,102,241,0.3)'">
+                <i class="bi bi-magic"></i> Générer l'analyse
+            </button>
+        </div>
+    </div>
+
+    {# Hidden forms for Export #}
+    <form id="ai-pdf-form" action="{{ path('admin_ai_analyse_pdf') }}" method="POST" style="display: none;">
+        <input type="hidden" name="summary" class="pdf-summary-field">
+        <input type="hidden" name="advice" class="pdf-advice-field">
+        <input type="hidden" name="kpis" class="pdf-kpis-field">
+        <input type="hidden" name="chartData" class="pdf-chartData-field">
+    </form>
+    <form id="ai-excel-form" action="{{ path('admin_ai_analyse_excel') }}" method="POST" style="display: none;">
+        <input type="hidden" name="summary" class="pdf-summary-field">
+        <input type="hidden" name="advice" class="pdf-advice-field">
+        <input type="hidden" name="kpis" class="pdf-kpis-field">
+        <input type="hidden" name="chartData" class="pdf-chartData-field">
+    </form>
+
+    <div id="ai-result-area" style="padding: 24px; display: none; animation: fadeIn 0.6s ease-out;">
+        <div id="ai-loading" style="display: none; text-align: center; padding: 48px; color: var(--muted);">
+            <div class="ai-loader"></div>
+            <p style="margin-top: 16px; font-weight: 500; letter-spacing: 0.02em;">Génération de l'intelligence artificielle...</p>
+        </div>
+        
+        <div id="ai-dashboard" style="display: none;">
+            {# KPI Grid #}
+            <div id="ai-kpis" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;"></div>
+
+            {# Visualization Row #}
+            <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-bottom: 24px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+                    <h3 style="font-size: 0.85rem; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.05em;">Équilibre du Catalogue</h3>
+                    <canvas id="aiChart" height="200"></canvas>
+                </div>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+                    <h3 style="font-size: 0.85rem; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.05em;">Résumé Exécutif</h3>
+                    <div id="ai-summary" style="line-height: 1.6; font-size: 0.95rem; color: #cbd5e1;"></div>
+                </div>
+            </div>
+
+            {# Detailed Advice #}
+            <div style="background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(168,85,247,0.05)); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 24px;">
+                <h3 style="font-size: 0.85rem; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; letter-spacing: 0.05em;">Conseils du Coach Expert</h3>
+                <div id="ai-advice" style="font-size: 0.9rem; line-height: 1.8; color: #e2e8f0; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ai-loader {
+    width: 50px; height: 50px;
+    border: 3px solid rgba(99,102,241,0.1);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.kpi-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.3s;
+}
+.kpi-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.05); }
+.kpi-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let myChart = null;
+
+async function runAiAnalysis() {
+    const btn = document.getElementById('ai-analyse-btn');
+    const exportGroup = document.getElementById('ai-export-group');
+    const area = document.getElementById('ai-result-area');
+    const loading = document.getElementById('ai-loading');
+    const dashboard = document.getElementById('ai-dashboard');
+    
+    btn.disabled = true;
+    exportGroup.style.display = 'none';
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin" style="display:inline-block; animation: spin 1s linear infinite"></i> Analyse...';
+    
+    area.style.display = 'block';
+    loading.style.display = 'block';
+    dashboard.style.display = 'none';
+
+    try {
+        const res = await fetch('{{ path("admin_ai_analyse") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        
+        if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+
+        const data = await res.json();
+        
+        // Store data for Exports (using class selectors to update both forms)
+        document.querySelectorAll('.pdf-summary-field').forEach(f => f.value = data.summary || '');
+        document.querySelectorAll('.pdf-advice-field').forEach(f => f.value = data.advice || '');
+        document.querySelectorAll('.pdf-kpis-field').forEach(f => f.value = JSON.stringify(data.kpis || []));
+        document.querySelectorAll('.pdf-chartData-field').forEach(f => f.value = JSON.stringify(data.chartData || {}));
+
+        // Render KPIs
+        const kpiContainer = document.getElementById('ai-kpis');
+        kpiContainer.innerHTML = '';
+        if (data.kpis && data.kpis.length) {
+            data.kpis.forEach((kpi, index) => {
+                const card = document.createElement('div');
+                card.className = 'kpi-card';
+                card.style.animation = `fadeIn 0.4s ease-out ${index * 0.1}s both`;
+                const colors = ['#6366f1', '#8b5cf6', '#ec4899'];
+                const color = colors[index % colors.length];
+                card.innerHTML = `
+                    <div class="kpi-icon" style="background: ${color}20; color: ${color}">
+                        <i class="bi ${kpi.icon || 'bi-lightning'}"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-bottom: 2px;">${kpi.label}</div>
+                        <div style="font-size: 1.25rem; font-weight: 700;">${kpi.value} <span style="font-size: 0.85rem; font-weight: 500; opacity: 0.7">${kpi.unit || ''}</span></div>
+                    </div>
+                `;
+                kpiContainer.appendChild(card);
+            });
+        }
+
+        // Render Summary & Advice
+        document.getElementById('ai-summary').textContent = data.summary || 'Analyse terminée.';
+        document.getElementById('ai-advice').textContent = data.advice || '';
+
+        // Render Chart
+        if (data.chartData) {
+            const ctx = document.getElementById('aiChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: data.chartData.labels,
+                    datasets: [{
+                        label: 'Équilibre',
+                        data: data.chartData.values,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: '#6366f1',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(255,255,255,0.05)' },
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            pointLabels: { color: '#64748b' },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        loading.style.display = 'none';
+        dashboard.style.display = 'block';
+        exportGroup.style.display = 'inline-flex';
+        exportGroup.style.animation = 'fadeIn 0.4s ease-out both';
+    } catch (e) {
+        console.error('AI Analysis failed:', e);
+        loading.style.display = 'none';
+        dashboard.style.display = 'block';
+        document.getElementById('ai-summary').innerHTML = `<span style="color:var(--danger)">Une erreur est survenue : ${e.message}</span>`;
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic"></i> Générer l\'analyse';
+}
+
+function exportAnalysisToPdf() {
+    document.getElementById('ai-pdf-form').submit();
+}
+
+function exportAnalysisToExcel() {
+    document.getElementById('ai-excel-form').submit();
+}
+</script>
 {% endblock %}
