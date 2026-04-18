@@ -1,0 +1,159 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques Générales — Admin{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-top: 24px;
+    }
+    .chart-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+    }
+    .chart-card.full-width {
+        grid-column: 1 / -1;
+    }
+    .chart-header {
+        margin-bottom: 20px;
+    }
+    .chart-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 4px;
+    }
+    .chart-subtitle {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .chart-container.large {
+        height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>📊 Statistiques de la plateforme</h1>
+        <p>Vue globale des performances et de l'activité</p>
+    </div>
+</div>
+
+{# KPIs overview #}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <div class="stat-label">Utilisateurs Total</div>
+            <div class="stat-value">{{ totalUsers }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="bi bi-chat-square-text-fill"></i></div>
+        <div>
+            <div class="stat-label">Posts Forum</div>
+            <div class="stat-value">{{ totalPosts }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange"><i class="bi bi-bullseye"></i></div>
+        <div>
+            <div class="stat-label">Habitudes créées</div>
+            <div class="stat-value">{{ totalHabitudes }}</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon pink"><i class="bi bi-flag-fill"></i></div>
+        <div>
+            <div class="stat-label">Défis/Challenges</div>
+            <div class="stat-value">{{ totalChallenges }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card full-width">
+        <div class="chart-header">
+            <h2 class="chart-title">Croissance des utilisateurs</h2>
+            <div class="chart-subtitle">Inscriptions sur les 6 derniers mois</div>
+        </div>
+        <div class="chart-container large">
+            <canvas id="c-reg"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h2 class="chart-title">Répartition par rôles</h2>
+            <div class="chart-subtitle">Proportion des statuts actuels</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="c-roles"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h2 class="chart-title">Habitudes par catégorie</h2>
+            <div class="chart-subtitle">Sujets les plus suivis par les utilisateurs</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="c-hab"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h2 class="chart-title">État des réclamations</h2>
+            <div class="chart-subtitle">Statuts actuels des requêtes support</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="c-rec"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card full-width">
+        <div class="chart-header">
+            <h2 class="chart-title">Vue d'ensemble de l'écosystème</h2>
+            <div class="chart-subtitle">Comparaison des volumes par module</div>
+        </div>
+        <div class="chart-container">
+            <canvas id="c-over"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Injecting the raw generic data from the controller
+    function initC(id, type, data, options) {
+        if(options && options.plugins && options.plugins.legend) {
+            options.plugins.legend.labels = options.plugins.legend.labels || {};
+            options.plugins.legend.labels.color = '#94a3b8';
+        }
+        new Chart(document.getElementById(id), { type, data, options });
+    }
+
+    initC('c-reg', '{{ chartRegistrations.type }}', {{ chartRegistrations.data|json_encode|raw }}, {{ chartRegistrations.options|json_encode|raw }});
+    initC('c-roles', '{{ chartRoles.type }}', {{ chartRoles.data|json_encode|raw }}, {{ chartRoles.options|json_encode|raw }});
+    initC('c-hab', '{{ chartHabitudes.type }}', {{ chartHabitudes.data|json_encode|raw }}, {{ chartHabitudes.options|json_encode|raw }});
+    initC('c-rec', '{{ chartReclamations.type }}', {{ chartReclamations.data|json_encode|raw }}, {{ chartReclamations.options|json_encode|raw }});
+    initC('c-over', '{{ chartOverview.type }}', {{ chartOverview.data|json_encode|raw }}, {{ chartOverview.options|json_encode|raw }});
+});
+</script>
+{% endblock %}

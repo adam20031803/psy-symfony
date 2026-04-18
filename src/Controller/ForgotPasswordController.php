@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
@@ -18,8 +19,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ForgotPasswordController extends AbstractController
 {
+    private const ALLOWED_EMAIL = 'adam.banaoues@esprit.tn';
+
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
-    public function request(
+    public function index(
         Request $request,
         UserRepository $userRepo,
         EntityManagerInterface $em,
@@ -27,97 +30,82 @@ class ForgotPasswordController extends AbstractController
         LoggerInterface $logger,
         #[Autowire('%env(MAILER_FROM)%')] string $mailerFrom,
         #[Autowire('%env(MAILER_DSN)%')] string $mailerDsn,
-        #[Autowire('%env(MAILER_FORCE_TO)%')] string $mailerForceTo,
+        #[Autowire('%env(MAILER_FORCE_TO)%')] ?string $mailerForceTo,
     ): Response {
-        $error                = null;
-        $success              = false;
-        $nullTransport        = str_starts_with($mailerDsn, 'null://');
-        $emailSendFailed      = false;
-        $emailFailureDetail   = null;
-        $devResetUrl          = null;
+        $error = null;
+        $success = false;
+        $isDev = $this->getParameter('kernel.debug');
+        $isNullTransport = str_starts_with($mailerDsn, 'null://');
 
         if ($request->isMethod('POST')) {
             $email = trim((string) $request->request->get('email', ''));
 
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            // Validate email format
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $error = 'Veuillez saisir une adresse email valide.';
-            } else {
+            }
+            // Check if email is allowed
+            elseif (strtolower($email) !== strtolower(self::ALLOWED_EMAIL)) {
+                $error = sprintf('Seule l\'adresse %s est autorisée.', self::ALLOWED_EMAIL);
+            }
+            // Find user
+            else {
                 $user = $userRepo->findOneBy(['email' => $email]);
 
                 if ($user === null) {
+                    // Pretend success for security (don't reveal if email exists)
                     $success = true;
                 } else {
-                    $plainToken = bin2hex(random_bytes(32));
-                    $user->setPasswordResetToken($plainToken);
+                    // Generate reset token
+                    $token = bin2hex(random_bytes(32));
+                    $user->setPasswordResetToken($token);
                     $user->setPasswordResetRequestedAt(new \DateTimeImmutable());
 
                     try {
                         $em->flush();
                     } catch (\Throwable $e) {
-                        $logger->error('Échec enregistrement jeton réinitialisation (souvent colonnes SQL manquantes)', [
+                        $logger->error('Failed to save password reset token', [
                             'exception' => $e,
-                            'email'     => $email,
+                            'email' => $email,
                         ]);
-                        $error = 'Impossible d’enregistrer la demande. Exécutez la mise à jour de la base (voir documentation projet) puis réessayez.';
-
+                        $error = 'Une erreur est survenue. Veuillez réessayer.';
                         return $this->render('security/forgot_password.html.twig', [
-                            'error'         => $error,
-                            'success'       => false,
-                            'devResetUrl'   => null,
+                            'error' => $error,
                         ]);
                     }
 
+                    // Generate reset URL
                     $resetUrl = $this->generateUrl(
                         'app_reset_password',
-                        ['token' => $plainToken],
+                        ['token' => $token],
                         UrlGeneratorInterface::ABSOLUTE_URL
                     );
 
-                    if ($nullTransport && $this->getParameter('kernel.debug')) {
-                        $devResetUrl = $resetUrl;
-                    }
-
-                    if (!$nullTransport && $this->mailerConfigContainsPlaceholders($mailerDsn, $mailerFrom)) {
-                        $emailSendFailed = true;
-                        $emailFailureDetail = 'Dans .env.local, vous avez encore des valeurs d’exemple (REMPLACE_…). Remplacez-les par votre vraie adresse Gmail (avec %40 à la place de @ dans le DSN) et le mot de passe d’application Google à 16 caractères, ou mettez MAILER_DSN=null://null le temps de configurer.';
-                    } else {
+                    // Send email if not in test mode
+                    if (!$isNullTransport) {
                         try {
-                            $accountEmail = (string) $user->getEmail();
-                            $forceTo      = trim($mailerForceTo);
-                            $recipient    = ($forceTo !== '' && filter_var($forceTo, FILTER_VALIDATE_EMAIL))
-                                ? $forceTo
-                                : $accountEmail;
-
                             $emailMessage = (new TemplatedEmail())
                                 ->from(Address::create($mailerFrom))
-                                ->to($recipient)
-                                ->subject('Réinitialisation de votre mot de passe — Atomic You')
+                                ->to($email)
+                                ->subject('Réinitialisation de votre mot de passe')
                                 ->htmlTemplate('emails/reset_password.html.twig')
                                 ->context([
-                                    'resetUrl'            => $resetUrl,
-                                    'prenom'              => $user->getPrenom() ?? '',
-                                    'redirectedToMailbox' => $recipient !== $accountEmail ? $accountEmail : null,
+                                    'resetUrl' => $resetUrl,
+                                    'userName' => $user->getPrenom() ?? $user->getNom() ?? 'User',
                                 ]);
 
                             $mailer->send($emailMessage);
                         } catch (TransportExceptionInterface $e) {
-                            $logger->error('Échec envoi email réinitialisation mot de passe', [
+                            $logger->error('Failed to send password reset email', [
                                 'exception' => $e,
-                                'email'     => $email,
+                                'email' => $email,
                             ]);
-                            $emailSendFailed = true;
-                            if ($this->getParameter('kernel.debug')) {
-                                $emailFailureDetail = $e->getMessage();
-                            }
+                            // Show success anyway, not to reveal email existence
                         } catch (\Throwable $e) {
-                            $logger->error('Erreur email réinitialisation (template ou mailer)', [
+                            $logger->error('Error sending reset email', [
                                 'exception' => $e,
-                                'email'     => $email,
+                                'email' => $email,
                             ]);
-                            $emailSendFailed = true;
-                            if ($this->getParameter('kernel.debug')) {
-                                $emailFailureDetail = $e->getMessage();
-                            }
                         }
                     }
 
@@ -127,25 +115,10 @@ class ForgotPasswordController extends AbstractController
         }
 
         return $this->render('security/forgot_password.html.twig', [
-            'error'              => $error,
-            'success'            => $success,
-            'nullTransport'      => $nullTransport,
-            'emailSendFailed'    => $emailSendFailed,
-            'emailFailureDetail' => $emailFailureDetail,
-            'devResetUrl'        => $devResetUrl,
+            'error' => $error,
+            'success' => $success,
+            'isDev' => $isDev,
+            'isNullTransport' => $isNullTransport,
         ]);
-    }
-
-    /** Détecte les modèles .env jamais remplacés (évite un appel SMTP inutile et l’erreur 535 Google). */
-    private function mailerConfigContainsPlaceholders(string $dsn, string $from): bool
-    {
-        $blob = $dsn . ' ' . $from;
-        foreach (['REMPLACE_', 'VOTRE_MDP', 'vous%40gmail.com', 'CHANGEME', 'XXXXXXXX', 'exemple@'] as $needle) {
-            if (str_contains($blob, $needle)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -4,6 +4,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -53,11 +55,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'is_active', type: 'boolean', options: ['default' => 1])]
     private bool $isActive = true;
 
+    #[ORM\Column(name: 'password_reset_token', type: 'string', length: 100, nullable: true, unique: true)]
+    private ?string $passwordResetToken = null;
+
+    #[ORM\Column(name: 'password_reset_requested_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $passwordResetRequestedAt = null;
+
+    /**
+     * Face descriptor: 128-float array produced by face-api.js for biometric login.
+     * Stored as a JSON array in the database.
+     */
+    #[ORM\Column(name: 'face_descriptor', type: 'json', nullable: true)]
+    private ?array $faceDescriptor = null;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: MentalEntries::class, orphanRemoval: true)]
+    private Collection $mentalEntries;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Moods::class, orphanRemoval: true)]
+    private Collection $moods;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: NotificationLog::class, orphanRemoval: true)]
+    private Collection $notificationLogs;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Reclamation::class, orphanRemoval: true)]
+    private Collection $reclamations;
+
     // --- Getters & Setters ---
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
+        $this->mentalEntries = new ArrayCollection();
+        $this->moods = new ArrayCollection();
+        $this->notificationLogs = new ArrayCollection();
+        $this->reclamations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -205,6 +236,71 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->isActive = $isActive;
         return $this;
+    }
+
+    public function getPasswordResetToken(): ?string
+    {
+        return $this->passwordResetToken;
+    }
+
+    public function setPasswordResetToken(?string $passwordResetToken): static
+    {
+        $this->passwordResetToken = $passwordResetToken;
+        return $this;
+    }
+
+    public function getPasswordResetRequestedAt(): ?\DateTimeImmutable
+    {
+        return $this->passwordResetRequestedAt;
+    }
+
+    public function setPasswordResetRequestedAt(?\DateTimeImmutable $passwordResetRequestedAt): static
+    {
+        $this->passwordResetRequestedAt = $passwordResetRequestedAt;
+        return $this;
+    }
+
+    public function getFaceDescriptor(): ?array
+    {
+        return $this->faceDescriptor;
+    }
+
+    public function setFaceDescriptor(?array $faceDescriptor): static
+    {
+        $this->faceDescriptor = $faceDescriptor;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MentalEntries>
+     */
+    public function getMentalEntries(): Collection
+    {
+        return $this->mentalEntries;
+    }
+
+    /**
+     * @return Collection<int, Moods>
+     */
+    public function getMoods(): Collection
+    {
+        return $this->moods;
+    }
+
+    /**
+     * @return Collection<int, NotificationLog>
+     */
+    public function getNotificationLogs(): Collection
+    {
+        return $this->notificationLogs;
+    }
+
+    /**
+     * @return Collection<int, Reclamation>
+     */
+    public function getReclamations(): Collection
+    {
+        return $this->reclamations;
     }
 
     /**

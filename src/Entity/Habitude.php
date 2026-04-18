@@ -54,7 +54,7 @@ class Habitude
     #[Assert\GreaterThan(propertyPath: 'startDate', message: 'The end date must be after the start date.')]
     private ?\DateTimeInterface $endDate = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'is_active')]
     private ?bool $active = true;
 
 

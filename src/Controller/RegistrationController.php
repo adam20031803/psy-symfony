@@ -25,17 +25,17 @@ class RegistrationController extends AbstractController
             $formData = $request->request->all();
 
             $prenom    = trim($formData['prenom'] ?? '');
+            $nom       = trim($formData['nom'] ?? '');
             $age       = (int) ($formData['age'] ?? 0);
             $telephone = trim($formData['telephone'] ?? '');
             $email     = trim($formData['email'] ?? '');
             $password  = $formData['password'] ?? '';
             $confirm   = $formData['confirm_password'] ?? '';
-            $role      = in_array($formData['role'] ?? '', ['user', 'coach'], true)
-                         ? $formData['role']
-                         : 'user';
+            // New users are always created with 'user' role - only admins can be coaches/admins
+            $role      = 'user';
 
             // Validation
-            if (empty($prenom) || empty($email) || empty($password)) {
+            if (empty($prenom) || empty($nom) || empty($email) || empty($password)) {
                 $error = 'Tous les champs obligatoires doivent être remplis.';
             } elseif ($password !== $confirm) {
                 $error = 'Les deux mots de passe ne correspondent pas.';
@@ -46,12 +46,21 @@ class RegistrationController extends AbstractController
             } else {
                 $user = new User();
                 $user->setPrenom($prenom);
-                $user->setNom(''); // nom facultatif, vide par défaut
+                $user->setNom($nom);
                 $user->setAge($age > 0 ? $age : null);
                 $user->setTelephone(!empty($telephone) ? $telephone : null);
                 $user->setEmail($email);
                 $user->setRole($role);
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
+
+                // Optional Face ID descriptor submitted with the form
+                $faceDescriptorRaw = trim($formData['face_descriptor'] ?? '');
+                if (!empty($faceDescriptorRaw)) {
+                    $descriptor = json_decode($faceDescriptorRaw, true);
+                    if (is_array($descriptor) && count($descriptor) === 128) {
+                        $user->setFaceDescriptor(array_map('floatval', $descriptor));
+                    }
+                }
 
                 $entityManager->persist($user);
                 $entityManager->flush();

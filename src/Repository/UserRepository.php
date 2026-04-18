@@ -61,4 +61,45 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         
         return $results;
     }
+
+    /**
+     * Count users grouped by role.
+     * Returns e.g. [['role' => 'user', 'cnt' => 10], ...]
+     */
+    public function countByRole(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.role', 'COUNT(u.id) AS cnt')
+            ->groupBy('u.role')
+            ->getQuery()
+            ->getArrayResult();
+    }
+
+    /**
+     * Count new user registrations per month for the last N months.
+     * Returns an associative array ['YYYY-MM' => count, ...].
+     */
+    public function registrationsPerMonth(int $months = 6): array
+    {
+        $data = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $data[(new \DateTime("first day of -$i months"))->format('Y-m')] = 0;
+        }
+
+        $rows = $this->createQueryBuilder('u')
+            ->select('SUBSTRING(u.createdAt, 1, 7) AS ym', 'COUNT(u.id) AS cnt')
+            ->where('u.createdAt >= :since')
+            ->setParameter('since', new \DateTime("first day of -" . ($months - 1) . " months"))
+            ->groupBy('ym')
+            ->orderBy('ym', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        foreach ($rows as $row) {
+            if (isset($data[$row['ym']])) {
+                $data[$row['ym']] = (int) $row['cnt'];
+            }
+        }
+        return $data;
+    }
 }

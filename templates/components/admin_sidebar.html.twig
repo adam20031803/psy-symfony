@@ -5,6 +5,9 @@
     </div>
 
     <div class="nav-label">Principal</div>
+    <a href="{{ path('app_admin_statistiques') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_statistiques' ? 'active' : '' }}">
+        <span class="nav-icon">📊</span> Statistiques
+    </a>
     <a href="{{ path('app_admin_users') }}" class="nav-item {{ app.request.attributes.get('_route') == 'app_admin_users' ? 'active' : '' }}">
         <span class="nav-icon">👥</span> Utilisateurs
     </a>

@@ -158,6 +158,7 @@
     }
     input::placeholder { color: rgba(255,255,255,0.25); }
 
+
     .btn-login {
         width: 100%;
         padding: 15px;
@@ -169,7 +170,7 @@
         font-weight: 600;
         font-family: 'Inter', sans-serif;
         cursor: pointer;
-        margin-top: 8px;
+        margin-top: 20px;
         transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
         box-shadow: 0 6px 24px rgba(108,99,255,0.4);
         letter-spacing: 0.2px;
@@ -208,6 +209,141 @@
         transition: color 0.2s;
     }
     .footer-link a:hover { color: #00d2c8; }
+
+    /* Google Login Button */
+    .btn-google {
+        width: 100%;
+        padding: 12px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        color: #333;
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.2s, border-color 0.2s;
+        margin-bottom: 12px;
+    }
+    .btn-google:hover {
+        background: #f8f8f8;
+        border-color: #999;
+    }
+
+    /* Face ID Button */
+    .btn-face {
+        width: 100%;
+        padding: 12px;
+        background: rgba(108,99,255,0.08);
+        border: 1.5px solid rgba(108,99,255,0.4);
+        border-radius: 12px;
+        color: rgba(255,255,255,0.85);
+        font-size: 0.95rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+        margin-bottom: 12px;
+    }
+    .btn-face:hover {
+        background: rgba(108,99,255,0.18);
+        border-color: #6c63ff;
+        box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+    }
+    .btn-face-icon {
+        font-size: 1.2rem;
+    }
+
+    /* Face Modal */
+    .face-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(8px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .face-modal-overlay.active { display: flex; }
+    .face-modal {
+        background: #12122a;
+        border: 1px solid rgba(108,99,255,0.3);
+        border-radius: 24px;
+        padding: 32px;
+        max-width: 380px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+        animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    .face-modal h3 {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .face-modal p {
+        color: rgba(255,255,255,0.45);
+        font-size: 0.82rem;
+        margin-bottom: 20px;
+    }
+    .face-video-wrap {
+        position: relative;
+        width: 240px;
+        height: 240px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid rgba(108,99,255,0.5);
+        box-shadow: 0 0 30px rgba(108,99,255,0.3);
+    }
+    .face-video-wrap video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1); /* mirror */
+    }
+    .face-scan-ring {
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-top-color: #6c63ff;
+        border-right-color: #00d2c8;
+        animation: spin 1.5s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .face-status {
+        font-size: 0.85rem;
+        font-weight: 600;
+        min-height: 22px;
+        margin-bottom: 16px;
+        transition: color 0.3s;
+    }
+    .face-status.scanning { color: rgba(255,255,255,0.5); }
+    .face-status.success  { color: #00d2c8; }
+    .face-status.error    { color: #ff7070; }
+    .btn-cancel-face {
+        background: none;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.82rem;
+        font-family: 'Inter', sans-serif;
+        padding: 8px 20px;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-cancel-face:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); }
 </style>
 {% endblock %}
 
@@ -237,7 +373,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_login') }}">
+    <form method="post" action="{{ path('app_login') }}" id="login-form">
         <div class="field">
             <label for="username">Email</label>
             <input type="text"
@@ -274,8 +410,163 @@
 
     <div class="divider">ou</div>
 
+    <button type="button" class="btn-face" id="btn-face-login">
+        <span class="btn-face-icon">👤</span> Se connecter avec Face ID
+    </button>
+
+    <a href="{{ path('connect_google') }}" class="btn-google">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continuer avec Google
+    </a>
+
     <div class="footer-link">
         Pas encore de compte ? <a href="{{ path('app_register') }}">En créer un</a>
     </div>
 </div>
+
+<!-- ========== FACE ID MODAL ========== -->
+<div class="face-modal-overlay" id="face-modal-overlay">
+    <div class="face-modal">
+        <h3>👤 Connexion Face ID</h3>
+        <p>Regardez la caméra pour vous identifier</p>
+
+        <div class="face-video-wrap">
+            <video id="face-video" autoplay muted playsinline></video>
+            <div class="face-scan-ring" id="face-scan-ring"></div>
+        </div>
+
+        <div class="face-status scanning" id="face-status">Initialisation…</div>
+        <button class="btn-cancel-face" id="face-cancel-btn" type="button">✕ Annuler</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+    const loginForm = document.getElementById('login-form');
+    const loginButton = document.getElementById('login-submit');
+
+    loginForm.addEventListener('submit', () => {
+        loginButton.disabled = true;
+        loginButton.style.opacity = '0.6';
+    });
+
+    // ── Face ID Logic ──────────────────────────────────────────────
+    const MODELS_URL = '/face-models';
+    const overlay    = document.getElementById('face-modal-overlay');
+    const video      = document.getElementById('face-video');
+    const statusEl   = document.getElementById('face-status');
+    const scanRing   = document.getElementById('face-scan-ring');
+    let   stream     = null;
+    let   scanning   = false;
+    let   modelsLoaded = false;
+
+    document.getElementById('btn-face-login').addEventListener('click', async () => {
+        overlay.classList.add('active');
+        setStatus('scanning', 'Chargement des modèles IA…');
+
+        if (!modelsLoaded) {
+            try {
+                await Promise.all([
+                    faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL),
+                    faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODELS_URL),
+                    faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL),
+                ]);
+                modelsLoaded = true;
+            } catch (e) {
+                setStatus('error', '❌ Erreur de chargement des modèles');
+                return;
+            }
+        }
+
+        // Start camera
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            video.srcObject = stream;
+            await video.play();
+        } catch (e) {
+            setStatus('error', '❌ Caméra inaccessible');
+            return;
+        }
+
+        setStatus('scanning', '🔍 Recherche du visage…');
+        scanning = true;
+        runDetection();
+    });
+
+    async function runDetection() {
+        if (!scanning) return;
+
+        const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+
+        // Try up to 30 frames (~3s) to detect a face
+        for (let attempt = 0; attempt < 30 && scanning; attempt++) {
+            await new Promise(r => setTimeout(r, 100));
+            const detection = await faceapi
+                .detectSingleFace(video, options)
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
+
+            if (detection) {
+                stopCamera();
+                setStatus('scanning', '✅ Visage détecté, vérification…');
+                scanRing.style.animation = 'none';
+                await sendDescriptor(Array.from(detection.descriptor));
+                return;
+            }
+        }
+
+        if (scanning) {
+            setStatus('error', '❌ Aucun visage détecté. Réessayez.');
+            stopCamera();
+        }
+    }
+
+    async function sendDescriptor(descriptor) {
+        try {
+            const res = await fetch('/api/face/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descriptor }),
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                setStatus('success', '✅ Identifié ! Redirection…');
+                setTimeout(() => { window.location.href = data.redirect || '/dashboard'; }, 800);
+            } else {
+                setStatus('error', '❌ ' + (data.error || 'Visage non reconnu'));
+            }
+        } catch (e) {
+            setStatus('error', '❌ Erreur réseau');
+        }
+    }
+
+    document.getElementById('face-cancel-btn').addEventListener('click', closeFaceModal);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeFaceModal(); });
+
+    function closeFaceModal() {
+        scanning = false;
+        stopCamera();
+        overlay.classList.remove('active');
+        setStatus('scanning', 'Initialisation…');
+        scanRing.style.animation = '';
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+        }
+    }
+
+    function setStatus(type, msg) {
+        statusEl.className = 'face-status ' + type;
+        statusEl.textContent = msg;
+    }
+</script>
 {% endblock %}

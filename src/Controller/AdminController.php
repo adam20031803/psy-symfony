@@ -30,6 +30,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -503,6 +505,181 @@ class AdminController extends AbstractController
             $this->addFlash('success', 'L\'habitude a été supprimée par l\'administrateur.');
         }
         return $this->redirectToRoute('app_admin_habitudes');
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // STATISTIQUES
+    // ──────────────────────────────────────────────────────────────────────────
+
+    #[Route('/statistiques', name: 'app_admin_statistiques')]
+    public function statistiques(
+        UserRepository        $userRepo,
+        ReclamationRepository $recRepo,
+        ChallengeRepository   $challengeRepo,
+        PostRepository        $postRepo,
+        HabitudeRepository    $habitudeRepo,
+        ChartBuilderInterface $chartBuilder
+    ): Response {
+        // ── 1. Inscriptions par mois (6 derniers mois) ─ Line chart ─────────
+        $regData   = $userRepo->registrationsPerMonth(6);
+        $regMonths = array_map(
+            fn($k) => (new \DateTime($k . '-01'))->format('M Y'),
+            array_keys($regData)
+        );
+
+        $chartRegistrations = $chartBuilder->createChart(Chart::TYPE_LINE);
+        $chartRegistrations->setData([
+            'labels'   => $regMonths,
+            'datasets' => [[
+                'label'           => 'Inscriptions',
+                'data'            => array_values($regData),
+                'borderColor'     => '#6c63ff',
+                'backgroundColor' => 'rgba(108,99,255,0.12)',
+                'fill'            => true,
+                'tension'         => 0.4,
+                'pointBackgroundColor' => '#6c63ff',
+                'pointRadius'     => 5,
+            ]],
+        ]);
+        $chartRegistrations->setOptions([
+            'responsive' => true,
+            'plugins'    => ['legend' => ['display' => false]],
+            'scales'     => [
+                'y' => ['beginAtZero' => true, 'ticks' => ['stepSize' => 1,
+                    'color' => '#94a3b8'], 'grid' => ['color' => 'rgba(255,255,255,0.05)']],
+                'x' => ['ticks' => ['color' => '#94a3b8'], 'grid' => ['display' => false]],
+            ],
+        ]);
+
+        // ── 2. Utilisateurs par rôle ─ Doughnut chart ───────────────────
+        $roleRows  = $userRepo->countByRole();
+        $roleMap   = ['user' => 'Utilisateurs', 'coach' => 'Coachs', 'admin' => 'Admins'];
+        $roleLabels = array_map(fn($r) => $roleMap[$r['role']] ?? ucfirst($r['role']), $roleRows);
+        $roleData   = array_map(fn($r) => (int)$r['cnt'], $roleRows);
+
+        $chartRoles = $chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $chartRoles->setData([
+            'labels'   => $roleLabels,
+            'datasets' => [[
+                'data'            => $roleData,
+                'backgroundColor' => ['#6c63ff', '#00d2c8', '#f59e0b', '#ef4444'],
+                'borderWidth'     => 0,
+                'hoverOffset'     => 6,
+            ]],
+        ]);
+        $chartRoles->setOptions([
+            'responsive' => true,
+            'cutout'     => '65%',
+            'plugins'    => ['legend' => ['position' => 'bottom',
+                'labels' => ['color' => '#94a3b8', 'padding' => 16, 'usePointStyle' => true]]],
+        ]);
+
+        // ── 3. Réclamations par statut ─ Bar chart ─────────────────────
+        $allRec    = $recRepo->findAll();
+        $recStatuts = ['ouvert' => 0, 'en_cours' => 0, 'resolu' => 0, 'ferme' => 0];
+        foreach ($allRec as $r) {
+            $s = $r->getStatut();
+            if (isset($recStatuts[$s])) $recStatuts[$s]++;
+        }
+
+        $chartReclamations = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $chartReclamations->setData([
+            'labels'   => ['Ouvert', 'En cours', 'Résolu', 'Fermé'],
+            'datasets' => [[
+                'label'           => 'Réclamations',
+                'data'            => array_values($recStatuts),
+                'backgroundColor' => ['rgba(239,68,68,0.7)', 'rgba(245,158,11,0.7)',
+                                      'rgba(34,211,165,0.7)', 'rgba(100,116,139,0.7)'],
+                'borderRadius'    => 8,
+                'borderSkipped'   => false,
+            ]],
+        ]);
+        $chartReclamations->setOptions([
+            'responsive' => true,
+            'plugins'    => ['legend' => ['display' => false]],
+            'scales'     => [
+                'y' => ['beginAtZero' => true, 'ticks' => ['stepSize' => 1,
+                    'color' => '#94a3b8'], 'grid' => ['color' => 'rgba(255,255,255,0.05)']],
+                'x' => ['ticks' => ['color' => '#94a3b8'], 'grid' => ['display' => false]],
+            ],
+        ]);
+
+        // ── 4. Habitudes par catégorie ─ Polar Area chart ──────────────
+        $allHabitudes = $habitudeRepo->findAll();
+        $habCats = [];
+        foreach ($allHabitudes as $h) {
+            $cat = $h->getCategory() ?: 'Autre';
+            $habCats[$cat] = ($habCats[$cat] ?? 0) + 1;
+        }
+        arsort($habCats);
+
+        $chartHabitudes = $chartBuilder->createChart(Chart::TYPE_POLAR_AREA);
+        $chartHabitudes->setData([
+            'labels'   => array_keys($habCats),
+            'datasets' => [[
+                'data'            => array_values($habCats),
+                'backgroundColor' => [
+                    'rgba(108,99,255,0.7)', 'rgba(0,210,200,0.7)', 'rgba(245,158,11,0.7)',
+                    'rgba(239,68,68,0.7)', 'rgba(34,211,165,0.7)', 'rgba(236,72,153,0.7)',
+                ],
+                'borderWidth' => 0,
+            ]],
+        ]);
+        $chartHabitudes->setOptions([
+            'responsive' => true,
+            'plugins'    => ['legend' => ['position' => 'bottom',
+                'labels' => ['color' => '#94a3b8', 'padding' => 12, 'usePointStyle' => true]]],
+            'scales'     => ['r' => ['ticks' => ['backdropColor' => 'transparent', 'color' => '#64748b'],
+                'grid' => ['color' => 'rgba(255,255,255,0.06)']]],
+        ]);
+
+        // ── 5. Posts vs Challenges vs Habitudes ─ Bar (grouped) chart ──
+        $totalPosts      = $postRepo->count([]);
+        $totalChallenges = $challengeRepo->count([]);
+        $totalHabitudes  = $habitudeRepo->count([]);
+        $totalUsers      = count($userRepo->findAll());
+        $totalRec        = count($allRec);
+
+        $chartOverview = $chartBuilder->createChart(Chart::TYPE_BAR);
+        $chartOverview->setData([
+            'labels'   => ['Utilisateurs', 'Posts', 'Challenges', 'Habitudes', 'Réclamations'],
+            'datasets' => [[
+                'label'           => 'Total',
+                'data'            => [$totalUsers, $totalPosts, $totalChallenges, $totalHabitudes, $totalRec],
+                'backgroundColor' => [
+                    'rgba(108,99,255,0.75)',
+                    'rgba(0,210,200,0.75)',
+                    'rgba(245,158,11,0.75)',
+                    'rgba(34,211,165,0.75)',
+                    'rgba(239,68,68,0.75)',
+                ],
+                'borderRadius'  => 10,
+                'borderSkipped' => false,
+            ]],
+        ]);
+        $chartOverview->setOptions([
+            'responsive'          => true,
+            'indexAxis'           => 'y',
+            'plugins'             => ['legend' => ['display' => false]],
+            'scales'              => [
+                'x' => ['beginAtZero' => true, 'ticks' => ['stepSize' => 1,
+                    'color' => '#94a3b8'], 'grid' => ['color' => 'rgba(255,255,255,0.05)']],
+                'y' => ['ticks' => ['color' => '#94a3b8'], 'grid' => ['display' => false]],
+            ],
+        ]);
+
+        return $this->render('admin/statistiques.html.twig', [
+            'totalUsers'      => $totalUsers,
+            'totalPosts'      => $totalPosts,
+            'totalChallenges' => $totalChallenges,
+            'totalHabitudes'  => $totalHabitudes,
+            'totalRec'        => $totalRec,
+            'chartRegistrations' => $chartRegistrations,
+            'chartRoles'         => $chartRoles,
+            'chartReclamations'  => $chartReclamations,
+            'chartHabitudes'     => $chartHabitudes,
+            'chartOverview'      => $chartOverview,
+        ]);
     }
 }
 
