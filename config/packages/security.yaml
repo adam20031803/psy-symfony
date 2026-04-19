@@ -23,6 +23,11 @@ security:
                 always_use_default_target_path: true
                 enable_csrf: true
 
+            json_login:
+                check_path: app_api_login
+                username_path: username
+                password_path: password
+
             logout:
                 path: app_logout
                 target: app_login
@@ -33,7 +38,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin,              roles: ROLE_ADMIN }
+        - { path: ^/admin/auth,         roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/admin,              roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/moods,              roles: ROLE_ADMIN }
         - { path: ^/mental-tips,       roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/mental-entries,    roles: IS_AUTHENTICATED_FULLY }

@@ -34,7 +34,6 @@ use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
 #[Route('/admin')]
-#[IsGranted('ROLE_ADMIN')]
 class AdminController extends AbstractController
 {
     #[Route('', name: 'app_admin')]

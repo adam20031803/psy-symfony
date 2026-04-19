@@ -42,7 +42,7 @@ class GoogleController extends AbstractController
     }
 
     #[Route('/connect/google/check', name: 'connect_google_check')]
-    public function connectCheckAction(Request $request): Response
+    public function connectCheckAction(Request $request, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $code = $request->query->get('code');
         $error = $request->query->get('error');
@@ -118,13 +118,14 @@ class GoogleController extends AbstractController
                 $this->entityManager->persist($user);
                 $this->entityManager->flush();
 
-                $this->addFlash('success', 'Welcome! Your account has been created.');
+                $this->addFlash('success', 'Bienvenue ! Votre compte avec Google a été créé.');
             }
 
-            // Authenticate user
-            $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-            $this->tokenStorage->setToken($token);
-            $request->getSession()->set('_security_main', serialize($token));
+            // Authenticate user properly using Symfony Security
+            $security->login($user, 'form_login', 'main');
+
+            // Bypass 2FA for Google login
+            $request->getSession()->set('admin_2fa_unlocked', true);
 
             return $this->redirectToRoute('app_redirect_after_login');
         } catch (\Exception $e) {

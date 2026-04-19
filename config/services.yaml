@@ -1,5 +1,7 @@
 parameters:
     app.env_empty_string: ''
+    google_client_id: '%env(default:app.env_empty_string:GOOGLE_CLIENT_ID)%'
+    google_client_secret: '%env(default:app.env_empty_string:GOOGLE_CLIENT_SECRET)%'
     twilio.accountSid: '%env(default:app.env_empty_string:TWILIO_ACCOUNT_SID)%'
     twilio.authToken: '%env(default:app.env_empty_string:TWILIO_AUTH_TOKEN)%'
     twilio.fromNumber: '%env(default:app.env_empty_string:TWILIO_FROM_NUMBER)%'

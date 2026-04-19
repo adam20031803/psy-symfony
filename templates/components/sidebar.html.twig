@@ -8,6 +8,14 @@
                 <span class="sidebar-link-sub">Vue d'ensemble</span>
             </div>
         </a>
+
+        <a href="{{ path('app_admin') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_admin' ? 'active' : '' }}">
+            <div class="sidebar-icon si-orange">⚙️</div>
+            <div class="sidebar-link-text">
+                <span class="sidebar-link-title">Panel Administrateur</span>
+                <span class="sidebar-link-sub">Gérer la plateforme</span>
+            </div>
+        </a>
     </div>
 
     <div class="sidebar-divider"></div>

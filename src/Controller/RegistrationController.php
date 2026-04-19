@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -36,13 +37,19 @@ class RegistrationController extends AbstractController
 
             // Validation
             if (empty($prenom) || empty($nom) || empty($email) || empty($password)) {
-                $error = 'Tous les champs obligatoires doivent être remplis.';
+                $error = 'Tous les champs obligatoires (Prénom, Nom, Email, Mot de passe) doivent être remplis.';
             } elseif ($password !== $confirm) {
                 $error = 'Les deux mots de passe ne correspondent pas.';
             } elseif (strlen($password) < 6) {
                 $error = 'Le mot de passe doit contenir au moins 6 caractères.';
             } elseif ($entityManager->getRepository(User::class)->findOneBy(['email' => $email])) {
                 $error = 'Un compte avec cet email existe déjà.';
+            }
+            
+            if ($error) {
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse(['success' => false, 'error' => $error], 400);
+                }
             } else {
                 $user = new User();
                 $user->setPrenom($prenom);
@@ -66,6 +73,10 @@ class RegistrationController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_login')]);
+                }
                 return $this->redirectToRoute('app_login');
             }
         }

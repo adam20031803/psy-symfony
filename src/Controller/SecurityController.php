@@ -3,18 +3,23 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
+    #[Route('/api/login', name: 'app_api_login', methods: ['POST'])]
+    public function apiLogin(): JsonResponse
+    {
+        // This code is never executed; Symfony's JSON login intercepts the request.
+        return new JsonResponse(['error' => 'Invalid Request']);
+    }
+
     #[Route('/login', name: 'app_login')]
-    public function login(
-        AuthenticationUtils $authenticationUtils,
-       
-    ): Response {
+    public function login(AuthenticationUtils $authenticationUtils): Response
+    {
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
 

@@ -316,7 +316,12 @@
             <div class="nav-actions">
                 <div class="nav-user">
                     <div class="nav-avatar">{{ app.user ? app.user.prenom|default('')|slice(0,1)|upper : 'U' }}{{ app.user ? app.user.nom|default('')|slice(0,1)|upper : 'S' }}</div>
-                    <span class="nav-name">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Admin User' }}</span>
+                    <div style="display: flex; flex-direction: column; justify-content: center; margin-left: 2px;">
+                        <span class="nav-name" style="line-height: 1.1;">{{ app.user ? app.user.prenom ~ ' ' ~ app.user.nom : 'Admin User' }}</span>
+                        <span style="font-size: 0.6rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">
+                            {% if app.user and 'ROLE_ADMIN' in app.user.roles %}🛡️ Admin{% else %}👤 Utilisateur{% endif %}
+                        </span>
+                    </div>
                 </div>
                 <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
             </div>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification Backoffice — Atomic You</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #0d0d1a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .verify-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #a0a0b0;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+        .code-input-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .code-input-group input {
+            width: 50px;
+            height: 60px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 1.5rem;
+            color: #fff;
+            text-align: center;
+            font-family: monospace;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .code-input-group input:focus {
+            border-color: #6c63ff;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #6c63ff, #00d2c8);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.3s;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        .alert-success {
+            background: rgba(0,210,200,0.15);
+            border: 1px solid #00d2c8;
+            color: #00d2c8;
+        }
+        .alert-error {
+            background: rgba(255,80,80,0.15);
+            border: 1px solid #ff5050;
+            color: #ff5050;
+        }
+    </style>
+</head>
+<body>
+
+<div class="verify-card">
+    <div class="icon">🔒</div>
+    <h2>Accès Restreint</h2>
+    <p>Veuillez entrer le code à 4 chiffres envoyé à votre adresse e-mail pour accéder au panneau d'administration.</p>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-error">{{ message }}</div>
+    {% endfor %}
+    
+    <div class="alert alert-error" id="js-error" style="display: none;"></div>
+
+    <form method="post" action="{{ path('app_admin_auth_verify') }}" id="verify-form" novalidate>
+        <div class="code-input-group">
+            <input type="text" maxlength="1" name="c1" required autofocus oninput="moveToNext(this, 'c2')">
+            <input type="text" maxlength="1" id="c2" name="c2" required oninput="moveToNext(this, 'c3')" onkeydown="moveToPrev(event, 'c1')">
+            <input type="text" maxlength="1" id="c3" name="c3" required oninput="moveToNext(this, 'c4')" onkeydown="moveToPrev(event, 'c2')">
+            <input type="text" maxlength="1" id="c4" name="c4" required onkeydown="moveToPrev(event, 'c3')">
+            <input type="hidden" name="code" id="finalCode">
+        </div>
+        
+        <button type="submit" class="btn-submit" onclick="assembleCode()">Déverrouiller l'accès</button>
+    </form>
+    
+    <div style="margin-top:20px;font-size:0.8rem;">
+        <a href="{{ path('app_admin_auth_request') }}" style="color:#6c63ff;text-decoration:none;">Renvoyer le code</a> | 
+        <a href="{{ path('app_dashboard') }}" style="color:#a0a0b0;text-decoration:none;">Retourner à l'accueil</a>
+    </div>
+</div>
+
+<script>
+    function moveToNext(current, nextFieldID) {
+        if (current.value.length >= current.maxLength) {
+            const next = document.getElementById(nextFieldID);
+            if (next) next.focus();
+        }
+    }
+    
+    function moveToPrev(event, prevFieldID) {
+        if (event.key === 'Backspace' && event.target.value === '') {
+            const prev = document.getElementById(prevFieldID);
+            if (prev) prev.focus();
+        }
+    }
+
+    function assembleCode() {
+        const c1 = document.querySelector('input[name="c1"]').value || '';
+        const c2 = document.getElementById('c2').value || '';
+        const c3 = document.getElementById('c3').value || '';
+        const c4 = document.getElementById('c4').value || '';
+        document.getElementById('finalCode').value = c1 + c2 + c3 + c4;
+    }
+
+    document.getElementById('verify-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        assembleCode();
+        
+        const form = this;
+        const btn = document.querySelector('.btn-submit');
+        const errorBox = document.getElementById('js-error');
+        errorBox.style.display = 'none';
+        
+        const codeValue = document.getElementById('finalCode').value;
+        if (codeValue.length !== 4) {
+            errorBox.textContent = 'Veuillez saisir les 4 chiffres.';
+            errorBox.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Vérification en cours...';
+        btn.style.opacity = '0.7';
+
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                btn.style.background = '#00d2c8';
+                btn.textContent = '✔ Accès autorisé';
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/admin';
+                }, 600);
+            } else {
+                btn.disabled = false;
+                btn.textContent = "Déverrouiller l'accès";
+                btn.style.opacity = '1';
+                
+                errorBox.textContent = '⚠️ ' + (data.error || 'Erreur inconnue.');
+                errorBox.style.display = 'block';
+                
+                // Clear fields on error to try again easily
+                document.querySelector('input[name="c1"]').value = '';
+                document.getElementById('c2').value = '';
+                document.getElementById('c3').value = '';
+                document.getElementById('c4').value = '';
+                document.querySelector('input[name="c1"]').focus();
+            }
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = "Déverrouiller l'accès";
+            btn.style.opacity = '1';
+            errorBox.textContent = '⚠️ Erreur de connexion au serveur.';
+            errorBox.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>

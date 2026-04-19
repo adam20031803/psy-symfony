@@ -367,13 +367,21 @@
         <div style="background:rgba(0,210,200,0.12);border:1px solid rgba(0,210,200,0.3);border-radius:12px;padding:12px 16px;color:#00d2c8;font-size:0.85rem;margin-bottom:16px;">✓ {{ message }}</div>
     {% endfor %}
 
+    {% for message in app.flashes('error') %}
+        <div class="alert-error">
+            ⚠️ {{ message }}
+        </div>
+    {% endfor %}
+
     {% if error %}
         <div class="alert-error">
             ⚠️ {{ error.messageKey | trans(error.messageData, 'security') }}
         </div>
     {% endif %}
 
-    <form method="post" action="{{ path('app_login') }}" id="login-form">
+    <div class="alert-error" id="js-error" style="display: none;"></div>
+
+    <form method="post" action="{{ path('app_login') }}" id="login-form" novalidate>
         <div class="field">
             <label for="username">Email</label>
             <input type="text"
@@ -449,10 +457,49 @@
 <script>
     const loginForm = document.getElementById('login-form');
     const loginButton = document.getElementById('login-submit');
+    const errorBox = document.getElementById('js-error');
 
-    loginForm.addEventListener('submit', () => {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        errorBox.style.display = 'none';
         loginButton.disabled = true;
+        const originalText = loginButton.innerText;
+        loginButton.innerHTML = 'Connexion en cours...';
         loginButton.style.opacity = '0.6';
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+
+            if (response.ok) {
+                loginButton.style.background = '#00d2c8';
+                loginButton.innerHTML = '✔ Succès ! Redirection...';
+                window.location.href = '/redirect-after-login';
+            } else {
+                const data = await response.json();
+                loginButton.disabled = false;
+                loginButton.innerHTML = originalText;
+                loginButton.style.opacity = '1';
+                errorBox.textContent = '⚠️ ' + (data.error || 'Identifiants invalides.');
+                errorBox.style.display = 'flex';
+            }
+        } catch (err) {
+            loginButton.disabled = false;
+            loginButton.innerHTML = originalText;
+            loginButton.style.opacity = '1';
+            errorBox.textContent = '⚠️ Erreur de connexion au serveur.';
+            errorBox.style.display = 'flex';
+        }
     });
 
     // ── Face ID Logic ──────────────────────────────────────────────

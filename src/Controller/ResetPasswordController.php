@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -52,8 +53,16 @@ class ResetPasswordController extends AbstractController
                 $em->flush();
 
                 $this->addFlash('success', 'Votre mot de passe a été modifié. Vous pouvez vous connecter.');
+                
+                if ($request->isXmlHttpRequest()) {
+                    return new JsonResponse(['success' => true, 'redirect' => $this->generateUrl('app_login')]);
+                }
 
                 return $this->redirectToRoute('app_login');
+            }
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(['success' => false, 'error' => $error], 400);
             }
         }
 

@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpClient\HttpClient;
@@ -111,6 +112,13 @@ class ForgotPasswordController extends AbstractController
 
                     $success = true;
                 }
+            }
+            
+            if ($request->isXmlHttpRequest()) {
+                if ($error) {
+                    return new JsonResponse(['success' => false, 'error' => $error], 400);
+                }
+                return new JsonResponse(['success' => true]);
             }
         }
 
