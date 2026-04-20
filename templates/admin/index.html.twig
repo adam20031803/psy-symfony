@@ -62,7 +62,7 @@
                     <div class="stat-icon green" style="width: 32px; height: 32px; font-size: 1rem;">💬</div>
                     <span style="font-weight: 500; font-size: 0.9rem;">Modérer Forum</span>
                 </a>
-                <a href="{{ path('admin_dashboard') }}" class="stat-card" style="text-decoration: none; border-color: rgba(59,130,246,0.2);">
+                <a href="#fitness-section" class="stat-card" style="text-decoration: none; border-color: rgba(59,130,246,0.2);">
                     <div class="stat-icon blue" style="width: 32px; height: 32px; font-size: 1rem;">💪</div>
                     <span style="font-weight: 500; font-size: 0.9rem;">Fitness Dashboard</span>
                 </a>
@@ -88,4 +88,92 @@
             </div>
         </div>
     </div>
+
+    <!-- Fitness & Clients Section Added Here -->
+    <div id="fitness-section" style="margin-top: 32px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="font-size: 1.5rem; margin: 0;">Fitness & Suivi Clients</h2>
+        <a href="{{ path('app_admin_fitness_export') }}" class="btn-primary" style="background: var(--success); display: inline-flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export Excel (.xls)
+        </a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-color: rgba(108,99,255,0.2);">
+            <div class="stat-icon purple" style="font-size: 1.5rem;">🏆</div>
+            <div>
+                <div class="stat-label">Programmes</div>
+                <div class="stat-value">{{ stats.total_programs }}</div>
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">{{ stats.published_programs }} publiés</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color: rgba(245,158,11,0.2);">
+            <div class="stat-icon orange" style="font-size: 1.5rem;">⛹️</div>
+            <div>
+                <div class="stat-label">Clients Actifs</div>
+                <div class="stat-value">{{ stats.active_clients }}</div>
+                <div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;">Ayant tracké un workout</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border-color: rgba(34,211,165,0.2);">
+            <div class="stat-icon green" style="font-size: 1.5rem;">🔥</div>
+            <div>
+                <div class="stat-label">Workouts Trackés</div>
+                <div class="stat-value">{{ stats.total_workouts }}</div>
+                <div style="font-size: 0.75rem; color: var(--success); margin-top: 4px;">Sessions globales</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-card" style="margin-top: 24px; overflow-x: auto;">
+        <div style="padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h2 style="font-size: 1.1rem; margin: 0;">Activité des Clients</h2>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th style="text-align: center;">Workouts</th>
+                    <th>Dernière Activité</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(108,99,255,0.2); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                                    {{ client.prenom|slice(0, 1) }}{{ client.nom|slice(0, 1) }}
+                                </div>
+                                <div style="font-weight: 500;">{{ client.prenom }} {{ client.nom }}</div>
+                            </div>
+                        </td>
+                        <td style="color: var(--muted);">{{ client.email }}</td>
+                        <td style="color: var(--muted);">{{ client.telephone|default('-') }}</td>
+                        <td style="text-align: center;">
+                            {% if client.total_workouts > 0 %}
+                                <span class="status-badge status-active">{{ client.total_workouts }} session(s)</span>
+                            {% else %}
+                                <span class="status-badge" style="background: rgba(255,255,255,0.1); color: #aaa;">Aucune</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if client.last_workout_date %}
+                                <span style="font-size: 0.85rem;">{{ client.last_workout_date|date('d/m/Y') }}</span>
+                            {% else %}
+                                <span style="color: var(--muted); font-size: 0.85rem;">Jamais</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 32px; color: var(--muted);">Aucun client trouvé dans le système.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 {% endblock %}

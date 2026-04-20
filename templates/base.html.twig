@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     {% block stylesheets %}
-        <link rel="stylesheet" href="{{ asset('css/premium.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/premium.css') }}?v={{ 'now'|date('U') }}">
         <style>
             body {
                 font-family: 'Inter', sans-serif;
@@ -284,7 +284,14 @@
                 flex: 1;
                 padding: 36px 40px 80px;
                 min-width: 0;
+                margin: 0 auto;
+                width: 100%;
             }
+
+            /* Container widths */
+            .w-wide { max-width: 1200px; }
+            .w-medium { max-width: 1000px; }
+            .w-narrow { max-width: 800px; }
 
             @media (max-width: 900px) {
                 .sidebar { display: none; }

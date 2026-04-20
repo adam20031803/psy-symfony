@@ -11,11 +11,13 @@ use App\Entity\PostShare;
 use App\Form\CommentaireType;
 use App\Form\PostType;
 use App\Repository\CategorieRepository;
+use App\Repository\CommentaireRepository;
 use App\Repository\PostLikeRepository;
 use App\Repository\PostRepository;
 use App\Repository\PostShareRepository;
 use App\Service\BadWordChecker;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -40,13 +42,19 @@ class PostController extends AbstractController
        INDEX — liste des posts avec filtres
     ════════════════════════════════════════════════════════════════ */
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(Request $request, CategorieRepository $categorieRepository): Response
+    public function index(Request $request, CategorieRepository $categorieRepository, PaginatorInterface $paginator): Response
     {
         $search      = $request->query->get('q');
         $categorieId = $request->query->get('categorie') ? (int) $request->query->get('categorie') : null;
 
-        $posts      = $this->postRepository->findByFilters($search, $categorieId);
+        $qb         = $this->postRepository->getQueryBuilderForFilters($search, $categorieId);
         $categories = $categorieRepository->findAll();
+
+        $posts = $paginator->paginate(
+            $qb,
+            $request->query->getInt('page', 1),
+            6 // 6 posts par page
+        );
 
         return $this->render('post/index.html.twig', [
             'posts'             => $posts,
@@ -190,15 +198,74 @@ class PostController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // ── BadWord check (IA Gemini) ──
+            if ($this->badWordChecker->containsBadWord($commentaire->getContenu())) {
+                $this->addFlash('error', '🚫 Votre commentaire contient des mots interdits et n\'a pas été publié.');
+                return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
+            }
+
             $commentaire->setPost($post);
             $commentaire->setUser($this->getUser());
             $commentaire->setCreatedAt(new \DateTime());
             $this->em->persist($commentaire);
             $this->em->flush();
-            $this->addFlash('success', 'Commentaire ajouté.');
+            $this->addFlash('success', '💬 Commentaire publié.');
         }
 
         return $this->redirectToRoute('post_show', ['id' => $post->getId()]);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       EDIT COMMENT
+    ════════════════════════════════════════════════════════════════ */
+    #[Route('/{postId}/comment/{id}/edit', name: 'edit_comment', methods: ['POST'], requirements: ['postId' => '\d+', 'id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function editComment(int $postId, Commentaire $commentaire, Request $request, CommentaireRepository $commentaireRepo): Response
+    {
+        if ($commentaire->getUser() !== $this->getUser()) {
+            throw new AccessDeniedHttpException('Action non autorisée.');
+        }
+
+        $newContent = trim($request->request->get('contenu', ''));
+
+        if (empty($newContent)) {
+            $this->addFlash('error', 'Le commentaire ne peut pas être vide.');
+            return $this->redirectToRoute('post_show', ['id' => $postId]);
+        }
+
+        if ($this->badWordChecker->containsBadWord($newContent)) {
+            $this->addFlash('error', '🚫 Votre commentaire contient des mots interdits.');
+            return $this->redirectToRoute('post_show', ['id' => $postId]);
+        }
+
+        $commentaire->setContenu($newContent);
+        $this->em->flush();
+        $this->addFlash('success', '✏️ Commentaire modifié.');
+
+        return $this->redirectToRoute('post_show', ['id' => $postId]);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       DELETE COMMENT
+    ════════════════════════════════════════════════════════════════ */
+    #[Route('/{postId}/comment/{id}/delete', name: 'delete_comment', methods: ['POST'], requirements: ['postId' => '\d+', 'id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function deleteComment(int $postId, Commentaire $commentaire, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('delete_comment_' . $commentaire->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+            return $this->redirectToRoute('post_show', ['id' => $postId]);
+        }
+
+        if ($commentaire->getUser() !== $this->getUser()) {
+            throw new AccessDeniedHttpException('Action non autorisée.');
+        }
+
+        $this->em->remove($commentaire);
+        $this->em->flush();
+        $this->addFlash('success', '🗑️ Commentaire supprimé.');
+
+        return $this->redirectToRoute('post_show', ['id' => $postId]);
     }
 
     /* ════════════════════════════════════════════════════════════════

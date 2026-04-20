@@ -1,168 +1,10 @@
-{# templates/post/index.html.twig #}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forum & Posts — Atomic You</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}Forum & Posts — Atomic You{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg:       #0a0c1a;
-            --surface:  #111328;
-            --card:     #181b30;
-            --sidebar:  #0e1025;
-            --border:   rgba(255,255,255,0.06);
-            --accent:   #6c63ff;
-            --accent2:  #00d2ff;
-            --success:  #22d3a5;
-            --warning:  #f59e0b;
-            --pink:     #ec4899;
-            --orange:   #f97316;
-            --text:     #e2e8f0;
-            --muted:    #64748b;
-            --radius:   16px;
-            --sidebar-w: 280px;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ── Navbar ── */
-        .top-nav {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(14,16,37,.92);
-            backdrop-filter: blur(18px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 32px; height: 60px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
-        .nav-logo .icon {
-            width: 34px; height: 34px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
-        }
-        .nav-logo span { color: var(--accent2); }
-        .nav-logo strong { color: var(--text); }
-        .nav-actions { display: flex; align-items: center; gap: 14px; }
-        .nav-user {
-            display: flex; align-items: center; gap: 10px;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 999px; padding: 5px 14px 5px 5px;
-        }
-        .nav-avatar {
-            width: 28px; height: 28px;
-            background: linear-gradient(135deg, var(--accent), var(--pink));
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.7rem;
-        }
-        .nav-name { font-size: 0.8rem; font-weight: 500; }
-        .btn-logout {
-            text-decoration: none; color: var(--muted); font-size: 0.78rem; font-weight: 500;
-            padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: all .2s;
-        }
-        .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
-
-        /* ── Layout ── */
-        .app-layout { display: flex; flex: 1; position: relative; z-index: 1; }
-
-        /* ── Sidebar ── */
-        .sidebar {
-            width: var(--sidebar-w); min-height: calc(100vh - 60px);
-            background: var(--sidebar); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; padding: 24px 0;
-            position: sticky; top: 60px; height: calc(100vh - 60px);
-            overflow-y: auto; flex-shrink: 0;
-        }
-        .sidebar-section-label {
-            font-size: 0.65rem; font-weight: 700; letter-spacing: .12em;
-            text-transform: uppercase; color: var(--muted);
-            padding: 0 24px; margin-bottom: 10px; margin-top: 8px;
-        }
-        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
-        .sidebar-link {
-            display: flex; align-items: center; gap: 14px; padding: 12px 16px;
-            border-radius: 12px; text-decoration: none; color: rgba(255,255,255,0.6);
-            font-size: 0.85rem; font-weight: 500;
-            transition: all .25s cubic-bezier(.4,0,.2,1);
-            position: relative; overflow: hidden;
-        }
-        .sidebar-link:hover { background: rgba(108,99,255,.08); color: var(--text); transform: translateX(4px); }
-        .sidebar-link.active {
-            background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08));
-            color: #fff; font-weight: 600;
-            border: 1px solid rgba(108,99,255,.2);
-            box-shadow: 0 4px 16px rgba(108,99,255,.12);
-            animation: pulse-glow 3s ease-in-out infinite;
-        }
-        .sidebar-link.active::before {
-            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            width: 3px; height: 60%;
-            background: linear-gradient(180deg, var(--accent), var(--accent2));
-            border-radius: 0 4px 4px 0;
-        }
-        .sidebar-icon {
-            width: 38px; height: 38px; border-radius: 11px; display: flex;
-            align-items: center; justify-content: center; font-size: 1.15rem;
-            flex-shrink: 0; transition: transform .25s;
-        }
-        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
-        .si-purple { background: rgba(108,99,255,.12); }
-        .si-teal   { background: rgba(0,210,255,.10); }
-        .si-green  { background: rgba(34,211,165,.10); }
-        .si-pink   { background: rgba(236,72,153,.10); }
-        .si-orange { background: rgba(249,115,22,.10); }
-        .si-blue   { background: rgba(59,130,246,.10); }
-        .si-yellow { background: rgba(245,158,11,.10); }
-        .sidebar-link-text { display: flex; flex-direction: column; gap: 1px; }
-        .sidebar-link-title { font-size: 0.84rem; line-height: 1.3; }
-        .sidebar-link-sub { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
-        .sidebar-link:hover .sidebar-link-sub,
-        .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
-        .sidebar-badge {
-            margin-left: auto; font-size: 0.65rem; font-weight: 700;
-            padding: 2px 8px; border-radius: 999px;
-            background: rgba(108,99,255,.18); color: var(--accent); letter-spacing: .02em;
-        }
-        .sidebar-divider { height: 1px; background: var(--border); margin: 16px 24px; }
-        .sidebar-footer { margin-top: auto; padding: 20px 20px 0; }
-        .sidebar-pro-card {
-            background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08));
-            border: 1px solid rgba(108,99,255,.18); border-radius: 14px;
-            padding: 18px; text-align: center;
-        }
-        .sidebar-pro-card .pro-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
-        .sidebar-pro-card h4 {
-            font-size: 0.82rem; font-weight: 700; margin-bottom: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .sidebar-pro-card p { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
-
-        /* ── Main ── */
-        .main-content { flex: 1; padding: 36px 40px 80px; max-width: 1100px; }
-
         /* ── Page header ── */
         .page-header {
             background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.06));
@@ -301,45 +143,11 @@
         .empty-state .icon { font-size: 3rem; margin-bottom: 14px; display: block; }
         .empty-state p { color: var(--muted); font-size: 0.88rem; }
 
-        /* ── Responsive ── */
-        @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .main-content { padding: 24px 16px 60px; }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,.15); }
-            50% { box-shadow: 0 0 18px 4px rgba(108,99,255,.12); }
-        }
     </style>
-</head>
-<body>
+{% endblock %}
 
-<!-- Navbar -->
-<nav class="top-nav">
-    <div class="nav-logo">
-        <div class="icon">🧠</div>
-        <div><strong>Atomic</strong><span>You</span></div>
-    </div>
-    <div class="nav-actions">
-        {% if app.user %}
-        <div class="nav-user">
-            <div class="nav-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
-            <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-        </div>
-        {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
-    </div>
-</nav>
-
-<div class="app-layout">
-
-    <!-- Sidebar -->
-{% include 'components/sidebar.html.twig' %}
-
-    <!-- Main content -->
-    <div class="main-content">
-
+{% block body %}
+    <div class="w-wide">
         <!-- Flash messages -->
         {% for type, messages in app.flashes %}
             {% for message in messages %}
@@ -379,7 +187,7 @@
                 <p>Aucun post trouvé. Soyez le premier à publier !</p>
             </div>
         {% else %}
-            <div class="posts-grid">
+            <div class="posts-grid" id="posts-list">
                 {% for post in posts %}
                 <div class="post-card">
                     {% if post.image %}
@@ -428,10 +236,27 @@
                 </div>
                 {% endfor %}
             </div>
+
+            {# ── Pagination ── #}
+            <div class="pagination-bar">
+                {{ knp_pagination_render(posts) }}
+            </div>
         {% endif %}
-
     </div>
-</div>
+{% endblock %}
 
-</body>
-</html>
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth scroll back to list on page change if page > 1
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('page') && parseInt(urlParams.get('page')) > 1) {
+                const list = document.getElementById('posts-list');
+                if (list) {
+                    list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    </script>
+{% endblock %}

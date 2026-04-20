@@ -16,9 +16,12 @@
         Des exercices guidés et des programmes structurés pour tous les niveaux.
     </p>
     
-    <div style="margin-top: 32px; display: flex; gap: 16px; justify-content: center;">
+    <div style="margin-top: 32px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
         <a href="{{ path('front_program_list') }}" class="btn btn-primary" style="padding: 12px 24px;">Voir les programmes</a>
         <a href="{{ path('front_exercise_list') }}" class="btn btn-outline-primary" style="padding: 12px 24px;">Explorer les exercices</a>
+        <a href="{{ path('fitness_coach_index') }}" class="btn" style="padding: 12px 24px; background: linear-gradient(135deg, rgba(29,78,216,0.2), rgba(59,130,246,0.2)); color: #93c5fd; border: 1px solid rgba(59,130,246,0.4);">
+            <i class="bi bi-robot me-2"></i> Coach IA Fitness
+        </a>
     </div>
 </div>
 

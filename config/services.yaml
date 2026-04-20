@@ -38,6 +38,10 @@ services:
         arguments:
             $groqApiKey: '%env(GROQ_API_KEY)%'
 
+    App\Service\BadWordChecker:
+        arguments:
+            $badwordApiKey: '%env(default:app.env_empty_string:BADWORD_API_KEY)%'
+
     App\Service\SpotifySuggestionService:
         arguments:
             $spotifyClientId: ''
@@ -50,3 +54,5 @@ services:
             $fromNumber: '%twilio.fromNumber%'
             $toNumber: '%twilio.toNumber%'
             $connection: '@doctrine.dbal.default_connection'
+
+

@@ -48,7 +48,7 @@ security:
         - { path: ^/posts/\d+/like,     roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/posts/\d+/repost,   roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/posts,              roles: PUBLIC_ACCESS }
-        - { path: ^/daily/checkin,      roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/fitness/coach,      roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/videos,              roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

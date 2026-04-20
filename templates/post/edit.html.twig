@@ -1,152 +1,219 @@
-﻿{# templates/post/edit.html.twig #}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifier le post â€” Atomic You</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier le Post — Atomic You{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root { --bg: #0a0c1a; --surface: #111328; --card: #181b30; --sidebar: #0e1025; --border: rgba(255,255,255,0.06); --accent: #6c63ff; --accent2: #00d2ff; --success: #22d3a5; --warning: #f59e0b; --pink: #ec4899; --orange: #f97316; --text: #e2e8f0; --muted: #64748b; --radius: 16px; --sidebar-w: 280px; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-        body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-        .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(14,16,37,.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
-        .nav-logo .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
-        .nav-logo span { color: var(--accent2); } .nav-logo strong { color: var(--text); }
-        .nav-actions { display: flex; align-items: center; gap: 14px; }
-        .nav-user { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 5px 14px 5px 5px; }
-        .nav-avatar { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; }
-        .nav-name { font-size: 0.8rem; font-weight: 500; }
-        .btn-logout { text-decoration: none; color: var(--muted); font-size: 0.78rem; font-weight: 500; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: all .2s; }
-        .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
-        .app-layout { display: flex; flex: 1; position: relative; z-index: 1; }
-        .sidebar { width: var(--sidebar-w); min-height: calc(100vh - 60px); background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; flex-shrink: 0; }
-        .sidebar-section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 24px; margin-bottom: 10px; margin-top: 8px; }
-        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
-        .sidebar-link { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 500; transition: all .25s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden; }
-        .sidebar-link:hover { background: rgba(108,99,255,.08); color: var(--text); transform: translateX(4px); }
-        .sidebar-link.active { background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08)); color: #fff; font-weight: 600; border: 1px solid rgba(108,99,255,.2); box-shadow: 0 4px 16px rgba(108,99,255,.12); animation: pulse-glow 3s ease-in-out infinite; }
-        .sidebar-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 0 4px 4px 0; }
-        .sidebar-icon { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; transition: transform .25s; }
-        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
-        .si-purple { background: rgba(108,99,255,.12); } .si-teal { background: rgba(0,210,255,.10); } .si-green { background: rgba(34,211,165,.10); } .si-pink { background: rgba(236,72,153,.10); } .si-orange { background: rgba(249,115,22,.10); } .si-blue { background: rgba(59,130,246,.10); } .si-yellow { background: rgba(245,158,11,.10); }
-        .sidebar-link-text { display: flex; flex-direction: column; gap: 1px; }
-        .sidebar-link-title { font-size: 0.84rem; line-height: 1.3; }
-        .sidebar-link-sub { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
-        .sidebar-link:hover .sidebar-link-sub, .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
-        .sidebar-badge { margin-left: auto; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(108,99,255,.18); color: var(--accent); }
-        .sidebar-divider { height: 1px; background: var(--border); margin: 16px 24px; }
-        .sidebar-footer { margin-top: auto; padding: 20px 20px 0; }
-        .sidebar-pro-card { background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08)); border: 1px solid rgba(108,99,255,.18); border-radius: 14px; padding: 18px; text-align: center; }
-        .sidebar-pro-card .pro-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
-        .sidebar-pro-card h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .sidebar-pro-card p { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
-        .main-content { flex: 1; padding: 36px 40px 80px; max-width: 720px; }
         .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; transition: color .2s; }
         .back-link:hover { color: var(--accent2); }
         .page-heading { margin-bottom: 28px; }
         .page-heading h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-        .page-heading h1 span { background: linear-gradient(90deg, var(--warning), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .page-heading h1 span { background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .page-heading p { color: var(--muted); font-size: 0.82rem; }
         .form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 36px; }
-        .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
-        .field label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-        .field input[type="text"], .field textarea, .field select { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 11px 14px; font-family: 'Inter', sans-serif; font-size: 0.85rem; outline: none; transition: border-color .2s, box-shadow .2s; width: 100%; }
-        .field input[type="text"]:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
-        .field textarea { resize: vertical; min-height: 140px; }
-        .field input[type="file"] { background: var(--surface); border: 1px dashed rgba(255,255,255,.12); border-radius: 10px; padding: 11px 14px; color: var(--muted); font-size: 0.8rem; width: 100%; cursor: pointer; }
-        .field input[type="file"]:hover { border-color: var(--accent); }
-        .field-check { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-        .field-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
-        .field-check label { font-size: 0.84rem; color: var(--text); cursor: pointer; }
-        .form-error { color: #ef4444; font-size: 0.75rem; margin-top: 2px; }
+
+        /* ── AI Toolbar ── */
+        .ai-toolbar {
+            display: flex; gap: 10px; flex-wrap: wrap;
+            background: linear-gradient(135deg, rgba(108,99,255,.07), rgba(0,210,255,.04));
+            border: 1px solid rgba(108,99,255,.15); border-radius: 12px;
+            padding: 14px 16px; margin-bottom: 24px; align-items: center;
+        }
+        .ai-toolbar-label { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; flex: 1; }
+        .ai-topic-input {
+            flex: 2; min-width: 180px;
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text); border-radius: 9px; padding: 8px 12px;
+            font-family: 'Inter', sans-serif; font-size: 0.82rem; outline: none;
+            transition: border-color .2s;
+        }
+        .ai-topic-input:focus { border-color: var(--accent); }
+        .ai-topic-input::placeholder { color: var(--muted); }
+        .btn-ai {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 9px; border: none; cursor: pointer;
+            font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 600;
+            transition: all .2s; white-space: nowrap;
+        }
+        .btn-ai-generate {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff; box-shadow: 0 3px 12px rgba(108,99,255,.3);
+        }
+        .btn-ai-generate:hover { opacity: .88; transform: translateY(-1px); }
+        .btn-ai-translate {
+            background: rgba(0,210,255,.1); color: var(--accent2);
+            border: 1px solid rgba(0,210,255,.2);
+        }
+        .btn-ai-translate:hover { background: rgba(0,210,255,.2); }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+        .form-control { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 10px 14px; font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none; transition: border-color .2s; }
+        .form-control:focus { border-color: var(--accent); }
+        .form-actions { margin-top: 32px; display: flex; gap: 12px; }
+        .btn-submit { flex: 1; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: opacity .2s; }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-cancel { text-decoration: none; background: var(--surface); color: var(--muted); border: 1px solid var(--border); border-radius: 10px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; transition: all .2s; }
+        .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.1); }
 
         /* Current image preview */
-        .current-image-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-        .current-image-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 10px 14px; background: rgba(255,255,255,.02); border-bottom: 1px solid var(--border); }
-        .current-image-card img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
+        .current-image { margin-bottom: 12px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); width: 120px; height: 80px; }
+        .current-image img { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-submit { width: 100%; padding: 12px; border: none; border-radius: 11px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700; background: linear-gradient(135deg, var(--warning), var(--orange)); color: #fff; transition: opacity .2s; box-shadow: 0 4px 18px rgba(245,158,11,.25); margin-top: 4px; }
-        .btn-submit:hover { opacity: .88; }
-        @media (max-width: 900px) { .sidebar { display: none; } .main-content { padding: 24px 16px 60px; } }
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,.15); } 50% { box-shadow: 0 0 18px 4px rgba(108,99,255,.12); } }
+        /* Custom file input */
+        .file-input-wrapper { position: relative; }
+        .file-input-wrapper input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .file-input-custom { background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 20px; text-align: center; color: var(--muted); font-size: 0.82rem; transition: all .2s; }
+        .file-input-wrapper:hover .file-input-custom { border-color: var(--accent); color: var(--accent); }
+
+        /* Toast feedback */
+        .toast { position: fixed; bottom: 28px; right: 28px; z-index: 9999; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px; font-size: 0.82rem; font-weight: 500; color: var(--text); box-shadow: 0 8px 32px rgba(0,0,0,.4); transform: translateY(20px); opacity: 0; transition: all .3s cubic-bezier(.4, 0, .2, 1); pointer-events: none; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.toast-success { border-color: rgba(34,211,165,0.3); color: var(--success); }
+        .toast.toast-error { border-color: rgba(239,68,68,0.3); color: #ef4444; }
+
+        .spinner { display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
-</head>
-<body>
+{% endblock %}
 
-<nav class="top-nav">
-    <div class="nav-logo"><div class="icon">ðŸ§ </div><div><strong>Atomic</strong><span>You</span></div></div>
-    <div class="nav-actions">
-        {% if app.user %}
-        <div class="nav-user">
-            <div class="nav-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
-            <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-        </div>
-        {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">ðŸšª DÃ©connexion</a>
-    </div>
-</nav>
-
-<div class="app-layout">
-    {% include 'components/sidebar.html.twig' %}
-
-    <div class="main-content">
-        <a href="{{ path('post_show', {id: post.id}) }}" class="back-link">â† Retour au post</a>
+{% block body %}
+    <div class="w-narrow">
+        <a href="{{ path('post_show', {id: post.id}) }}" class="back-link">← Retour au post</a>
 
         <div class="page-heading">
-            <h1>âœï¸ <span>Modifier le post</span></h1>
-            <p>Apportez vos modifications ci-dessous</p>
+            <h1>Modifier <span>votre Post</span></h1>
+            <p>Ajustez votre contenu ou utilisez l'IA pour l'améliorer.</p>
         </div>
 
-        <div class="form-card">
-            {{ form_start(form, {attr: {enctype: 'multipart/form-data', novalidate: 'novalidate'}}) }}
-
-                <div class="field">
-                    <label for="{{ form.titre.vars.id }}">Titre</label>
-                    {{ form_widget(form.titre) }}
-                    {{ form_errors(form.titre) }}
+        <div class="form-card" style="padding: 0; overflow: hidden;">
+            {# ── En-tête AI Intégré ── #}
+            <div class="ai-header">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.2rem;">✨</span>
+                        <div class="ai-toolbar-label" style="margin:0;">Assistant IA</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex: 1; min-width: 300px;">
+                        <input type="text" id="ai-topic" class="ai-topic-input" placeholder="Sujet pour régénérer (optionnel)..." style="flex: 1;">
+                        <button type="button" class="btn-ai btn-ai-generate" id="btn-generate" onclick="aiGenerate()">
+                            <span class="spinner" id="gen-spinner"></span>
+                            🪄 Régénérer
+                        </button>
+                    </div>
                 </div>
+            </div>
 
-                <div class="field">
-                    <label for="{{ form.contenu.vars.id }}">Contenu</label>
-                    {{ form_widget(form.contenu) }}
-                    {{ form_errors(form.contenu) }}
-                </div>
+            <div style="padding: 36px;">
+                {{ form_start(form) }}
+                    <div class="form-group">
+                        {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.titre, {'attr': {'class': 'form-control', 'placeholder': 'Titre du post'}}) }}
+                    </div>
 
-                <div class="field">
-                    <label for="{{ form.categorie.vars.id }}">CatÃ©gorie</label>
-                    {{ form_widget(form.categorie) }}
-                    {{ form_errors(form.categorie) }}
-                </div>
+                    <div class="form-group">
+                        {{ form_label(form.categorie, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }}
+                    </div>
 
-                {% if post.image %}
-                <div class="current-image-card">
-                    <div class="current-image-label">ðŸ“Ž Image actuelle</div>
-                    <img src="/uploads/posts/{{ post.image }}" alt="Image actuelle">
-                </div>
-                {% endif %}
+                    <div class="form-group">
+                        {{ form_label(form.contenu, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.contenu) }}
+                    </div>
 
-                <div class="field">
-                    <label for="{{ form.imageFile.vars.id }}">Remplacer l'image (optionnel)</label>
-                    {{ form_widget(form.imageFile) }}
-                    {{ form_errors(form.imageFile) }}
-                </div>
+                    <div class="form-group">
+                        <label class="form-label">Image d'illustration</label>
+                        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+                            {% if post.image %}
+                                <div class="current-image" style="margin-bottom:0;">
+                                    <img src="/uploads/posts/{{ post.image }}" alt="Actuelle">
+                                    <div style="font-size: 0.65rem; text-align: center; color: var(--muted); padding-top:4px;">Image actuelle</div>
+                                </div>
+                            {% endif %}
+                            <div class="file-input-wrapper" style="flex:1; min-width: 200px;">
+                                {{ form_widget(form.imageFile) }}
+                                <div class="file-input-custom">
+                                    <span>📸 Remplacer l'image</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="field-check">
-                    {{ form_widget(form.isAnonymous) }}
-                    <label for="{{ form.isAnonymous.vars.id }}">Poster anonymement</label>
-                </div>
+                    <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-top: 24px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+                        {{ form_widget(form.isAnonymous) }}
+                        {{ form_label(form.isAnonymous, null, {'label_attr': {'style': 'margin:0; cursor:pointer; font-size: 0.85rem;'}}) }}
+                    </div>
 
-                <button type="submit" class="btn-submit">ðŸ’¾ Enregistrer les modifications</button>
-
-            {{ form_end(form) }}
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit">💾 Enregistrer les modifications</button>
+                        <a href="{{ path('post_show', {id: post.id}) }}" class="btn-cancel">Annuler</a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
         </div>
     </div>
-</div>
 
-</body>
-</html>
+    {# ── Toast de feedback ── #}
+    <div class="toast" id="toast"></div>
+{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"></script>
+    <script>
+        const GEN_URL = '{{ path('api_post_generate') }}';
+
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = `toast toast-${type}`;
+            void t.offsetWidth;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        function setLoading(btnId, spinnerId, isLoading) {
+            const btn = document.getElementById(btnId);
+            const spinner = document.getElementById(spinnerId);
+            if (!btn || !spinner) return;
+            if (isLoading) { btn.style.opacity = '0.7'; btn.style.pointerEvents = 'none'; spinner.style.display = 'inline-block'; }
+            else { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; spinner.style.display = 'none'; }
+        }
+
+        async function aiGenerate() {
+            const topicInput = document.getElementById('ai-topic');
+            const titreField = document.getElementById('post_titre');
+            const topic      = topicInput.value.trim() || titreField.value.trim();
+            if (!topic) { showToast('⚠️ Entrez au moins un titre ou un sujet.', 'error'); return; }
+
+            setLoading('btn-generate', 'gen-spinner', true);
+            try {
+                const res  = await fetch(GEN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ topic }) });
+                const data = await res.json();
+                if (data.error) { showToast('❌ ' + data.error, 'error'); return; }
+
+                if (titreField) titreField.value = data.titre;
+                
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances['post_contenu']) {
+                    CKEDITOR.instances['post_contenu'].setData(data.contenu);
+                } else {
+                    const contenuField = document.getElementById('post_contenu');
+                    if (contenuField) contenuField.value = data.contenu;
+                }
+                showToast('🪄 Post régénéré par l\'IA !');
+            } catch (e) { showToast('❌ Erreur réseau.', 'error'); }
+            finally { setLoading('btn-generate', 'gen-spinner', false); }
+        }
+
+        // Force Dark Mode even if CSS fails to load inside the iframe
+        if (typeof CKEDITOR !== 'undefined') {
+            CKEDITOR.on('instanceReady', function(ev) {
+                const body = ev.editor.document.getBody();
+                body.setStyle('background-color', '#181b30');
+                body.setStyle('color', '#e2e8f0');
+                body.setStyle('font-family', "'Inter', sans-serif");
+            });
+        }
+    </script>
+{% endblock %}

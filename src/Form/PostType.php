@@ -6,11 +6,11 @@ namespace App\Form;
 
 use App\Entity\Categorie;
 use App\Entity\Post;
+use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -25,8 +25,9 @@ class PostType extends AbstractType
                 'label' => 'Titre',
                 'attr' => ['placeholder' => 'Titre du post']
             ])
-            ->add('contenu', TextareaType::class, [
+            ->add('contenu', CKEditorType::class, [
                 'label' => 'Contenu',
+                'config_name' => 'main_config',
                 'attr' => ['rows' => 6]
             ])
             ->add('categorie', EntityType::class, [

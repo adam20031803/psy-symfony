@@ -1,0 +1,57 @@
+{# templates/pagination/premium.html.twig #}
+{% if pageCount > 1 %}
+    <nav class="premium-pagination">
+        <ul class="pagination-list">
+            {# Previous Page #}
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, knp_pagination_query(query, previous, options)) }}" class="page-link prev" aria-label="Précédent">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link prev">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon opacity-50">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </span>
+                </li>
+            {% endif %}
+
+            {# Page Numbers #}
+            {% for page in pagesInRange %}
+                {% if page != current %}
+                    <li class="page-item">
+                        <a href="{{ path(route, knp_pagination_query(query, page, options)) }}" class="page-link">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page }}</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {# Next Page #}
+            {% if next is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, knp_pagination_query(query, next, options)) }}" class="page-link next" aria-label="Suivant">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="nav-icon">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link next">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon opacity-50">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

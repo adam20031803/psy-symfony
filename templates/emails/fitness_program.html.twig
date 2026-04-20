@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ton programme fitness personnalisé — Atomic You</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .wrapper {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+            border-radius: 20px 20px 0 0;
+        }
+        .header-icon { font-size: 3rem; margin-bottom: 12px; }
+        .header h1 {
+            font-size: 1.6rem; font-weight: 800;
+            color: #fff; margin-bottom: 6px;
+        }
+        .header p { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+
+        /* Body */
+        .body {
+            background: #1e293b;
+            padding: 32px 30px;
+        }
+        .greeting {
+            font-size: 1rem; color: #94a3b8;
+            margin-bottom: 24px;
+        }
+        .greeting strong { color: #fff; }
+
+        /* Program meta */
+        .program-title {
+            font-size: 1.4rem; font-weight: 800;
+            color: #93c5fd;
+            margin-bottom: 4px;
+        }
+        .program-meta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            margin: 12px 0 28px;
+        }
+        .meta-pill {
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 50px;
+            padding: 4px 14px;
+            font-size: 0.8rem; color: #93c5fd;
+        }
+
+        /* Exercises */
+        .section-title {
+            font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #475569; margin-bottom: 16px;
+        }
+        .exercise-row {
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .exercise-row:last-child { border-bottom: none; }
+        .ex-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: rgba(59,130,246,0.15);
+            color: #60a5fa;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .ex-name { color: #e2e8f0; font-weight: 600; font-size: 0.9rem; }
+        .ex-desc { color: #64748b; font-size: 0.8rem; margin-top: 3px; line-height: 1.4; }
+        .ex-badges { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+        .ex-badge {
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 0.72rem; color: #94a3b8;
+        }
+
+        /* CTA */
+        .cta-block {
+            margin-top: 32px; text-align: center;
+            padding: 28px;
+            background: rgba(59,130,246,0.07);
+            border: 1px solid rgba(59,130,246,0.2);
+            border-radius: 16px;
+        }
+        .cta-block p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 16px; }
+        .cta-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: #fff !important;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 12px 28px;
+            border-radius: 12px;
+            text-decoration: none;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f172a;
+            padding: 24px 30px;
+            border-radius: 0 0 20px 20px;
+            text-align: center;
+        }
+        .footer p { color: #334155; font-size: 0.78rem; }
+        .footer strong { color: #475569; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-icon">🏋️</div>
+        <h1>Ton programme fitness est prêt !</h1>
+        <p>Généré par Gemini AI · Atomic You Coach</p>
+    </div>
+
+    <!-- BODY -->
+    <div class="body">
+        <p class="greeting">Salut <strong>{{ name }}</strong> 👋,</p>
+        <p class="greeting">Ton coach IA a créé ce programme sur mesure, rien que pour toi. Lance-toi dès aujourd'hui ! 💪</p>
+
+        <!-- Program Info -->
+        <div class="program-title">{{ program.title }}</div>
+        <div class="program-meta">
+            <span class="meta-pill">🎯 {{ program.goal }}</span>
+            <span class="meta-pill">📊 {{ program.level }}</span>
+            <span class="meta-pill">📅 {{ program.durationWeeks }} semaines</span>
+            <span class="meta-pill">🏋️ {{ program.exercises|length }} exercices</span>
+        </div>
+
+        <!-- Exercises -->
+        <div class="section-title">Plan d'entraînement</div>
+        {% for i, ex in program.exercises %}
+        <div class="exercise-row">
+            <div class="ex-num">{{ i + 1 }}</div>
+            <div>
+                <div class="ex-name">{{ ex.name }}</div>
+                <div class="ex-desc">{{ ex.description|length > 120 ? ex.description|slice(0,120) ~ '…' : ex.description }}</div>
+                <div class="ex-badges">
+                    <span class="ex-badge">{{ ex.category }}</span>
+                    <span class="ex-badge">⏱ {{ ex.duration }} min</span>
+                    <span class="ex-badge">🔥 {{ ex.calories }} kcal</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- CTA -->
+        <div class="cta-block">
+            <p>Retrouve tous tes programmes et exercices sur la plateforme !</p>
+            <a href="https://127.0.0.1:8000/fitness" class="cta-btn">Accéder à Atomic You →</a>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>© 2026 <strong>Atomic You</strong> · Ce programme a été généré par IA à titre informatif.</p>
+        <p style="margin-top:4px">Consultez un professionnel de santé avant de démarrer un nouveau programme sportif.</p>
+    </div>
+</div>
+</body>
+</html>
