@@ -28,6 +28,16 @@ class PostRepository extends ServiceEntityRepository
      */
     public function findByFilters(?string $search, ?int $categorieId): array
     {
+        return $this->getQueryBuilderForFilters($search, $categorieId)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne un QueryBuilder filtré — utilisé par KnpPaginator.
+     */
+    public function getQueryBuilderForFilters(?string $search, ?int $categorieId): \Doctrine\ORM\QueryBuilder
+    {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.categorie', 'c')
             ->addSelect('c')
@@ -45,6 +55,6 @@ class PostRepository extends ServiceEntityRepository
                ->setParameter('cat', $categorieId);
         }
 
-        return $qb->getQuery()->getResult();
+        return $qb;
     }
 }

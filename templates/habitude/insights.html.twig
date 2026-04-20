@@ -4,102 +4,33 @@
 
 {% block stylesheets %}
 {{ parent() }}
-<style>
-:root {
-  --bg: #0d1117; --surface: #161b27; --surface2: #1e2536;
-  --border: rgba(255,255,255,0.07); --accent: #6c63ff; --text: #e2e8f0; --muted: #94a3b8;
-}
-* { box-sizing: border-box; }
-body { background: var(--bg); }
-.insights-page { max-width: 1000px; margin: 0 auto; padding: 28px 20px 64px; color: var(--text); }
-.back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; font-size: .9rem; margin-bottom: 24px; transition: color .2s; }
-.back-link:hover { color: var(--text); }
-.page-header { margin-bottom: 32px; }
-.page-header h1 { font-size: 2rem; font-weight: 800; margin: 0 0 8px;
-  background: linear-gradient(90deg, #86efac, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.page-header p { color: var(--muted); font-size: .95rem; margin: 0; }
-
-/* ── Stats row ── */
-.stat-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 32px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px 16px; }
-.stat-card .s-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 10px; }
-.stat-card .s-value { font-size: 2rem; font-weight: 800; }
-.stat-card .s-sub { font-size: .72rem; color: var(--muted); margin-top: 4px; }
-
-/* ── Consistency ring ── */
-.consistency-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 32px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-.ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
-.ring-wrap svg { transform: rotate(-90deg); }
-.ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; }
-.cons-text h3 { font-size: 1.1rem; font-weight: 700; margin: 0 0 6px; }
-.cons-text p { font-size: .88rem; color: var(--muted); margin: 0; line-height: 1.6; }
-
-/* ── Best habit ── */
-.best-habit-card { background: linear-gradient(135deg, rgba(34,197,94,.15), rgba(16,185,129,.08)); border: 1px solid rgba(34,197,94,.3); border-radius: 16px; padding: 20px; margin-bottom: 32px; display: flex; align-items: center; gap: 16px; }
-.best-icon { font-size: 2rem; flex-shrink: 0; }
-.best-info .bi-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: #86efac; font-weight: 700; margin-bottom: 6px; }
-.best-info .bi-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-.best-info .bi-sub { font-size: .82rem; color: var(--muted); margin-top: 4px; }
-
-/* ── Category distribution ── */
-.cat-dist { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
-.cat-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 16px; font-size: .8rem; display: flex; align-items: center; gap: 8px; }
-.cat-chip .cc-count { font-weight: 700; color: #6c63ff; }
-
-/* ── Suggestion cards (same style as checkin suggestions) ── */
-.category-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 18px; overflow: hidden; transition: transform .2s; }
-.category-card:hover { transform: translateY(-2px); }
-.cat-header { display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--border); cursor: pointer; }
-.cat-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-.cat-title { font-size: 1rem; font-weight: 700; flex: 1; }
-.cat-count { font-size: .72rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
-.cat-body { padding: 0; max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.4,0,.2,1), padding .3s; }
-.cat-body.open { max-height: 600px; padding: 16px 22px 22px; }
-.cat-body ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
-.cat-body li { display: flex; align-items: flex-start; gap: 10px; font-size: .9rem; color: var(--muted); line-height: 1.6; padding: 12px 14px; background: rgba(255,255,255,.03); border-radius: 10px; border: 1px solid rgba(255,255,255,.05); }
-.cat-body li .bullet { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .65rem; font-weight: 800; color: #fff; margin-top: 2px; }
-.chevron { margin-left: auto; color: var(--muted); transition: transform .3s; font-size: .8rem; }
-.cat-header.open .chevron { transform: rotate(180deg); }
-
-/* ── At-risk habits ── */
-.at-risk-list { list-style: none; padding: 0; margin: 0 0 32px; display: flex; flex-direction: column; gap: 10px; }
-.at-risk-list li { background: rgba(244,63,94,.08); border: 1px solid rgba(244,63,94,.25); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; font-size: .9rem; }
-.at-risk-list li .ar-icon { font-size: 1.2rem; flex-shrink: 0; }
-.at-risk-list li .ar-title { font-weight: 600; color: var(--text); }
-.at-risk-list li .ar-sub { font-size: .78rem; color: var(--muted); }
-
-.section-title { font-size: 1rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; margin: 0 0 14px; }
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: .88rem; text-decoration: none; border: none; cursor: pointer; transition: all .2s; }
-.btn-primary { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
-.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-.btn:hover { opacity: .88; transform: translateY(-1px); }
-.action-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
-
-.empty-state { text-align: center; padding: 60px 20px; background: var(--surface); border: 1px dashed var(--border); border-radius: 20px; }
-.empty-state .e-icon { font-size: 3rem; margin-bottom: 16px; }
-.empty-state h2 { font-size: 1.2rem; margin-bottom: 8px; }
-.empty-state p { color: var(--muted); font-size: .9rem; }
-
-@media (max-width: 600px) {
-  .stat-row { grid-template-columns: repeat(2, 1fr); }
-  .consistency-card { flex-direction: column; text-align: center; }
-}
-</style>
+    {# Les styles sont centralisés dans premium.css #}
+    <style>
+        .ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+        .ring-wrap svg { transform: rotate(-90deg); }
+        .ring-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; }
+        .consistency-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 32px; display: flex; align-items: center; gap: 30px; flex-wrap: wrap; backdrop-filter: blur(10px); }
+        .cons-text h3 { font-size: 1.25rem; font-weight: 700; margin: 0 0 8px; }
+        .best-habit-card { background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(0,210,255,0.05)); border: 1px solid rgba(34,197,94,0.3); border-radius: 20px; padding: 25px; margin-bottom: 32px; display: flex; align-items: center; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .at-risk-list { list-style: none; padding: 0; margin-bottom: 32px; display: grid; gap: 12px; }
+        .at-risk-item { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
+    </style>
 {% endblock %}
 
 {% block body %}
-<div class="insights-page">
-
-  <a href="{{ path('app_habitude_index') }}" class="back-link">← Retour aux habitudes</a>
+<div class="w-wide">
+  <div style="margin-bottom: 25px;">
+    <a href="{{ path('app_habitude_index') }}" class="btn btn-blue-purple btn-small">← Retour aux habitudes</a>
+  </div>
 
   <div class="page-header">
     <h1>🌿 Insights des habitudes</h1>
     <p>Analyse de vos séries, régularité et suggestions d'amélioration — basées sur vos données.</p>
   </div>
 
-  <div class="action-bar">
-    <a href="{{ path('app_habitude_new') }}" class="btn btn-primary">➕ Nouvelle habitude</a>
-    <a href="{{ path('app_habitude_index') }}" class="btn btn-secondary">📋 Toutes les habitudes</a>
+  <div class="action-bar" style="display: flex; gap: 12px; margin-bottom: 35px;">
+    <a href="{{ path('app_habitude_new') }}" class="btn btn-purple btn-small">➕ Nouvelle habitude</a>
+    <a href="{{ path('app_habitude_index') }}" class="btn btn-blue-purple btn-small">📋 Toutes les habitudes</a>
   </div>
 
   {% if totalHabits == 0 %}
@@ -113,26 +44,26 @@ body { background: var(--bg); }
 
     {# ── Key stats ── #}
     <p class="section-title">📊 Vue d'ensemble</p>
-    <div class="stat-row">
+    <div class="stats-dashboard">
       <div class="stat-card">
-        <div class="s-label">🌱 Total habitudes</div>
-        <div class="s-value" style="color:#6c63ff">{{ totalHabits }}</div>
+        <div class="stat-label">🌱 Total</div>
+        <div class="stat-value" style="color:#6c63ff">{{ totalHabits }}</div>
         <div class="s-sub">{{ activeHabits }} active{{ activeHabits > 1 ? 's' : '' }}</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">✅ Complétions totales</div>
-        <div class="s-value" style="color:#22c55e">{{ totalCompletions }}</div>
-        <div class="s-sub">toutes habitudes confondues</div>
+        <div class="stat-label">✅ Complétions</div>
+        <div class="stat-value" style="color:#22c55e">{{ totalCompletions }}</div>
+        <div class="s-sub">total plateforme</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">🔥 Série max</div>
-        <div class="s-value" style="color:#f97316">{{ maxStreak }}</div>
-        <div class="s-sub">jour{{ maxStreak > 1 ? 's' : '' }} consécutif{{ maxStreak > 1 ? 's' : '' }}</div>
+        <div class="stat-label">🔥 Série max</div>
+        <div class="stat-value" style="color:#f97316">{{ maxStreak }}</div>
+        <div class="s-sub">jours record</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">📈 Série moyenne</div>
-        <div class="s-value" style="color:#00d2ff">{{ avgStreak }}</div>
-        <div class="s-sub">jours par habitude</div>
+        <div class="stat-label">📈 Moyenne</div>
+        <div class="stat-value" style="color:#00d2ff">{{ avgStreak }}</div>
+        <div class="s-sub">jours / habitude</div>
       </div>
     </div>
 
@@ -184,18 +115,18 @@ body { background: var(--bg); }
     {# ── At-risk habits ── #}
     {% if atRiskHabits is not empty %}
     <p class="section-title">⚠️ Habitudes à relancer ({{ atRiskHabits|length }})</p>
-    <ul class="at-risk-list">
+    <div class="at-risk-list">
       {% for h in atRiskHabits|slice(0, 5) %}
-        <li>
+        <div class="at-risk-item">
           <div class="ar-icon">⚠️</div>
-          <div>
-            <div class="ar-title">{{ h.title }}</div>
-            <div class="ar-sub">{{ h.category ?? 'Sans catégorie' }} · {{ h.totalCompletions }} complétion{{ h.totalCompletions > 1 ? 's' : '' }} historiques · Série interrompue</div>
+          <div style="flex: 1;">
+            <div class="ar-title" style="font-weight: 700; color: #fff;">{{ h.title }}</div>
+            <div class="ar-sub" style="font-size: 0.8rem; color: #94a3b8;">{{ h.category ?? 'Général' }} · Série interrompue</div>
           </div>
-          <a href="{{ path('app_habitude_show', {id: h.id}) }}" style="margin-left:auto;color:#a5b4fc;font-size:.8rem;white-space:nowrap;text-decoration:none;">Voir →</a>
-        </li>
+          <a href="{{ path('app_habitude_show', {id: h.id}) }}" class="btn btn-blue-purple btn-small" style="padding: 5px 12px;">Relancer →</a>
+        </div>
       {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 
     {# ── Category distribution ── #}

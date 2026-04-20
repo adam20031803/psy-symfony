@@ -55,8 +55,8 @@
             </div>
         </a>
 
-        <a href="{{ path('app_mental_tip_index') }}" class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_mental_tip' or app.request.attributes.get('_route') starts with 'app_mental_entry' or app.request.attributes.get('_route') == 'app_chatbot' or app.request.attributes.get('_route') == 'app_weekly_analysis' ? 'active' : '' }}">
-            <div class="sidebar-icon si-purple">🧠</div>
+        <a href="{{ path('app_mental_tip_index') }}" class="sidebar-link {{ (app.request.attributes.get('_route') starts with 'app_mental_tip') or (app.request.attributes.get('_route') starts with 'app_mental_entry') or (app.request.attributes.get('_route') == 'app_chatbot') or (app.request.attributes.get('_route') == 'app_weekly_analysis') ? 'active' : '' }}">
+            <div class="sidebar-icon si-teal">🧘</div>
             <div class="sidebar-link-text">
                 <span class="sidebar-link-title">Santé mentale</span>
                 <span class="sidebar-link-sub">Tips, journal &amp; chat IA</span>
@@ -80,14 +80,14 @@
         </a>
 
 
-         <a href="{{ path('app_ai_messenger') }}"
-       class="sidebar-link {{ app.request.get('_route') starts with 'app_ai_messenger' ? 'active' : '' }}">
-        <div class="sidebar-icon si-purple">🧠</div>
-        <div class="sidebar-link-text">
-            <span class="sidebar-link-title">ARIA — Coach IA</span>
-            <span class="sidebar-link-sub">Messenger intelligent</span>
-        </div>
-    </a>
+          <a href="{{ path('app_ai_messenger') }}"
+        class="sidebar-link {{ app.request.attributes.get('_route') starts with 'app_ai_messenger' ? 'active' : '' }}">
+         <div class="sidebar-icon si-purple">🧠</div>
+         <div class="sidebar-link-text">
+             <span class="sidebar-link-title">ARIA — Coach IA</span>
+             <span class="sidebar-link-sub">Messenger intelligent</span>
+         </div>
+     </a>
     
     </div>
 

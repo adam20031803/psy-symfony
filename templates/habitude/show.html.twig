@@ -4,66 +4,12 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <style>
-        :root {
-            --bg:       #0a0c1a;
-            --surface:  #111328;
-            --card:     #181b30;
-            --border:   rgba(255,255,255,0.06);
-            --accent:   #6c63ff;
-            --accent2:  #00d2ff;
-            --success:  #22d3a5;
-            --danger:   #ef4444;
-            --text:     #e2e8f0;
-            --muted:    #64748b;
-            --radius:   16px;
-        }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-        
-        .show-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        .show-header { background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,210,255,0.1)); border-bottom: 1px solid var(--border); padding: 40px; text-align: center; }
-        
-        .hab-category { display: inline-block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 6px 12px; background: rgba(108,99,255,0.2); color: #b1aeff; border-radius: 6px; margin-bottom: 15px; }
-        h1 { font-size: 2.2rem; margin-bottom: 15px; color: white; }
-        
-        .show-body { padding: 40px; }
-        .info-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px; }
-        .info-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
-        .info-value { font-size: 1rem; color: var(--text); line-height: 1.6; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--border); }
-        .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
-        .stat-box .str { font-size: 2rem; margin-bottom: 10px; display: block; }
-        .stat-box .val { font-size: 1.5rem; font-weight: 700; color: white; margin-bottom: 5px; }
-        .stat-box .lbl { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 600; }
-        
-        .weekly-tracker { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 25px 0; }
-        .week-day { aspect-ratio: 1; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; background: var(--surface); border: 1px solid var(--border); }
-        .week-day.completed { background: var(--success); color: white; border-color: var(--success); }
-        .week-day.missed { background: var(--danger); color: white; border-color: var(--danger); }
-        .week-day.future { background: var(--card); color: var(--muted); border: 2px dashed var(--border); }
-        .week-day.today { border: 2px solid var(--accent); }
-        
-        .week-history { margin: 25px 0; }
-        .week-history-item { margin-bottom: 20px; }
-        .week-history-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        .progress-bar { height: 10px; background: var(--surface); border-radius: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.3s; }
-        
-        .actions-bar { display: flex; gap: 15px; padding: 20px 40px; background: var(--surface); border-top: 1px solid var(--border); }
-        
-        .btn { padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; cursor: pointer; border: none; }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-secondary { background: var(--card); border: 1px solid var(--border); color: var(--text); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
-    </style>
+    {# Les styles sont centralisés dans premium.css #}
 {% endblock %}
 
 {% block body %}
-<div class="container">
-    <a href="{{ path('app_habitude_index') }}" class="btn btn-secondary" style="margin-bottom: 25px;">← Retour à la liste</a>
+<div class="w-medium">
+    <a href="{{ path('app_habitude_index') }}" class="btn btn-blue-purple btn-small" style="margin-bottom: 25px;">← Retour à la liste</a>
     
     <div class="show-card">
         <div class="show-header">
@@ -86,21 +32,21 @@
             
 
             
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="str">🔥</span>
-                    <div class="val">{{ habitude.currentStreak }}</div>
-                    <div class="lbl">Série Actuelle</div>
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <span class="stat-icon">🔥</span>
+                    <div class="stat-value">{{ habitude.currentStreak }}</div>
+                    <div class="stat-label">Série Actuelle</div>
                 </div>
-                <div class="stat-box">
-                    <span class="str">🏆</span>
-                    <div class="val">{{ habitude.longestStreak }}</div>
-                    <div class="lbl">Record de Série</div>
+                <div class="stat-card">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-value">{{ habitude.longestStreak }}</div>
+                    <div class="stat-label">Record</div>
                 </div>
-                <div class="stat-box">
-                    <span class="str">✅</span>
-                    <div class="val">{{ habitude.totalCompletions }}</div>
-                    <div class="lbl">Fois Complétée</div>
+                <div class="stat-card">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-value">{{ habitude.totalCompletions }}</div>
+                    <div class="stat-label">Complétée</div>
                 </div>
             </div>
 
@@ -177,8 +123,8 @@
             </div>
         </div>
         
-        <div class="actions-bar">
-            <a href="{{ path('app_habitude_edit', {'id': habitude.id}) }}" class="btn btn-primary" style="flex: 1;">✏️ Editer cette habitude</a>
+        <div class="actions-bar" style="display: flex; gap: 15px; padding: 25px 40px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.08);">
+            <a href="{{ path('app_habitude_edit', {'id': habitude.id}) }}" class="btn btn-purple" style="flex: 1;">✏️ Editer cette habitude</a>
             {{ include('habitude/_delete_form.html.twig') }}
         </div>
     </div>

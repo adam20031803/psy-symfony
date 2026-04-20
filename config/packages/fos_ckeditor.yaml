@@ -1,0 +1,26 @@
+fos_ck_editor:
+    base_path: "https://cdn.ckeditor.com/4.22.1/full-all/"
+    js_path:   "https://cdn.ckeditor.com/4.22.1/full-all/ckeditor.js"
+    configs:
+        main_config:
+            toolbar: [
+                { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                { name: 'colors', items: ['TextColor', 'BGColor'] },
+                { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike', 'RemoveFormat'] },
+                { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'] },
+                { name: 'links', items: ['Link', 'Unlink'] },
+                { name: 'insert', items: ['Image', 'Table', 'HorizontalRule', 'SpecialChar'] },
+                { name: 'tools', items: ['Maximize'] }
+            ]
+            uiColor: "#1d2140"
+            skin: "moono-lisa"
+            versionCheck: false
+            # Force dark mode style content
+            contentsCss: [
+                'https://cdn.ckeditor.com/4.22.1/full-all/contents.css',
+                'https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap',
+                '/css/premium.css'
+            ]
+            bodyClass: 'ckeditor-dark-body'
+            extraAllowedContent: '*{*}'
+            height: '500px'

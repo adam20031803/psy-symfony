@@ -26,12 +26,10 @@ class Post
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 255)]
-    #[Assert\Callback([PostValidator::class, 'checkBadWords'])]
     private ?string $titre = null;
 
     #[ORM\Column(type: 'text')]
     #[Assert\NotBlank]
-    #[Assert\Callback([PostValidator::class, 'checkBadWords'])]
     private ?string $contenu = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]

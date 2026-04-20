@@ -41,6 +41,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $photo = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $cv = null;
+
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $age = null;
 
@@ -160,6 +163,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhoto(?string $photo): static
     {
         $this->photo = $photo;
+        return $this;
+    }
+
+    public function getCv(): ?string
+    {
+        return $this->cv;
+    }
+
+    public function setCv(?string $cv): static
+    {
+        $this->cv = $cv;
         return $this;
     }
 
