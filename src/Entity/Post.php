@@ -5,11 +5,12 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
-use App\Validator\PostValidator;
+use App\Validator\BadWord;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\HttpFoundation\File\File;
 
 /**
  * Entité mappée exactement sur la table existante 'post'.
@@ -26,16 +27,21 @@ class Post
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 255)]
-    #[Assert\Callback([PostValidator::class, 'checkBadWords'])]
+    #[BadWord]
     private ?string $titre = null;
 
     #[ORM\Column(type: 'text')]
     #[Assert\NotBlank]
-    #[Assert\Callback([PostValidator::class, 'checkBadWords'])]
+    #[BadWord]
     private ?string $contenu = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $image = null;
+
+    #[Assert\File(maxSize: '2M', mimeTypes: ['image/jpeg', 'image/png', 'image/webp'])]
+    private ?File $imageFile = null;
+
+
 
     #[ORM\Column(name: 'is_anonymous', type: 'boolean', options: ['default' => 0])]
     private bool $isAnonymous = false;
@@ -126,6 +132,28 @@ class Post
         $this->image = $image;
         return $this;
     }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    /**
+     * @param File|null $imageFile
+     * @return $this
+     */
+    public function setImageFile(?File $imageFile = null): static
+    {
+        $this->imageFile = $imageFile;
+
+        if (null !== $imageFile) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+
 
     public function isIsAnonymous(): bool
     {

@@ -6,6 +6,7 @@ parameters:
     twilio.authToken: '%env(default:app.env_empty_string:TWILIO_AUTH_TOKEN)%'
     twilio.fromNumber: '%env(default:app.env_empty_string:TWILIO_FROM_NUMBER)%'
     twilio.toNumber: '%env(default:app.env_empty_string:TWILIO_TO_NUMBER)%'
+    uploads_directory: '%kernel.project_dir%/public/uploads'
 
 services:
     _defaults:
@@ -18,11 +19,6 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-
-    App\Controller\PostController:
-        arguments:
-            $postsDirectory: '%kernel.project_dir%/public/uploads/posts'
-        tags: ['controller.service_arguments']
 
     App\Service\AiTaskGeneratorService:
         arguments:
@@ -53,4 +49,7 @@ services:
             $toNumber: '%twilio.toNumber%'
             $connection: '@doctrine.dbal.default_connection'
 
+    App\Service\FileUploader:
+        arguments:
+            $targetDirectory: '%uploads_directory%'
 

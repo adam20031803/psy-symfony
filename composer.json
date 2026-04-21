@@ -13,6 +13,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.1",
         "dompdf/dompdf": "*",
+        "friendsofsymfony/ckeditor-bundle": "^2.8",
         "phpoffice/phpspreadsheet": "^5.6",
         "shuchkin/simplexlsxgen": "^1.5",
         "symfony/asset": "6.4.*",
@@ -34,7 +35,8 @@
         "symfony/yaml": "6.4.*",
         "tattali/calendar-bundle": "^1.3",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0"
+        "twig/twig": "^2.12|^3.0",
+        "vich/uploader-bundle": "^2.4"
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.0",

@@ -57,16 +57,21 @@ Le JSON doit avoir la structure suivante:
         // Try Gemini first
         $response = $this->geminiService->generateResponse($prompt);
         
-        // Fallback to Groq if Gemini returns an error message or empty response
-        if (str_starts_with($response, 'Erreur') || empty(trim($response)) || str_contains($response, 'API Key is missing')) {
+        $cleanResponse = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($response));
+        $json = json_decode($cleanResponse, true);
+
+        $isGeminiError = str_starts_with($response, 'Erreur') || 
+                         str_starts_with($response, "L'IA a") || 
+                         str_starts_with($response, "Je n'ai pas pu") || 
+                         str_contains($response, 'API Key') || 
+                         empty(trim($response));
+
+        // Fallback to Groq if Gemini fails or JSON is invalid
+        if ($isGeminiError || !$json || !isset($json['exercises'])) {
             $response = $this->groqService->generateResponse($prompt);
+            $cleanResponse = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($response));
+            $json = json_decode($cleanResponse, true);
         }
-
-        // Clean markdown if present
-        $response = preg_replace('/```json/i', '', $response);
-        $response = preg_replace('/```/i', '', $response);
-
-        $json = json_decode(trim($response), true);
 
         if (!$json || !isset($json['exercises'])) {
             return null; // Failed to parse from both providers

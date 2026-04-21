@@ -18,7 +18,8 @@ class CommentaireType extends AbstractType
             ->add('contenu', TextareaType::class, [
                 'label' => false,
                 'attr' => [
-                    'rows' => 3, 
+                    'rows' => 5,
+                    'id'   => 'comment-editor',
                     'placeholder' => 'Votre commentaire...'
                 ]
             ])

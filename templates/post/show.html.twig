@@ -1,389 +1,266 @@
-﻿{# templates/post/show.html.twig #}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ post.titre }} â€” Atomic You</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.titre }} — Atomic You{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --bg: #0a0c1a; --surface: #111328; --card: #181b30; --sidebar: #0e1025;
-            --border: rgba(255,255,255,0.06); --accent: #6c63ff; --accent2: #00d2ff;
-            --success: #22d3a5; --warning: #f59e0b; --pink: #ec4899; --orange: #f97316;
-            --text: #e2e8f0; --muted: #64748b; --radius: 16px; --sidebar-w: 280px;
-        }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-        body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(108,99,255,.10) 0%, transparent 70%), radial-gradient(ellipse 50% 35% at 80% 80%, rgba(0,210,255,.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
-
-        /* â”€â”€ Navbar â”€â”€ */
-        .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(14,16,37,.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-        .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; }
-        .nav-logo .icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; }
-        .nav-logo span { color: var(--accent2); } .nav-logo strong { color: var(--text); }
-        .nav-actions { display: flex; align-items: center; gap: 14px; }
-        .nav-user { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 5px 14px 5px 5px; }
-        .nav-avatar { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.7rem; }
-        .nav-name { font-size: 0.8rem; font-weight: 500; }
-        .btn-logout { text-decoration: none; color: var(--muted); font-size: 0.78rem; font-weight: 500; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); transition: all .2s; }
-        .btn-logout:hover { color: var(--text); border-color: rgba(255,255,255,.15); background: var(--card); }
-
-        /* â”€â”€ Layout â”€â”€ */
-        .app-layout { display: flex; flex: 1; position: relative; z-index: 1; }
-
-        /* â”€â”€ Sidebar â”€â”€ */
-        .sidebar { width: var(--sidebar-w); min-height: calc(100vh - 60px); background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; flex-shrink: 0; }
-        .sidebar-section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 24px; margin-bottom: 10px; margin-top: 8px; }
-        .sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
-        .sidebar-link { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 12px; text-decoration: none; color: rgba(255,255,255,0.6); font-size: 0.85rem; font-weight: 500; transition: all .25s cubic-bezier(.4,0,.2,1); position: relative; overflow: hidden; }
-        .sidebar-link:hover { background: rgba(108,99,255,.08); color: var(--text); transform: translateX(4px); }
-        .sidebar-link.active { background: linear-gradient(135deg, rgba(108,99,255,.15), rgba(0,210,255,.08)); color: #fff; font-weight: 600; border: 1px solid rgba(108,99,255,.2); box-shadow: 0 4px 16px rgba(108,99,255,.12); animation: pulse-glow 3s ease-in-out infinite; }
-        .sidebar-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 0 4px 4px 0; }
-        .sidebar-icon { width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; transition: transform .25s; }
-        .sidebar-link:hover .sidebar-icon { transform: scale(1.1); }
-        .si-purple { background: rgba(108,99,255,.12); } .si-teal { background: rgba(0,210,255,.10); } .si-green { background: rgba(34,211,165,.10); } .si-pink { background: rgba(236,72,153,.10); } .si-orange { background: rgba(249,115,22,.10); } .si-blue { background: rgba(59,130,246,.10); } .si-yellow { background: rgba(245,158,11,.10); }
-        .sidebar-link-text { display: flex; flex-direction: column; gap: 1px; }
-        .sidebar-link-title { font-size: 0.84rem; line-height: 1.3; }
-        .sidebar-link-sub { font-size: 0.68rem; color: var(--muted); font-weight: 400; }
-        .sidebar-link:hover .sidebar-link-sub, .sidebar-link.active .sidebar-link-sub { color: rgba(255,255,255,.45); }
-        .sidebar-badge { margin-left: auto; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(108,99,255,.18); color: var(--accent); }
-        .sidebar-divider { height: 1px; background: var(--border); margin: 16px 24px; }
-        .sidebar-footer { margin-top: auto; padding: 20px 20px 0; }
-        .sidebar-pro-card { background: linear-gradient(135deg, rgba(108,99,255,.12), rgba(0,210,255,.08)); border: 1px solid rgba(108,99,255,.18); border-radius: 14px; padding: 18px; text-align: center; }
-        .sidebar-pro-card .pro-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
-        .sidebar-pro-card h4 { font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .sidebar-pro-card p { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
-
-        /* â”€â”€ Main â”€â”€ */
-        .main-content { flex: 1; padding: 36px 40px 80px; max-width: 820px; }
         .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); text-decoration: none; font-size: 0.8rem; font-weight: 500; margin-bottom: 20px; transition: color .2s; }
         .back-link:hover { color: var(--accent2); }
 
-        /* â”€â”€ Flash â”€â”€ */
-        .flash { padding: 12px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 500; margin-bottom: 16px; }
-        .flash-success { background: rgba(34,211,165,.12); border: 1px solid rgba(34,211,165,.3); color: var(--success); }
-        .flash-error   { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: #ef4444; }
+        .show-post-container { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .post-header-img { width: 100%; max-height: 400px; object-fit: cover; }
+        .post-content { padding: 40px; }
+        .post-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 0.85rem; color: var(--muted); }
+        .post-badge { background: rgba(108,99,255,0.15); color: var(--accent); padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; }
+        .post-title { font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 20px; line-height: 1.2; }
+        .post-body { font-size: 1.05rem; line-height: 1.8; color: #cbd5e1; }
+        .post-actions { display: flex; gap: 14px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--border); }
+        .btn-action { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: #fff; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+        .btn-action:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+        .btn-action.active-like { background: rgba(34,211,165,0.15); border-color: var(--success); color: var(--success); }
+        .btn-action.active-dislike { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
 
-        /* â”€â”€ Post article card â”€â”€ */
-        .post-article { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 28px; }
-        .post-article-img { width: 100%; max-height: 360px; object-fit: cover; display: block; }
-        .post-article-body { padding: 32px 36px; }
+        .comments-section { margin-top: 40px; }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .comment-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; transition: 0.3s; }
+        .comment-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(108,99,255,0.2); }
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; }
+        .comment-content { font-size: 0.92rem; line-height: 1.6; color: #e2e8f0; }
+        .comment-actions { display: flex; gap: 12px; margin-top: 12px; }
+        .btn-small { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; font-weight: 600; padding: 0; transition: 0.2s; }
+        
+        .translation-panel { background: rgba(0,210,255,0.05); border: 1px dashed var(--accent2); border-radius: 12px; padding: 20px; margin-top: 20px; display: none; }
+        .translation-panel.visible { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .post-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(108,99,255,.12); color: var(--accent); border: 1px solid rgba(108,99,255,.2); font-size: 0.7rem; font-weight: 600; padding: 3px 11px; border-radius: 999px; margin-bottom: 16px; }
-
-        .post-article-body h1 { font-size: 1.55rem; font-weight: 700; line-height: 1.35; margin-bottom: 16px; }
-
-        .post-meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; font-size: 0.75rem; color: var(--muted); margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .post-meta-row .meta-item { display: flex; align-items: center; gap: 5px; }
-        .meta-modified { font-style: italic; color: var(--muted); font-size: 0.7rem; }
-
-        .post-body-text { font-size: 0.88rem; line-height: 1.8; color: #c8d3e0; white-space: pre-wrap; }
-
-        /* â”€â”€ Reaction bar â”€â”€ */
-        .reaction-bar {
-            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-            margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
-        }
-        .reaction-btn {
-            display: inline-flex; align-items: center; gap: 7px;
-            padding: 9px 18px; border-radius: 999px; border: 1px solid var(--border);
-            background: var(--surface); color: var(--muted);
-            font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; transition: all .2s; user-select: none;
-        }
-        .reaction-btn:hover { border-color: rgba(255,255,255,.18); color: var(--text); transform: scale(1.04); }
-        .reaction-btn.active-like   { background: rgba(34,211,165,.12); border-color: var(--success); color: var(--success); }
-        .reaction-btn.active-dislike { background: rgba(239,68,68,.1); border-color: #ef4444; color: #ef4444; }
-        .reaction-btn.shared        { background: rgba(0,210,255,.1); border-color: var(--accent2); color: var(--accent2); cursor: default; }
-        .reaction-btn .count { font-size: 0.78rem; }
-        .reaction-separator { width: 1px; height: 24px; background: var(--border); }
-
-        /* â”€â”€ Post actions (edit/delete) â”€â”€ */
-        .post-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-        .btn-edit-post { display: inline-flex; align-items: center; gap: 7px; background: rgba(245,158,11,.1); color: var(--warning); border: 1px solid rgba(245,158,11,.25); font-size: 0.8rem; font-weight: 600; padding: 9px 16px; border-radius: 9px; text-decoration: none; transition: all .2s; }
-        .btn-edit-post:hover { background: rgba(245,158,11,.2); }
-        .btn-delete-post { display: inline-flex; align-items: center; gap: 7px; background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.25); font-size: 0.8rem; font-weight: 600; padding: 9px 16px; border-radius: 9px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s; }
-        .btn-delete-post:hover { background: rgba(239,68,68,.2); }
-
-        /* â”€â”€ Toast notification â”€â”€ */
-        .toast {
-            position: fixed; bottom: 28px; right: 28px; z-index: 9999;
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 12px 20px;
-            font-size: 0.82rem; font-weight: 500; color: var(--text);
-            box-shadow: 0 8px 32px rgba(0,0,0,.4);
-            transform: translateY(20px); opacity: 0;
-            transition: all .3s cubic-bezier(.4,0,.2,1);
-            pointer-events: none;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast.toast-success { border-color: rgba(34,211,165,.3); color: var(--success); }
-        .toast.toast-info    { border-color: rgba(0,210,255,.3); color: var(--accent2); }
-
-        /* â”€â”€ Comments section â”€â”€ */
-        .comments-section { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; }
-        .comments-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-        .comments-header h2 { font-size: 1rem; font-weight: 700; }
-        .comments-count { background: rgba(108,99,255,.15); color: var(--accent); border: 1px solid rgba(108,99,255,.2); font-size: 0.7rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
-        .comment-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
-        .comment-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; transition: border-color .2s; }
-        .comment-item:hover { border-color: rgba(108,99,255,.18); }
-        .comment-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .comment-author { font-size: 0.8rem; font-weight: 600; color: var(--text); }
-        .comment-date { font-size: 0.7rem; color: var(--muted); }
-        .comment-body { font-size: 0.83rem; color: #b0bec5; line-height: 1.6; white-space: pre-wrap; }
-        .no-comments { text-align: center; padding: 28px; color: var(--muted); font-size: 0.82rem; font-style: italic; margin-bottom: 24px; }
-        .comment-form-section { border-top: 1px solid var(--border); padding-top: 22px; }
-        .comment-form-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
-        .comment-form-section textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px 14px; font-family: 'Inter', sans-serif; font-size: 0.84rem; resize: vertical; min-height: 90px; outline: none; transition: border-color .2s, box-shadow .2s; }
-        .comment-form-section textarea::placeholder { color: var(--muted); }
-        .comment-form-section textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
-        .comment-form-error { color: #ef4444; font-size: 0.75rem; margin: 4px 0; }
-        .btn-comment-submit { margin-top: 10px; display: inline-flex; align-items: center; gap: 7px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 0.8rem; font-weight: 600; padding: 9px 20px; border-radius: 9px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: opacity .2s; box-shadow: 0 3px 12px rgba(108,99,255,.25); }
-        .btn-comment-submit:hover { opacity: .88; }
-        .login-prompt { text-align: center; padding: 20px; color: var(--muted); font-size: 0.83rem; border-top: 1px solid var(--border); margin-top: 4px; }
-        .login-prompt a { color: var(--accent); text-decoration: none; font-weight: 500; }
-        .login-prompt a:hover { color: var(--accent2); }
-
-        @media (max-width: 900px) { .sidebar { display: none; } .main-content { padding: 24px 16px 60px; } }
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,.15); } 50% { box-shadow: 0 0 18px 4px rgba(108,99,255,.12); } }
+        .toast { background: rgba(24,27,48,0.9); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: #fff; padding: 12px 24px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-top: 10px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; }
     </style>
-</head>
-<body>
+{% endblock %}
 
-<!-- Navbar -->
-<nav class="top-nav">
-    <div class="nav-logo">
-        <div class="icon">ðŸ§ </div>
-        <div><strong>Atomic</strong><span>You</span></div>
-    </div>
-    <div class="nav-actions">
-        {% if app.user %}
-        <div class="nav-user">
-            <div class="nav-avatar">{{ app.user.prenom|slice(0,1)|upper }}{{ app.user.nom|slice(0,1)|upper }}</div>
-            <span class="nav-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-        </div>
+{% block body %}
+    <a href="{{ path('post_index') }}" class="back-link">← Retour au forum</a>
+
+    <div class="show-post-container">
+        {% if post.image %}
+            <img src="/uploads/posts/{{ post.image }}" class="post-header-img" alt="{{ post.titre }}">
         {% endif %}
-        <a href="{{ path('app_logout') }}" class="btn-logout">ðŸšª DÃ©connexion</a>
+
+        <div class="post-content">
+            <div class="post-meta">
+                <span class="post-badge">{{ post.categorie.nom ?? 'Général' }}</span>
+                <span>• Par <strong>{{ post.isAnonymous ? 'Anonyme' : (post.user ? post.user.prenom ~ ' ' ~ post.user.nom : 'Utilisateur') }}</strong></span>
+                <span>• {{ post.createdAt|date('d/m/Y H:i') }}</span>
+                {% if app.user and post.user == app.user %}
+                    <a href="{{ path('post_edit', {id: post.id}) }}" style="margin-left: auto; color: var(--accent2); text-decoration: none; font-size: 0.8rem; font-weight: 700;">[Modifier]</a>
+                {% endif %}
+            </div>
+
+            <h1 class="post-title">{{ post.titre }}</h1>
+            
+            <div class="post-body">
+                <div class="post-body-text">{{ post.contenu|raw }}</div>
+                
+                <div id="translation-panel" class="translation-panel">
+                    <p style="font-size: 0.7rem; color: var(--accent2); margin-bottom:10px; font-weight: 800; text-transform: uppercase;">AI Translation (English) 🌐</p>
+                    <h2 id="tr-title" style="font-size: 1.4rem; margin-bottom: 15px;"></h2>
+                    <div id="tr-content" style="font-style: italic; color: #e2e8f0;"></div>
+                </div>
+            </div>
+
+            <div class="post-actions">
+                <button class="btn-action {{ userVote == 'like' ? 'active-like' }}" onclick="vote('like')" id="btn-like">
+                    👍 <span id="likes-count">{{ likesCount }}</span>
+                </button>
+                <button class="btn-action {{ userVote == 'dislike' ? 'active-dislike' }}" onclick="vote('dislike')" id="btn-dislike">
+                    👎 <span id="dislikes-count">{{ dislikesCount }}</span>
+                </button>
+                <button class="btn-action" onclick="translatePost()" id="btn-translate">
+                    🌐 <span id="translate-label">Traduire en EN</span>
+                </button>
+                <button class="btn-action {{ hasShared ? 'shared' }}" onclick="repost()" id="btn-repost" {% if hasShared %}disabled{% endif %}>
+                    🔁 <span id="shares-count">{{ sharesCount }}</span> <span id="repost-label">{{ hasShared ? 'Reposté' : 'Repost' }}</span>
+                </button>
+            </div>
+        </div>
     </div>
-</nav>
 
-<div class="app-layout">
+    <div class="comments-section">
+        <div class="section-title">
+            <span>Commentaires ({{ post.commentaires|length }})</span>
+        </div>
 
-    <!-- Sidebar -->
-    {% include 'components/sidebar.html.twig' %}
-
-    <!-- Main content -->
-    <div class="main-content">
-
-        <a href="{{ path('post_index') }}" class="back-link">â† Retour au forum</a>
-
-        <!-- Flash messages -->
-        {% for type, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="flash flash-{{ type }}">{{ message }}</div>
-            {% endfor %}
-        {% endfor %}
-
-        <!-- Post article -->
-        <article class="post-article">
-
-            {% if post.image %}
-                <img src="/uploads/posts/{{ post.image }}" alt="{{ post.titre }}" class="post-article-img">
-            {% endif %}
-
-            <div class="post-article-body">
-
-                {% if post.categorie %}
-                    <span class="post-badge">{{ post.categorie.icon ? post.categorie.icon ~ ' ' }}{{ post.categorie.nom }}</span>
-                {% endif %}
-
-                <h1>{{ post.titre }}</h1>
-
-                <div class="post-meta-row">
-                    <span class="meta-item">
-                        ðŸ‘¤
-                        {% if post.isAnonymous %}
-                            <em>Anonyme</em>
-                        {% else %}
-                            {{ post.user.prenom }} {{ post.user.nom }}
-                        {% endif %}
-                    </span>
-                    <span class="meta-item">ðŸ“… {{ post.createdAt|date('d/m/Y Ã  H:i') }}</span>
-                    {% if post.updatedAt %}
-                        <span class="meta-modified">(modifiÃ© le {{ post.updatedAt|date('d/m/Y') }})</span>
-                    {% endif %}
-                </div>
-
-                <div class="post-body-text">{{ post.contenu }}</div>
-
-                {# â”€â”€ Barre de rÃ©actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ #}
-                <div class="reaction-bar" id="reaction-bar">
-                    {% if app.user %}
-                        {# Bouton LIKE #}
-                        <button
-                            class="reaction-btn {% if userVote == 'like' %}active-like{% endif %}"
-                            id="btn-like"
-                            onclick="vote('like')">
-                            ðŸ‘ <span class="count" id="likes-count">{{ likesCount }}</span>
-                        </button>
-
-                        {# Bouton DISLIKE #}
-                        <button
-                            class="reaction-btn {% if userVote == 'dislike' %}active-dislike{% endif %}"
-                            id="btn-dislike"
-                            onclick="vote('dislike')">
-                            ðŸ‘Ž <span class="count" id="dislikes-count">{{ dislikesCount }}</span>
-                        </button>
-
-                        <div class="reaction-separator"></div>
-
-                        {# Bouton REPOST #}
-                        <button
-                            class="reaction-btn {% if hasShared %}shared{% endif %}"
-                            id="btn-repost"
-                            onclick="{% if not hasShared %}repost(){% endif %}"
-                            title="{% if hasShared %}DÃ©jÃ  repostÃ©{% else %}Reposer ce post{% endif %}">
-                            ðŸ” <span class="count" id="shares-count">{{ sharesCount }}</span>
-                            <span id="repost-label">{% if hasShared %}RepostÃ©{% else %}Repost{% endif %}</span>
-                        </button>
-                    {% else %}
-                        {# Affichage read-only pour les non-connectÃ©s #}
-                        <span class="reaction-btn" style="cursor:default">ðŸ‘ {{ likesCount }}</span>
-                        <span class="reaction-btn" style="cursor:default">ðŸ‘Ž {{ dislikesCount }}</span>
-                        <div class="reaction-separator"></div>
-                        <span class="reaction-btn" style="cursor:default">ðŸ” {{ sharesCount }}</span>
-                    {% endif %}
-                </div>
-
-                {# â”€â”€ Boutons Modifier / Supprimer (auteur uniquement) #}
-                {% if app.user and app.user == post.user %}
-                <div class="post-actions">
-                    <a href="{{ path('post_edit', {id: post.id}) }}" class="btn-edit-post">âœï¸ Modifier</a>
-                    <form method="post" action="{{ path('post_delete', {id: post.id}) }}"
-                          onsubmit="return confirm('Supprimer dÃ©finitivement ce post ?')" style="display:contents">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete'~post.id) }}">
-                        <button type="submit" class="btn-delete-post">ðŸ—‘ï¸ Supprimer</button>
-                    </form>
-                </div>
-                {% endif %}
-
-            </div>
-        </article>
-
-        <!-- Comments section -->
-        <section class="comments-section">
-
-            <div class="comments-header">
-                <h2>ðŸ’¬ Commentaires</h2>
-                <span class="comments-count">{{ post.commentaires|length }}</span>
-            </div>
-
-            {% if post.commentaires is empty %}
-                <div class="no-comments">Aucun commentaire pour l'instant. Soyez le premier !</div>
-            {% else %}
-                <div class="comment-list">
-                    {% for commentaire in post.commentaires %}
-                    <div class="comment-item">
-                        <div class="comment-meta">
-                            <span class="comment-author">ðŸ‘¤ {{ commentaire.user.prenom }} {{ commentaire.user.nom }}</span>
-                            <span class="comment-date">{{ commentaire.createdAt|date('d/m/Y Ã  H:i') }}</span>
+        <div id="comments-list">
+            {% for comment in post.commentaires %}
+                <div class="comment-card" id="comment-{{ comment.id }}">
+                    <div class="comment-header">
+                        <div>
+                            <strong>{{ comment.user.prenom }} {{ comment.user.nom }}</strong>
+                            <span style="color: var(--muted); margin-left: 8px;">{{ comment.createdAt|date('d/m/Y H:i') }}</span>
                         </div>
-                        <div class="comment-body">{{ commentaire.contenu }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <!-- Comment form or login prompt -->
-            {% if app.user %}
-                <div class="comment-form-section">
-                    <div class="comment-form-title">Laisser un commentaire</div>
-                    {{ form_start(commentaireForm, {
-                        action: path('post_add_comment', {id: post.id}),
-                        method: 'POST'
-                    }) }}
-                        {{ form_widget(commentaireForm.contenu, {attr: {placeholder: 'Votre commentaire...'}}) }}
-                        {% if form_errors(commentaireForm.contenu) is not empty %}
-                            <div class="comment-form-error">{{ form_errors(commentaireForm.contenu) }}</div>
+                        {% if app.user and comment.user == app.user %}
+                            <div class="comment-mgmt">
+                                <button class="btn-small" onclick="startEditComment({{ comment.id }})">Modifier</button>
+                                <button class="btn-small btn-delete" onclick="deleteComment({{ comment.id }}, '{{ csrf_token('delete_comment' ~ comment.id) }}')">Supprimer</button>
+                            </div>
                         {% endif %}
-                        <button type="submit" class="btn-comment-submit">ðŸ’¬ Commenter</button>
-                    {{ form_end(commentaireForm) }}
+                    </div>
+                    <div class="comment-content" id="comment-body-{{ comment.id }}">
+                        {{ comment.contenu|raw }}
+                    </div>
                 </div>
             {% else %}
-                <div class="login-prompt">
-                    <a href="{{ path('app_login') }}">Connectez-vous</a> pour laisser un commentaire.
-                </div>
-            {% endif %}
+                <p id="no-comments-msg" style="color: var(--muted); text-align: center; padding: 20px;">Aucun commentaire pour le moment.</p>
+            {% endfor %}
+        </div>
 
-        </section>
-
+        {% if app.user %}
+            <div class="add-comment-card" style="background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-top: 30px;">
+                <h4 style="margin-bottom: 16px; font-size: 1rem;">Ajouter un commentaire</h4>
+                {{ form_start(commentaireForm, {action: path('comment_create', {id: post.id}), attr: {id: 'new-comment-form'}}) }}
+                    {{ form_widget(commentaireForm.contenu, {attr: {placeholder: 'Votre message...'}}) }}
+                    <button type="submit" class="btn-submit" style="margin-top: 20px; background: var(--accent); color: #fff; padding: 10px 20px; border:none; border-radius: 8px; font-weight: 700; cursor: pointer;">📤 Envoyer</button>
+                {{ form_end(commentaireForm, {render_rest: false}) }}
+            </div>
+        {% endif %}
     </div>
-</div>
 
-{# â”€â”€ Toast de feedback â”€â”€ #}
-<div class="toast" id="toast"></div>
+    <div id="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000;"></div>
+{% endblock %}
 
-{% if app.user %}
-<script>
-    const LIKE_URL   = '{{ path('post_like',   {id: post.id}) }}';
-    const REPOST_URL = '{{ path('post_repost', {id: post.id}) }}';
-    let currentVote  = '{{ userVote ?? '' }}';
-    let isShared     = {{ hasShared ? 'true' : 'false' }};
+{% block javascripts %}
+    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+    <script>
+        const POST_ID = {{ post.id }};
+        const TRANSLATE_URL = "{{ path('app_posts_ai_translate', {id: post.id}) }}";
+        const LIKE_URL = "{{ path('post_like', {id: post.id}) }}";
+        const REPOST_URL = "{{ path('post_repost', {id: post.id}) }}";
 
-    /* â”€â”€ Toast helper â”€â”€ */
-    function showToast(msg, type = 'success') {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.className = `toast toast-${type}`;
-        void t.offsetWidth; // reflow
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2800);
-    }
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.cssText = 'background: rgba(24,27,48,0.9); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: #fff; padding: 12px 24px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-top: 10px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease;';
+            toast.innerHTML = (type === 'success' ? '✅ ' : '❌ ') + message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
 
-    /* â”€â”€ Like / Dislike â”€â”€ */
-    async function vote(type) {
-        const body = new URLSearchParams({ type });
-        try {
-            const res  = await fetch(LIKE_URL, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        async function vote(type) {
+            const body = new URLSearchParams({ type });
+            const res = await fetch(LIKE_URL, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await res.json();
-
-            document.getElementById('likes-count').textContent    = data.likes;
+            document.getElementById('likes-count').textContent = data.likes;
             document.getElementById('dislikes-count').textContent = data.dislikes;
+            showToast('Vote enregistré !');
+        }
 
-            const btnLike    = document.getElementById('btn-like');
-            const btnDislike = document.getElementById('btn-dislike');
-            btnLike.classList.remove('active-like');
-            btnDislike.classList.remove('active-dislike');
-
-            currentVote = data.userVote;
-            if (data.userVote === 'like')    { btnLike.classList.add('active-like'); showToast('ðŸ‘ Like enregistrÃ© !'); }
-            else if (data.userVote === 'dislike') { btnDislike.classList.add('active-dislike'); showToast('ðŸ‘Ž Dislike enregistrÃ© !'); }
-            else { showToast('Vote annulÃ©.', 'info'); }
-        } catch (e) { showToast('Erreur rÃ©seau.', 'info'); }
-    }
-
-    /* â”€â”€ Repost â”€â”€ */
-    async function repost() {
-        if (isShared) return;
-        try {
-            const res  = await fetch(REPOST_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        async function repost() {
+            const res = await fetch(REPOST_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await res.json();
-
             document.getElementById('shares-count').textContent = data.shares;
-            document.getElementById('repost-label').textContent = 'RepostÃ©';
-            const btn = document.getElementById('btn-repost');
-            btn.classList.add('shared');
-            btn.setAttribute('onclick', '');
-            isShared = true;
-            showToast('ðŸ” ' + data.message);
-        } catch (e) { showToast('Erreur rÃ©seau.', 'info'); }
-    }
-</script>
-{% endif %}
+            document.getElementById('repost-label').textContent = 'Reposté';
+            document.getElementById('btn-repost').disabled = true;
+            showToast('Reposté avec succès !');
+        }
 
-</body>
-</html>
+        let translationCache = null;
+        async function translatePost() {
+            const panel = document.getElementById('translation-panel');
+            if (panel.classList.contains('visible')) {
+                panel.classList.remove('visible');
+                document.getElementById('translate-label').textContent = 'Traduire en EN';
+                return;
+            }
+            if (translationCache) {
+                panel.classList.add('visible');
+                document.getElementById('translate-label').textContent = 'Voir l\'original';
+                return;
+            }
+            const res = await fetch(TRANSLATE_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            if (data.success) {
+                translationCache = data;
+                document.getElementById('tr-title').textContent = data.title;
+                document.getElementById('tr-content').innerHTML = data.content;
+                panel.classList.add('visible');
+                document.getElementById('translate-label').textContent = 'Voir l\'original';
+                showToast('Traduit avec succès');
+            }
+        }
 
+        function startEditComment(id) {
+            const body = document.getElementById('comment-body-' + id);
+            const text = body.textContent.trim();
+            body.innerHTML = `
+                <div class="inline-edit-form" id="edit-form-${id}" style="margin-top: 10px;">
+                    <textarea id="temp-edit-${id}" style="width: 100%; background: var(--surface); border: 1px solid var(--accent); border-radius: 8px; color: #fff; padding: 10px; min-height: 80px; outline: none; margin-bottom: 8px;">${text}</textarea>
+                    <div class="inline-edit-btns" style="display: flex; gap: 8px;">
+                        <button class="btn-save-edit" onclick="saveEditComment(${id})" style="background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.75rem; cursor: pointer;">Sauvegarder</button>
+                        <button class="btn-cancel-edit" onclick="location.reload()" style="background: rgba(255,255,255,0.1); color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.75rem; cursor: pointer;">Annuler</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function saveEditComment(id) {
+            const content = document.getElementById('temp-edit-' + id).value;
+            const body = new URLSearchParams({ contenu: content });
+            const res = await fetch(`/comments/${id}/edit`, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('comment-body-' + id).innerHTML = data.contenu;
+                showToast('Modifié !');
+            } else {
+                showToast(data.error || 'Erreur lors de la modification', 'error');
+            }
+        }
+
+        async function deleteComment(id, token) {
+            if (!confirm('Supprimer ?')) return;
+            const body = new URLSearchParams({ _token: token });
+            const res = await fetch(`/comments/${id}/delete`, { method: 'POST', body, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('comment-' + id).remove();
+                showToast('Supprimé !');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const commentForm = document.getElementById('new-comment-form');
+            if (commentForm) {
+                commentForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    // Force update CKEditor if used
+                    if (window.CKEDITOR && CKEDITOR.instances[Object.keys(CKEDITOR.instances)[0]]) {
+                        CKEDITOR.instances[Object.keys(CKEDITOR.instances)[0]].updateElement();
+                    }
+                    
+                    const formData = new FormData(this);
+                    const res = await fetch("{{ path('comment_create', {id: post.id}) }}", {
+                        method: 'POST',
+                        body: new URLSearchParams(formData),
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        location.reload(); // Simplest way to show new comment with full UI
+                    } else {
+                        showToast(data.error || 'Erreur', 'error');
+                    }
+                });
+            }
+
+            const textarea = document.querySelector('.add-comment-card textarea');
+            if (textarea) {
+                CKEDITOR.replace(textarea, {
+                    height: 120,
+                    toolbar: [{ name: 'basic', items: ['Bold', 'Italic', 'Underline'] }],
+                    on: { change: function(e) { e.editor.updateElement(); } }
+                });
+            }
+        });
+    </script>
+{% endblock %}

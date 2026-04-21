@@ -1,0 +1,17 @@
+twig:
+    form_themes:
+        - '@FOSCKEditor/Form/ckeditor_widget.html.twig'
+
+fos_ck_editor:
+    configs:
+        default:
+            toolbar: full
+            language: '%kernel.default_locale%'
+        standard:
+            toolbar:
+                - [Bold, Italic, Underline, Strike]
+                - [NumberedList, BulletedList]
+                - [Link, Unlink]
+                - [Blockquote]
+                - [Source]
+            language: '%kernel.default_locale%'

@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class HabitudeType extends AbstractType
 {
@@ -60,6 +61,12 @@ class HabitudeType extends AbstractType
             ->add('active', CheckboxType::class, [
                 'required' => false,
                 'label' => 'Active'
+            ])
+            ->add('imageFile', FileType::class, [
+                'required' => false,
+                'mapped' => false,
+                'label' => 'Habit Image/Icon',
+                'attr' => ['class' => 'form-control']
             ])
         ;
     }

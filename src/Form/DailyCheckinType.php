@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\RangeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 
 class DailyCheckinType extends AbstractType
 {
@@ -86,6 +87,12 @@ class DailyCheckinType extends AbstractType
                 'required' => false,
                 'label' => 'Notes additionnelles',
                 'attr' => ['rows' => 3, 'class' => 'form-control'],
+            ])
+            ->add('imageFile', FileType::class, [
+                'required' => false,
+                'mapped' => false,
+                'label' => 'Ma Photo du Jour',
+                'attr' => ['class' => 'form-control']
             ])
         ;
     }

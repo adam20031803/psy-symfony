@@ -14,7 +14,6 @@ use App\Repository\CategorieRepository;
 use App\Repository\PostLikeRepository;
 use App\Repository\PostRepository;
 use App\Repository\PostShareRepository;
-use App\Service\BadWordChecker;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -31,9 +30,7 @@ class PostController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
-        private readonly PostRepository         $postRepository,
-        private readonly BadWordChecker         $badWordChecker,
-        private readonly string                 $postsDirectory
+        private readonly PostRepository         $postRepository
     ) {}
 
     /* ════════════════════════════════════════════════════════════════
@@ -45,12 +42,38 @@ class PostController extends AbstractController
         $search      = $request->query->get('q');
         $categorieId = $request->query->get('categorie') ? (int) $request->query->get('categorie') : null;
 
-        $posts      = $this->postRepository->findByFilters($search, $categorieId);
-        $categories = $categorieRepository->findAll();
+        $queryBuilder = $this->postRepository->createQueryBuilder('p')
+            ->orderBy('p.createdAt', 'DESC');
+
+        if ($search) {
+            $queryBuilder->andWhere('p.titre LIKE :search OR p.contenu LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        if ($categorieId) {
+            $queryBuilder->andWhere('p.categorie = :cat')
+                ->setParameter('cat', $categorieId);
+        }
+
+        // Manual Pagination logic
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+        $offset = ($page - 1) * $limit;
+
+        $totalPosts = count($queryBuilder->getQuery()->getResult());
+        $totalPages = ceil($totalPosts / $limit);
+
+        $posts = $queryBuilder
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
 
         return $this->render('post/index.html.twig', [
             'posts'             => $posts,
-            'categories'        => $categories,
+            'currentPage'       => $page,
+            'totalPages'        => $totalPages,
+            'categories'        => $categorieRepository->findAll(),
             'search'            => $search,
             'selectedCategorie' => $categorieId,
         ]);
@@ -72,17 +95,31 @@ class PostController extends AbstractController
     ════════════════════════════════════════════════════════════════ */
     #[Route('/new', name: 'create', methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function create(Request $request, SluggerInterface $slugger): Response
+    public function create(Request $request): Response
     {
         $post = new Post();
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handleImageUpload($form->get('imageFile')->getData(), $post, $slugger);
-
             $post->setUser($this->getUser());
             $post->setCreatedAt(new \DateTime());
+
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/posts',
+                        $newFilename
+                    );
+                    $post->setImage($newFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                }
+            }
 
             $this->em->persist($post);
             $this->em->flush();
@@ -141,14 +178,38 @@ class PostController extends AbstractController
 
     #[Route('/{id}/edit', name: 'update', methods: ['POST'], requirements: ['id' => '\d+'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function update(Post $post, Request $request, SluggerInterface $slugger): Response
+    public function update(Post $post, Request $request): Response
     {
         $this->assertCanEdit($post);
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->handleImageUpload($form->get('imageFile')->getData(), $post, $slugger);
+            
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                // Delete old image if exists
+                if ($post->getImage()) {
+                    $oldPath = $this->getParameter('kernel.project_dir') . '/public/uploads/posts/' . $post->getImage();
+                    if (file_exists($oldPath)) {
+                        @unlink($oldPath);
+                    }
+                }
+
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/posts',
+                        $newFilename
+                    );
+                    $post->setImage($newFilename);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors de l\'upload de l\'image.');
+                }
+            }
+
             $post->setUpdatedAt(new \DateTime());
             $this->em->flush();
             $this->addFlash('success', 'Post modifié avec succès !');
@@ -170,6 +231,14 @@ class PostController extends AbstractController
             return $this->redirectToRoute('post_index');
         }
         $this->assertCanEdit($post);
+
+        // Delete image associated with post
+        if ($post->getImage()) {
+            $oldPath = $this->getParameter('kernel.project_dir') . '/public/uploads/posts/' . $post->getImage();
+            if (file_exists($oldPath)) {
+                @unlink($oldPath);
+            }
+        }
 
         $this->em->remove($post);
         $this->em->flush();
@@ -286,21 +355,6 @@ class PostController extends AbstractController
     {
         if ($this->getUser() !== $post->getUser()) {
             throw new AccessDeniedHttpException('Action non autorisée.');
-        }
-    }
-
-    private function handleImageUpload(mixed $imageFile, Post $post, SluggerInterface $slugger): void
-    {
-        if (!$imageFile) {
-            return;
-        }
-        $safe        = $slugger->slug(pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME));
-        $newFilename = $safe . '-' . uniqid() . '.' . $imageFile->guessExtension();
-        try {
-            $imageFile->move($this->postsDirectory, $newFilename);
-            $post->setImage($newFilename);
-        } catch (FileException) {
-            // On garde l'ancienne image en cas d'erreur
         }
     }
 }

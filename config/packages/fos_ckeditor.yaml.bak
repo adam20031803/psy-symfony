@@ -1,0 +1,11 @@
+fos_ck_editor:
+    default_config: default
+    configs:
+        default:
+            toolbar:
+                - [ 'Bold', 'Italic', 'Underline', '-', 'RemoveFormat' ]
+                - [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent' ]
+                - [ 'Link', 'Unlink' ]
+                - [ 'Blockquote', 'Maximize' ]
+            uiColor: '#181b30'
+            bodyClass: 'ckeditor-dark-theme'

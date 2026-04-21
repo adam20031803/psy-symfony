@@ -67,6 +67,12 @@
     
     <div class="show-card">
         <div class="show-header">
+            {% if habitude.imageName %}
+                <div class="hab-main-image" style="max-width: 300px; margin: 0 auto 30px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 2px solid var(--border);">
+                    <img src="{{ asset('uploads/habits/' ~ habitude.imageName) }}" alt="{{ habitude.title }}" style="width: 100%; height: auto; display: block;">
+                </div>
+            {% endif %}
+            
             <div class="hab-category">{{ habitude.category }}</div>
             <h1>{{ habitude.title }}</h1>
             <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; color: var(--muted);">

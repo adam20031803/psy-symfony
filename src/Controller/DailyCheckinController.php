@@ -10,6 +10,7 @@ use App\Service\DailyCheckinAnalyticsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Service\FileUploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +23,7 @@ class DailyCheckinController extends AbstractController
 {
     public function __construct(
         private readonly DailyCheckinAnalyticsService $analyticsService,
+        private readonly FileUploader $fileUploader,
     ) {
     }
 
@@ -159,6 +161,14 @@ class DailyCheckinController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $size = $imageFile->getSize();
+                $imageFileName = $this->fileUploader->upload($imageFile, 'checkins');
+                $dailyCheckin->setImageName($imageFileName);
+                $dailyCheckin->setImageSize($size);
+            }
+
             $dailyCheckin->setUser($user);
             $em->persist($dailyCheckin);
             $em->flush();
@@ -181,6 +191,14 @@ class DailyCheckinController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $size = $imageFile->getSize();
+                $imageFileName = $this->fileUploader->upload($imageFile, 'checkins');
+                $dailyCheckin->setImageName($imageFileName);
+                $dailyCheckin->setImageSize($size);
+            }
+
             if ($dailyCheckin->getUser() === null) {
                 $dailyCheckin->setUser($this->getAppUser());
             }

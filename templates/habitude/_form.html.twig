@@ -38,6 +38,13 @@
         </div>
     </div>
 
+    <div class="form-group">
+        {{ form_label(form.imageFile) }}
+        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+        <div style="color: var(--danger); font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.imageFile) }}</div>
+        <small style="color: var(--muted); font-size: 0.75rem; margin-top: 4px; display: block;">Ajoutez une icône ou une image inspirante pour cette habitude.</small>
+    </div>
+
     <div class="form-group form-check" style="margin-bottom: 30px;">
         {{ form_widget(form.active) }}
         {{ form_label(form.active) }}

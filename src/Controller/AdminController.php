@@ -22,11 +22,16 @@ use App\Repository\PostRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\HabitudeRepository;
 use App\Form\AdminUserType;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -219,6 +224,107 @@ class AdminController extends AbstractController
             $user->getPrenom(),
             $user->isActive() ? 'activé' : 'désactivé'
         ));
+
+        return $this->redirectToRoute('app_admin_users');
+    }
+
+    #[Route('/user/{id}/activate', name: 'app_admin_activate_user', methods: ['POST'])]
+    public function activateUser(Request $request, User $user, EntityManagerInterface $em): Response
+    {
+        if (!$this->isCsrfTokenValid('activate'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        $user->setActive(true);
+        $em->flush();
+
+        $this->addFlash('success', sprintf(
+            'Le compte de %s %s a été activé.',
+            $user->getPrenom(),
+            $user->getNom()
+        ));
+
+        return $this->redirectToRoute('app_admin_users');
+    }
+
+    #[Route('/user/{id}/deactivate', name: 'app_admin_deactivate_user', methods: ['POST'])]
+    public function deactivateUser(Request $request, User $user, EntityManagerInterface $em): Response
+    {
+        if (!$this->isCsrfTokenValid('deactivate'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        /** @var User $currentUser */
+        $currentUser = $this->getUser();
+        if ($user->getId() === $currentUser->getId()) {
+            $this->addFlash('danger', 'Vous ne pouvez pas désactiver votre propre compte.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        $user->setActive(false);
+        $em->flush();
+
+        $this->addFlash('success', sprintf(
+            'Le compte de %s %s a été désactivé.',
+            $user->getPrenom(),
+            $user->getNom()
+        ));
+
+        return $this->redirectToRoute('app_admin_users');
+    }
+
+    #[Route('/user/{id}/magic-link', name: 'app_admin_send_magic_link', methods: ['POST'])]
+    public function sendMagicLink(
+        Request $request,
+        User $user,
+        EntityManagerInterface $em,
+        MailerInterface $mailer,
+        #[Autowire('%env(MAILER_FROM)%')] string $mailerFrom
+    ): Response {
+        if (!$this->isCsrfTokenValid('magic_link'.$user->getId(), $request->request->get('_token'))) {
+            $this->addFlash('danger', 'Token CSRF invalide.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        if (!$user->isActive()) {
+            $this->addFlash('danger', 'Impossible d\'envoyer un lien magique à un compte désactivé.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        // Generate a secure token valid for 15 minutes
+        $token = bin2hex(random_bytes(32));
+        $user->setPasswordResetToken($token);
+        $user->setPasswordResetRequestedAt(new \DateTimeImmutable());
+        $em->flush();
+
+        $magicUrl = $this->generateUrl(
+            'app_magic_login',
+            ['token' => $token],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        try {
+            $email = (new TemplatedEmail())
+                ->from(Address::create($mailerFrom))
+                ->to($user->getEmail())
+                ->subject('Votre lien de connexion — Atomic You')
+                ->htmlTemplate('emails/magic_login.html.twig')
+                ->context([
+                    'user'     => $user,
+                    'magicUrl' => $magicUrl,
+                ]);
+
+            $mailer->send($email);
+            $this->addFlash('success', sprintf(
+                'Lien de connexion envoyé à %s (%s).',
+                $user->getPrenom() . ' ' . $user->getNom(),
+                $user->getEmail()
+            ));
+        } catch (\Throwable $e) {
+            $this->addFlash('danger', 'Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
+        }
 
         return $this->redirectToRoute('app_admin_users');
     }

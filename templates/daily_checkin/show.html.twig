@@ -9,6 +9,12 @@
     <p style="color:#94a3b8;margin-bottom:20px;">
         Humeur {{ daily_checkin.moodRating }}/10 · Énergie {{ daily_checkin.energyLevel }}/10 · Productivité {{ daily_checkin.productivityLevel }}/10 · Stress {{ daily_checkin.stressLevel }}/10 · Sommeil {{ daily_checkin.sleepQuality }}/10 · {{ daily_checkin.sleepHours }} h
     </p>
+
+    {% if daily_checkin.imageName %}
+        <div class="checkin-image" style="margin-bottom: 24px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            <img src="{{ asset('uploads/checkins/' ~ daily_checkin.imageName) }}" alt="Ma photo du jour" style="width: 100%; height: auto; display: block;">
+        </div>
+    {% endif %}
     <dl style="display:grid;gap:14px;font-size:0.95rem;">
         <dt style="color:#64748b;font-size:0.75rem;text-transform:uppercase;">Bien passé</dt>
         <dd style="margin:0;">{{ daily_checkin.whatWentWell|default('—')|nl2br }}</dd>

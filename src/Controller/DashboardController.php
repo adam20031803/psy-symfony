@@ -81,16 +81,16 @@ class DashboardController extends AbstractController
         );
 
         return $this->render('dashboard/index.html.twig', [
-            'user'             => $user,
-            'reclamations'     => $reclamations,
-            'recentPosts'      => $recentPosts,
+            'user' => $user,
+            'reclamations' => $reclamations,
+            'recentPosts' => $recentPosts,
             'activeChallenges' => $activeChallenges,
-            'aiMeetings'       => $aiMeetings, // Transmis à la vue
-            'userStats'        => $userStats,
-            'habitudeStats'    => $habitudeStats,
-            'habitsToday'      => $habitsToday,
-            'recentWorkouts'   => $recentWorkouts,
-            'plannedWorkouts'  => $plannedWorkouts,
+            'aiMeetings' => $aiMeetings, // Transmis à la vue
+            'userStats' => $userStats,
+            'habitudeStats' => $habitudeStats,
+            'habitsToday' => $habitsToday,
+            'recentWorkouts' => $recentWorkouts,
+            'plannedWorkouts' => $plannedWorkouts,
         ]);
     }
 }

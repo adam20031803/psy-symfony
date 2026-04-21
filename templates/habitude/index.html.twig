@@ -587,7 +587,12 @@
                 </div>
                 
                 <div class="hab-header">
-                    <div>
+                    {% if habitude.imageName %}
+                        <div class="hab-image" style="width: 100%; height: 120px; overflow: hidden; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border);">
+                            <img src="{{ asset('uploads/habits/' ~ habitude.imageName) }}" alt="{{ habitude.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    {% endif %}
+                    <div style="flex: 1;">
                         <div class="hab-category">{{ habitude.category }}</div>
                         <h2 class="hab-title">{{ habitude.title }}</h2>
                     </div>

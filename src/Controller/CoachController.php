@@ -74,7 +74,7 @@ class CoachController extends AbstractController
         $telephone = $request->request->get('telephone');
         if ($telephone !== null && $telephone !== '') $user->setTelephone($telephone);
         
-        $user->setIsActive($request->request->get('actif') !== null);
+        $user->setActive($request->request->get('actif') !== null);
 
         // Handle CV Upload
         $cvFile = $request->files->get('cv');
@@ -149,7 +149,7 @@ class CoachController extends AbstractController
         $telephone = $request->request->get('telephone');
         if ($telephone !== null && $telephone !== '') $user->setTelephone($telephone);
         
-        $user->setIsActive($request->request->get('actif') !== null);
+        $user->setActive($request->request->get('actif') !== null);
 
         // Handle CV Upload
         $cvFile = $request->files->get('cv');

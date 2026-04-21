@@ -12,7 +12,7 @@
     </div>
 
     <div id="chat-messages" class="p-3 rounded-3 mb-3 border" style="background: rgba(255,255,255,.05); min-height: 320px; max-height: 460px; overflow-y: auto; border-color: rgba(255,255,255,.18) !important;">
-        <div class="mb-2"><strong>Assistant:</strong> Salut. Quel est ton mood actuel en 1-2 mots ?</div>
+        <div class="mb-2"><strong>Assistant:</strong> Bonjour ! Je suis là pour t'écouter et t'accompagner sur ta santé mentale. Que ressens-tu ou de quoi aimerais-tu parler aujourd'hui ?</div>
     </div>
 
     <div class="input-group">
@@ -32,10 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const send = document.getElementById('chat-send');
     const reset = document.getElementById('chat-reset');
     const hintMap = {
-        awaiting_mood: 'Ex: stresse, calme, fatigue...',
-        awaiting_goal: 'Ton objectif principal...',
-        awaiting_obstacle: 'Ton blocage principal...',
-        coaching: 'Ecris ce que tu ressens maintenant...'
+        coaching: 'Que ressens-tu ? (Ecrivez ici...)'
     };
 
     function append(sender, text) {
@@ -90,9 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
     reset.addEventListener('click', function () {
         fetch('{{ path('api_chatbot_reset') }}', { method: 'POST', credentials: 'same-origin' })
             .finally(function () {
-                messages.innerHTML = '<div class="mb-2"><strong>Assistant:</strong> Chat reinitialise. Quel est ton mood actuel en 1-2 mots ?</div>';
+                messages.innerHTML = '<div class="mb-2"><strong>Assistant:</strong> Chat réinitialisé. Bonjour ! Je suis là pour t\'écouter et t\'accompagner sur ta santé mentale. Que ressens-tu ou de quoi aimerais-tu parler aujourd\'hui ?</div>';
                 input.value = '';
-                setHint('awaiting_mood');
+                setHint('coaching');
                 input.focus();
             });
     });

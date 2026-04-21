@@ -32,6 +32,13 @@
         </div>
     {% endfor %}
 
+    <div style="margin-bottom:20px;">
+        {{ form_label(form.imageFile) }}
+        {{ form_widget(form.imageFile, {'attr': {'class': 'form-control'}}) }}
+        <div style="color: #ef4444; font-size: 0.8rem; margin-top: 4px;">{{ form_errors(form.imageFile) }}</div>
+        <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px; display: block;">Capturez votre humeur ou un moment de votre journée en image.</small>
+    </div>
+
     <button type="submit" class="btn" style="width:100%;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#6c63ff,#00d2ff);color:#fff;font-weight:600;cursor:pointer;margin-top:8px;">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}
 

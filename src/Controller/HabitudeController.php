@@ -11,6 +11,7 @@ use App\Repository\HabitudeRepository;
 use App\Repository\HabitCompletionsRepository;
 use App\Repository\HabitStreaksRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\FileUploader;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,7 +53,7 @@ class HabitudeController extends AbstractController
     }
 
     #[Route('/new', name: 'app_habitude_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, FileUploader $fileUploader): Response
     {
         $habitude = new Habitude();
         $habitude->setStartDate(new \DateTime());
@@ -64,6 +65,14 @@ class HabitudeController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $size = $imageFile->getSize();
+                $imageFileName = $fileUploader->upload($imageFile, 'habits');
+                $habitude->setImageName($imageFileName);
+                $habitude->setImageSize($size);
+            }
+
             $user = $this->getUser();
             if ($user) {
                 $habitude->setUser($user);
@@ -89,12 +98,20 @@ class HabitudeController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_habitude_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
-    public function edit(Request $request, Habitude $habitude, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Habitude $habitude, EntityManagerInterface $entityManager, FileUploader $fileUploader): Response
     {
         $form = $this->createForm(HabitudeType::class, $habitude);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $size = $imageFile->getSize();
+                $imageFileName = $fileUploader->upload($imageFile, 'habits');
+                $habitude->setImageName($imageFileName);
+                $habitude->setImageSize($size);
+            }
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_habitude_index', [], Response::HTTP_SEE_OTHER);

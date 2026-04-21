@@ -102,4 +102,41 @@ class GroqService
             return "Erreur Groq (freeform): " . $e->getMessage();
         }
     }
+
+    /**
+     * Generate response from a conversational array of messages.
+     * @param array $messages Array of messages like [['role' => 'system', 'content' => '...'], ...]
+     * @return string
+     */
+    public function generateChatResponse(array $messages): string
+    {
+        if (!$this->apiKey || $this->apiKey === '') {
+            return "Groq API Key is missing.";
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                ],
+                'json' => [
+                    'model'       => 'llama-3.3-70b-versatile',
+                    'messages'    => $messages,
+                    'temperature' => 0.7,
+                    'max_tokens'  => 1500,
+                ]
+            ]);
+
+            $data = $response->toArray();
+
+            if (isset($data['choices'][0]['message']['content'])) {
+                return $data['choices'][0]['message']['content'];
+            }
+
+            return "Je n'ai pas pu générer de réponse pour le moment.";
+
+        } catch (\Exception $e) {
+            return "Erreur Groq: " . $e->getMessage();
+        }
+    }
 }

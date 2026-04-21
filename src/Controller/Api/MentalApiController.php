@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+
 use App\Service\SpotifySuggestionService;
 use App\Service\YoutubeSuggestionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,6 +18,7 @@ final class MentalApiController extends AbstractController
     public function __construct(
         private readonly SpotifySuggestionService $spotifySuggestionService,
         private readonly YoutubeSuggestionService $youtubeSuggestionService,
+        private readonly \App\Service\GroqService $groqService,
     ) {
     }
 
@@ -28,59 +30,39 @@ final class MentalApiController extends AbstractController
         $message = trim((string) ($payload['message'] ?? ''));
         $session = $request->getSession();
 
-        /** @var array{mood?: string, goal?: string, obstacle?: string} $profile */
-        $profile = $session->get('chatbot_profile', []);
-        $mood = trim((string) ($profile['mood'] ?? ''));
-        $goal = trim((string) ($profile['goal'] ?? ''));
-        $obstacle = trim((string) ($profile['obstacle'] ?? ''));
-
         if ('' === $message) {
             return $this->json([
                 'success' => true,
-                'phase' => 'awaiting_mood',
-                'answer' => 'Salut. Quel est ton mood actuel en 1-2 mots ?',
-            ]);
-        }
-
-        if ('' === $mood) {
-            $profile['mood'] = $message;
-            $session->set('chatbot_profile', $profile);
-
-            return $this->json([
-                'success' => true,
-                'phase' => 'awaiting_goal',
-                'answer' => sprintf('Merci. Mood noté: "%s". Quel est ton objectif principal aujourd hui ?', $message),
-            ]);
-        }
-
-        if ('' === $goal) {
-            $profile['goal'] = $message;
-            $session->set('chatbot_profile', $profile);
-
-            return $this->json([
-                'success' => true,
-                'phase' => 'awaiting_obstacle',
-                'answer' => 'Parfait. Quel est le blocage principal qui te freine maintenant ?',
-            ]);
-        }
-
-        if ('' === $obstacle) {
-            $profile['obstacle'] = $message;
-            $session->set('chatbot_profile', $profile);
-
-            return $this->json([
-                'success' => true,
                 'phase' => 'coaching',
-                'answer' => sprintf(
-                    'On avance ensemble. Mood: %s, objectif: %s, blocage: %s. Dis-moi ce que tu ressens maintenant et je te propose une action simple.',
-                    $mood,
-                    $goal,
-                    $message
-                ),
+                'answer' => 'Bonjour ! Je suis là pour t\'écouter et t\'accompagner sur ta santé mentale. Que ressens-tu ou de quoi aimerais-tu parler aujourd\'hui ?',
             ]);
         }
 
-        $answer = $this->buildCoachingAnswer($mood, $goal, $obstacle, $message);
+        $history = $session->get('chatbot_history', []);
+        
+        // Add user message to history
+        $history[] = ['role' => 'user', 'content' => $message];
+
+        // Prepare context for Groq
+        $systemMessage = [
+            'role' => 'system',
+            'content' => 'Tu es un psychologue et coach en santé mentale bienveillant. Ton but est de donner des conseils sur la santé mentale de l\'utilisateur. Avant de donner une réponse complète ou des conseils génériques, pose des questions pertinentes et empathiques pour mieux comprendre sa situation afin de donner les meilleurs recommandations possibles. Sois toujours chaleureux, concis et constructif.'
+        ];
+
+        $messagesForGroq = array_merge([$systemMessage], $history);
+
+        // Call Groq
+        $answer = $this->groqService->generateChatResponse($messagesForGroq);
+
+        // Add AI answer to history
+        $history[] = ['role' => 'assistant', 'content' => $answer];
+
+        // Keep history manageable (e.g., last 20 messages)
+        if (count($history) > 20) {
+            $history = array_slice($history, -20);
+        }
+
+        $session->set('chatbot_history', $history);
 
         return $this->json([
             'success' => true,
@@ -92,7 +74,7 @@ final class MentalApiController extends AbstractController
     #[Route('/chatbot/reset', name: 'chatbot_reset', methods: ['POST'])]
     public function resetChatbot(Request $request): JsonResponse
     {
-        $request->getSession()->remove('chatbot_profile');
+        $request->getSession()->remove('chatbot_history');
 
         return $this->json([
             'success' => true,
@@ -194,14 +176,5 @@ final class MentalApiController extends AbstractController
         ]);
     }
 
-    private function buildCoachingAnswer(string $mood, string $goal, string $obstacle, string $message): string
-    {
-        return sprintf(
-            'Je comprends, tu te sens "%s". Pour avancer sur "%s" malgré "%s", fais une mini-action de 5 minutes maintenant. Après ça, dis-moi ce qui a changé: %s',
-            $mood,
-            $goal,
-            $obstacle,
-            $message
-        );
-    }
+
 }

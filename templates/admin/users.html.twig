@@ -34,9 +34,15 @@
         cursor: pointer;
         outline: none;
     }
-    .actions { display: flex; gap: 6px; align-items: center; }
-    .btn-toggle { background: rgba(245,158,11,.15); color: var(--warning); }
-    
+    .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    .btn-activate   { background: rgba(34,211,165,.15); color: #22d3a5; border: 1px solid rgba(34,211,165,.3); }
+    .btn-activate:hover { background: rgba(34,211,165,.28); }
+    .btn-deactivate { background: rgba(239,68,68,.12); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+    .btn-deactivate:hover { background: rgba(239,68,68,.25); }
+    .btn-magic      { background: rgba(139,92,246,.15); color: #a78bfa; border: 1px solid rgba(139,92,246,.3); font-size: 0.72rem; }
+    .btn-magic:hover { background: rgba(139,92,246,.28); }
+
     .search-box {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -88,8 +94,8 @@
         <div class="stat-card">
             <div class="stat-icon orange">⏳</div>
             <div>
-                <div class="stat-label">Nouveaux ce mois</div>
-                <div class="stat-value">--</div>
+                <div class="stat-label">Comptes inactifs</div>
+                <div class="stat-value">{{ stats.total - stats.active }}</div>
             </div>
         </div>
     </div>
@@ -150,18 +156,49 @@
 
                     <td>
                         <div class="actions">
-                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="btn" style="background: rgba(108,99,255,.15); color: var(--accent); padding: 5px 10px;">
+                            {# Edit button #}
+                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}"
+                               class="btn" style="background: rgba(108,99,255,.15); color: var(--accent); padding: 5px 10px;">
                                 ✏️ Éditer
                             </a>
-                            <form method="post" action="{{ path('app_admin_toggle_user', {id: user.id}) }}">
-                                <button class="btn btn-toggle" type="submit">
-                                    {{ user.isActive ? '🔕 Désactiver' : '🔔 Activer' }}
+
+                            {# Activate button — only shown when inactive #}
+                            {% if not user.isActive %}
+                            <form method="post" action="{{ path('app_admin_activate_user', {id: user.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('activate'~user.id) }}">
+                                <button class="btn btn-activate" type="submit" title="Activer ce compte">
+                                    ✅ Activer
                                 </button>
                             </form>
+                            {% endif %}
+
+                            {# Deactivate button — only shown when active #}
+                            {% if user.isActive %}
+                            <form method="post" action="{{ path('app_admin_deactivate_user', {id: user.id}) }}"
+                                  onsubmit="return confirm('Désactiver le compte de {{ user.prenom }} {{ user.nom }} ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('deactivate'~user.id) }}">
+                                <button class="btn btn-deactivate" type="submit" title="Désactiver ce compte">
+                                    🔕 Désactiver
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {# Magic Login Link — only available if account is active #}
+                            {% if user.isActive %}
+                            <form method="post" action="{{ path('app_admin_send_magic_link', {id: user.id}) }}"
+                                  onsubmit="return confirm('Envoyer un lien de connexion magique à {{ user.email }} ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('magic_link'~user.id) }}">
+                                <button class="btn btn-magic" type="submit" title="Envoyer un lien de connexion sans mot de passe">
+                                    🔗 Magic Link
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {# Delete button #}
                             <form method="post" action="{{ path('app_admin_delete_user', {id: user.id}) }}"
                                   onsubmit="return confirm('Supprimer cet utilisateur ?')">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete'~user.id) }}">
-                                <button class="btn btn-danger" type="submit" style="padding: 5px 10px;">🗑️</button>
+                                <button class="btn btn-danger" type="submit" style="padding: 5px 10px;" title="Supprimer l'utilisateur">🗑️</button>
                             </form>
                         </div>
                     </td>
@@ -188,3 +225,4 @@ function filterTable() {
 }
 </script>
 {% endblock %}
+

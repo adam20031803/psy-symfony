@@ -448,23 +448,23 @@ body.aria-page {
         {# Mode selector #}
         <div class="mode-section">
             <div class="mode-title">Mode de conversation</div>
-            <button class="mode-btn {% if conversation.phase == 'daily' %}active{% endif %}" onclick="setPhase('daily')">
+            <button class="mode-btn {% if conversation.phase == 'daily' %}active{% endif %}" onclick="setPhase('daily', this)">
                 <div class="mode-icon" style="background:rgba(0,210,255,0.1);">📊</div>
                 Check-in quotidien
             </button>
-            <button class="mode-btn {% if conversation.phase == 'motivation' %}active{% endif %}" onclick="setPhase('motivation')">
+            <button class="mode-btn {% if conversation.phase == 'motivation' %}active{% endif %}" onclick="setPhase('motivation', this)">
                 <div class="mode-icon" style="background:rgba(108,99,255,0.1);">🔥</div>
                 Mode Motivation
             </button>
-            <button class="mode-btn {% if conversation.phase == 'coaching' %}active{% endif %}" onclick="setPhase('coaching')">
+            <button class="mode-btn {% if conversation.phase == 'coaching' %}active{% endif %}" onclick="setPhase('coaching', this)">
                 <div class="mode-icon" style="background:rgba(34,211,165,0.1);">🎯</div>
                 Coaching actif
             </button>
-            <button class="mode-btn {% if conversation.phase == 'crisis' %}active{% endif %}" onclick="setPhase('crisis')">
+            <button class="mode-btn {% if conversation.phase == 'crisis' %}active{% endif %}" onclick="setPhase('crisis', this)">
                 <div class="mode-icon" style="background:rgba(255,107,157,0.1);">💙</div>
                 Soutien émotionnel
             </button>
-            <button class="mode-btn {% if conversation.phase == 'reflection' %}active{% endif %}" onclick="setPhase('reflection')">
+            <button class="mode-btn {% if conversation.phase == 'reflection' %}active{% endif %}" onclick="setPhase('reflection', this)">
                 <div class="mode-icon" style="background:rgba(255,215,0,0.1);">✨</div>
                 Réflexion & Bilan
             </button>
@@ -815,14 +815,16 @@ function showXpPopup(xp, customText = null) {
 // ════════════════════════════════════════════════════════
 // SET PHASE
 // ════════════════════════════════════════════════════════
-async function setPhase(phase) {
+async function setPhase(phase, btn) {
     const res  = await fetch(`/ai-messenger/set-phase/${phase}`, { method: 'POST' });
     const data = await res.json();
 
     if (data.success) {
         // Mettre à jour les boutons actifs
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        event.target.closest('.mode-btn').classList.add('active');
+        if (btn) {
+            btn.classList.add('active');
+        }
 
         // Mettre à jour le badge de phase
         const phaseLabels = {
