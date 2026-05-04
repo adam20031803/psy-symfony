@@ -15,14 +15,14 @@ class ChallengeCoach
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'coaches')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Challenge $challenge = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $coach = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $assignedAt = null;
 
     public function __construct()

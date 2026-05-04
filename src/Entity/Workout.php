@@ -14,25 +14,25 @@ class Workout
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(type: 'text')]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column]
-    private ?int $duree = null; // en minutes
+    #[ORM\Column(nullable: true)]
+    private ?int $duree = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $type = null; // cardio | musculation | yoga | meditation
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $type = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $niveau = null; // debutant | intermediaire | avance
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $niveau = null;
 
     #[ORM\Column(length: 255, nullable: true, options: ['default' => null])]
     private ?string $image = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()

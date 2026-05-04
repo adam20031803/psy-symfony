@@ -10,3 +10,7 @@
 ###< symfony/framework-bundle ###
 
 /.env
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

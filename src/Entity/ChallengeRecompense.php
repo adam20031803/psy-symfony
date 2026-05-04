@@ -15,11 +15,11 @@ class ChallengeRecompense
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'recompenses')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Challenge $challenge = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Recompense $recompense = null;
 
     public function getId(): ?int { return $this->id; }

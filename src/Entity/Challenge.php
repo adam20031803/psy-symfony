@@ -89,12 +89,15 @@ class Challenge
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $mediaType = null; // image | video
 
+    /** @var Collection<int, ChallengeChat> */
     #[ORM\OneToMany(mappedBy: 'challenge', targetEntity: ChallengeChat::class, orphanRemoval: true)]
     private Collection $chats;
 
+    /** @var Collection<int, ChallengeCoach> */
     #[ORM\OneToMany(mappedBy: 'challenge', targetEntity: ChallengeCoach::class, orphanRemoval: true)]
     private Collection $coaches;
 
+    /** @var Collection<int, ChallengeRecompense> */
     #[ORM\OneToMany(mappedBy: 'challenge', targetEntity: ChallengeRecompense::class, orphanRemoval: true)]
     private Collection $recompenses;
 

@@ -20,7 +20,7 @@ class Categorie
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -35,9 +35,16 @@ class Categorie
     #[ORM\OneToMany(mappedBy: 'categorie', targetEntity: Post::class)]
     private Collection $posts;
 
+    /**
+     * @var Collection<int, Challenge>
+     */
+    #[ORM\OneToMany(mappedBy: 'categorie', targetEntity: Challenge::class)]
+    private Collection $challenges;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
+        $this->challenges = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -102,6 +109,36 @@ class Categorie
             // set the owning side to null (unless already changed)
             if ($post->getCategorie() === $this) {
                 $post->setCategorie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Challenge>
+     */
+    public function getChallenges(): Collection
+    {
+        return $this->challenges;
+    }
+
+    public function addChallenge(Challenge $challenge): static
+    {
+        if (!$this->challenges->contains($challenge)) {
+            $this->challenges->add($challenge);
+            $challenge->setCategorie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChallenge(Challenge $challenge): static
+    {
+        if ($this->challenges->removeElement($challenge)) {
+            // set the owning side to null (unless already changed)
+            if ($challenge->getCategorie() === $this) {
+                $challenge->setCategorie(null);
             }
         }
 
