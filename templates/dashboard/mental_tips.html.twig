@@ -10,7 +10,7 @@
             <p class="text-muted small mb-0">Gérez vos conseils par humeur</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm btn-export-pdf fw-semibold">Export PDF</button>
+            <button type="button" class="btn btn-sm btn-export-pdf fw-semibold"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</button>
             <button type="button" class="btn btn-light border btn-sm text-secondary px-2 py-1" title="Paramètres" aria-label="Paramètres"><i class="bi bi-gear fs-5"></i></button>
         </div>
     </div>
@@ -23,12 +23,19 @@
         </tr>
         </thead>
         <tbody>
-        {% for t in tips %}
+        {% for row in tips %}
             <tr>
-                <td><strong>{{ t.mood.moodName }}</strong></td>
-                <td>{{ t.tipText|length > 70 ? t.tipText|slice(0, 67) ~ '…' : t.tipText }}</td>
-                <td>
-                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_mental_tip_index', { edit: t.id }) }}">Modifier</a>
+                <td><strong>{{ row.mood_name }}</strong></td>
+                <td>{{ row.tip_text|length > 70 ? row.tip_text|slice(0, 67) ~ '…' : row.tip_text }}</td>
+                <td class="text-nowrap">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_mental_tip_index') }}?lp={{ loop.index }}">Modifier</a>
+                        <form method="post" action="{{ path('app_mental_tip_line_delete') }}" class="d-inline m-0">
+                            <input type="hidden" name="lp" value="{{ loop.index }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_mental_tip_line_' ~ loop.index) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         {% else %}
@@ -43,25 +50,40 @@
     <p class="text-muted small mb-3">Créez ou modifiez un conseil</p>
 
     {{ form_start(form, { attr: { id: 'mental-tip-crud', class: 'mental-dashboard-form', novalidate: 'novalidate' } }) }}
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="alert alert-danger small mb-3" role="alert">{{ form_errors(form) }}</div>
+        {% endif %}
         <input type="hidden" name="edit_id" value="{{ editing ? edit_id : 0 }}">
+        <input type="hidden" name="edit_lp" value="{{ edit_lp|default(0) }}">
         {% include 'form/bootstrap_field.html.twig' with { field: form.mood } %}
         {% include 'form/bootstrap_field.html.twig' with { field: form.tipText } %}
         {{ form_rest(form) }}
 
-        <div class="d-grid gap-2" style="grid-template-columns: 1fr 1fr;">
-            <button type="submit" class="btn btn-form-add fw-semibold" {% if editing %}disabled{% endif %}>+ Ajouter</button>
-            <button type="submit" class="btn btn-form-modify fw-semibold" {% if not editing %}disabled{% endif %}>Modifier</button>
+        <div class="d-grid mt-2">
+            {% if editing %}
+                <button type="submit" class="btn btn-form-modify fw-semibold">Enregistrer les modifications</button>
+            {% else %}
+                <button type="submit" class="btn btn-form-add fw-semibold">+ Ajouter</button>
+            {% endif %}
         </div>
     {{ form_end(form, { render_rest: false }) }}
 
     <div class="d-grid gap-2 mt-2" style="grid-template-columns: 1fr 1fr;">
         {% if editing %}
-            <form method="post" action="{{ path('app_mental_tip_delete', { id: edit_id }) }}" class="m-0" onsubmit="return confirm('Supprimer ce conseil ?');">
+            {% if edit_lp|default(0) > 0 %}
+            <form method="post" action="{{ path('app_mental_tip_line_delete') }}" class="m-0">
+                <input type="hidden" name="lp" value="{{ edit_lp }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_mental_tip_line_' ~ edit_lp) }}">
+                <button type="submit" class="btn btn-danger btn-form-danger w-100 fw-semibold">Supprimer</button>
+            </form>
+            {% else %}
+            <form method="post" action="{{ path('app_mental_tip_delete', { id: edit_id }) }}" class="m-0">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ edit_id) }}">
                 <button type="submit" class="btn btn-danger btn-form-danger w-100 fw-semibold">Supprimer</button>
             </form>
+            {% endif %}
         {% else %}
-            <button type="button" class="btn btn-danger btn-form-danger w-100 fw-semibold" disabled>Supprimer</button>
+            <button type="button" class="btn btn-danger btn-form-danger w-100 fw-semibold" disabled aria-hidden="true">Supprimer</button>
         {% endif %}
         <a href="{{ path('app_mental_tip_index') }}" class="btn btn-secondary btn-form-reset fw-semibold text-center w-100">Réinitialiser</a>
     </div>

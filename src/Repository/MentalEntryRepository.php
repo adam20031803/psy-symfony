@@ -20,11 +20,28 @@ class MentalEntryRepository extends ServiceEntityRepository
     public function findForDashboard(): array
     {
         return $this->createQueryBuilder('e')
-            ->join('e.mood', 'm')->addSelect('m')
+            ->leftJoin('e.mood', 'm')->addSelect('m')
             ->orderBy('e.entryDate', 'DESC')
             ->addOrderBy('e.id', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Même ordre que findForDashboard() : entry_date DESC, id DESC (uniquement entrées avec mood valide).
+     */
+    public function findOneByOrderedListOffset(int $zeroBasedOffset): ?MentalEntry
+    {
+        $offset = max(0, $zeroBasedOffset);
+
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.mood', 'm')->addSelect('m')
+            ->orderBy('e.entryDate', 'DESC')
+            ->addOrderBy('e.id', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /** @return MentalEntry[] */
@@ -41,11 +58,11 @@ class MentalEntryRepository extends ServiceEntityRepository
         $direction = 'DESC' === strtoupper($dir) ? 'DESC' : 'ASC';
 
         $qb = $this->createQueryBuilder('e')
-            ->join('e.mood', 'm')->addSelect('m');
+            ->leftJoin('e.mood', 'm')->addSelect('m');
 
         $term = mb_strtolower(trim((string) $search));
         if ('' !== $term) {
-            $qb->andWhere('LOWER(m.moodName) LIKE :term OR LOWER(e.activity) LIKE :term OR LOWER(COALESCE(e.note, \'\')) LIKE :term')
+            $qb->andWhere('LOWER(COALESCE(m.moodName, \'\')) LIKE :term OR LOWER(e.activity) LIKE :term OR LOWER(COALESCE(e.note, \'\')) LIKE :term')
                 ->setParameter('term', '%'.$term.'%');
         }
 

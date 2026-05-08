@@ -18,6 +18,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PostRepository extends ServiceEntityRepository
 {
+    private const DEFAULT_RESULT_LIMIT = 50;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Post::class);
@@ -33,7 +35,8 @@ class PostRepository extends ServiceEntityRepository
             ->addSelect('c')
             ->leftJoin('p.user', 'u')
             ->addSelect('u')
-            ->orderBy('p.createdAt', 'DESC');
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults(self::DEFAULT_RESULT_LIMIT);
 
         if ($search) {
             $qb->andWhere('p.titre LIKE :q OR p.contenu LIKE :q')
@@ -46,5 +49,21 @@ class PostRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Optimized lightweight query for dashboard cards.
+     *
+     * @return Post[]
+     */
+    public function findLatestForDashboard(int $limit = 3): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.categorie', 'c')
+            ->addSelect('c')
+            ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 }

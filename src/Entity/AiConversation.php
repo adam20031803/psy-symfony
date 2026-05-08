@@ -6,6 +6,7 @@ use App\Repository\AiConversationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity(repositoryClass: AiConversationRepository::class)]
 #[ORM\Table(name: 'ai_conversation')]
@@ -38,6 +39,7 @@ class AiConversation
     private ?User $user = null;
 
     #[ORM\Column(length: 64, unique: true)]
+    #[Ignore]
     private string $sessionToken;
 
     #[ORM\Column(length: 30)]

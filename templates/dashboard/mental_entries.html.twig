@@ -51,6 +51,10 @@
     .mental-media-body a:hover {
         color: #bae6fd;
     }
+    /* Thème clair Santé mentale (parent base_mental) */
+    .mental-ui--user .mood-cell-clickable:hover {
+        color: #4338ca !important;
+    }
 </style>
 {% endblock %}
 
@@ -83,13 +87,20 @@
         <tbody>
         {% for e in entries %}
             <tr>
-                <td class="mood-cell-clickable" role="button" tabindex="0" title="Cliquer pour utiliser ce mood (IA, Spotify, YouTube, météo)"><strong>{{ e.mood.moodName }}</strong></td>
+                <td class="mood-cell-clickable" role="button" tabindex="0" title="Cliquer pour utiliser ce mood (IA, Spotify, YouTube, météo)"><strong>{{ e.mood ? e.mood.moodName : '— (mood invalide)' }}</strong></td>
                 <td>{{ e.entryDate|date('d/m/Y') }}</td>
                 <td>{{ e.emotionLevel }}</td>
                 <td>{{ e.activity }}</td>
                 <td>{{ e.note|default('—') }}</td>
-                <td>
-                    <a class="btn btn-sm btn-outline-primary" href="{{ path('app_mental_entry_index', { edit: e.id }) }}">Modifier</a>
+                <td class="text-nowrap">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ path('app_mental_entry_index') }}?lp={{ loop.index }}">Modifier</a>
+                        <form method="post" action="{{ path('app_mental_entry_line_delete') }}" class="d-inline m-0">
+                            <input type="hidden" name="lp" value="{{ loop.index }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete_mental_entry_line_' ~ loop.index) }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         {% else %}
@@ -98,7 +109,7 @@
         </tbody>
     </table>
 
-    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+    <div class="mt-3 p-3 rounded-3 border mental-sub-panel" style="border-color: #e5e7eb !important;">
         <div class="small mb-1">Mood actif pour meteo: <strong id="weather-mood-active">—</strong></div>
         <div class="row g-2 align-items-end">
             <div class="col-12 col-md-8">
@@ -119,6 +130,7 @@
 
     {{ form_start(form, { attr: { id: 'mental-entry-crud', class: 'mental-dashboard-form', novalidate: 'novalidate' } }) }}
         <input type="hidden" name="edit_id" value="{{ editing ? edit_id : 0 }}">
+        <input type="hidden" name="edit_lp" value="{{ edit_lp|default(0) }}">
 
         {% include 'form/bootstrap_field.html.twig' with { field: form.mood } %}
         {% include 'form/bootstrap_field.html.twig' with { field: form.entryDate } %}
@@ -128,36 +140,47 @@
 
         {{ form_rest(form) }}
 
-        <div class="d-grid gap-2" style="grid-template-columns: 1fr 1fr;">
-            <button type="submit" class="btn btn-form-add fw-semibold" {% if editing %}disabled{% endif %}>+ Ajouter</button>
-            <button type="submit" class="btn btn-form-modify fw-semibold" {% if not editing %}disabled{% endif %}>Modifier</button>
+        <div class="d-grid mt-2">
+            {% if editing %}
+                <button type="submit" class="btn btn-form-modify fw-semibold">Enregistrer les modifications</button>
+            {% else %}
+                <button type="submit" class="btn btn-form-add fw-semibold">+ Ajouter</button>
+            {% endif %}
         </div>
     {{ form_end(form, { render_rest: false }) }}
 
     <div class="d-grid gap-2 mt-2" style="grid-template-columns: 1fr 1fr;">
         {% if editing %}
-            <form method="post" action="{{ path('app_mental_entry_delete', { id: edit_id }) }}" class="m-0" onsubmit="return confirm('Supprimer cette entrée ?');">
+            {% if edit_lp|default(0) > 0 %}
+            <form method="post" action="{{ path('app_mental_entry_line_delete') }}" class="m-0">
+                <input type="hidden" name="lp" value="{{ edit_lp }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_mental_entry_line_' ~ edit_lp) }}">
+                <button type="submit" class="btn btn-danger btn-form-danger w-100 fw-semibold">Supprimer</button>
+            </form>
+            {% else %}
+            <form method="post" action="{{ path('app_mental_entry_delete', { id: edit_id }) }}" class="m-0">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ edit_id) }}">
                 <button type="submit" class="btn btn-danger btn-form-danger w-100 fw-semibold">Supprimer</button>
             </form>
+            {% endif %}
         {% else %}
-            <button type="button" class="btn btn-danger btn-form-danger w-100 fw-semibold" disabled>Supprimer</button>
+            <button type="button" class="btn btn-danger btn-form-danger w-100 fw-semibold" disabled aria-hidden="true">Supprimer</button>
         {% endif %}
         <a href="{{ path('app_mental_entry_index') }}" class="btn btn-secondary btn-form-reset fw-semibold text-center w-100">Réinitialiser</a>
     </div>
 
-    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+    <div class="mt-3 p-3 rounded-3 border mental-sub-panel" style="border-color: #e5e7eb !important;">
         <h4 class="h6 mb-2">Conseil IA</h4>
         <p id="ia-mood-hint" class="small mental-advice-hint mb-2">Mood utilisé : <strong id="ia-mood-label">—</strong> (clique une ligne du tableau)</p>
         <div id="ia-advice-box" class="mental-advice-body">Aucun conseil pour le moment.</div>
     </div>
 
-    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+    <div class="mt-3 p-3 rounded-3 border mental-sub-panel" style="border-color: #e5e7eb !important;">
         <h4 class="h6 mb-2">Spotify</h4>
         <div id="spotify-results" class="small mental-media-body">Aucune suggestion.</div>
     </div>
 
-    <div class="mt-3 p-3 rounded-3 border" style="border-color: rgba(255,255,255,.12) !important;">
+    <div class="mt-3 p-3 rounded-3 border mental-sub-panel" style="border-color: #e5e7eb !important;">
         <h4 class="h6 mb-2">YouTube</h4>
         <div id="youtube-results" class="small mental-media-body">Aucune suggestion.</div>
     </div>

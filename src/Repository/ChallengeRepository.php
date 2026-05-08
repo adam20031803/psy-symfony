@@ -15,4 +15,24 @@ class ChallengeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Challenge::class);
     }
+
+    /**
+     * Returns counts indexed by status (statut => total).
+     */
+    public function countByStatus(): array
+    {
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.statut AS statut', 'COUNT(c.id) AS cnt')
+            ->groupBy('c.statut')
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $status = (string) ($row['statut'] ?? '');
+            $result[$status] = (int) ($row['cnt'] ?? 0);
+        }
+
+        return $result;
+    }
 }

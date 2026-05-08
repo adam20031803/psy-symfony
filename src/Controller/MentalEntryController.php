@@ -50,21 +50,40 @@ final class MentalEntryController extends AbstractController
     #[Route(name: 'app_mental_entry_index', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
-        $editId = $request->isMethod('POST')
-            ? $request->request->getInt('edit_id')
-            : $request->query->getInt('edit');
-
         $entry = new MentalEntry();
-        if ($editId <= 0) {
-            $entry->setEntryDate(new \DateTimeImmutable('today'));
-            $entry->setEmotionLevel(5);
-        }
-        if ($editId > 0) {
-            $found = $this->mentalEntryRepository->find($editId);
-            if (!$found) {
-                throw $this->createNotFoundException();
+        $entry->setEntryDate(new \DateTimeImmutable('today'));
+        $entry->setEmotionLevel(5);
+
+        if ($request->isMethod('POST')) {
+            $editLp = $request->request->getInt('edit_lp');
+            if ($editLp > 0) {
+                $loaded = $this->mentalEntryRepository->findOneByOrderedListOffset($editLp - 1);
+                if ($loaded instanceof MentalEntry) {
+                    $entry = $loaded;
+                }
+            } elseif ($request->request->getInt('edit_id') > 0) {
+                $editId = $request->request->getInt('edit_id');
+                $found = $this->mentalEntryRepository->find($editId);
+                if ($found instanceof MentalEntry) {
+                    $entry = $found;
+                }
             }
-            $entry = $found;
+        } else {
+            $lp = $request->query->getInt('lp');
+            $editId = $request->query->getInt('edit');
+            if ($lp > 0) {
+                $loaded = $this->mentalEntryRepository->findOneByOrderedListOffset($lp - 1);
+                if (!$loaded instanceof MentalEntry) {
+                    throw $this->createNotFoundException();
+                }
+                $entry = $loaded;
+            } elseif ($editId > 0) {
+                $found = $this->mentalEntryRepository->find($editId);
+                if (!$found instanceof MentalEntry) {
+                    throw $this->createNotFoundException();
+                }
+                $entry = $found;
+            }
         }
 
         $form = $this->createForm(MentalEntryType::class, $entry);
@@ -81,16 +100,43 @@ final class MentalEntryController extends AbstractController
                 $this->addFlash('success', 'Entrée mise à jour.');
             }
 
-            return $this->redirectToRoute('app_mental_entry_index');
+            return $this->redirectToRoute('app_mental_entry_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('dashboard/mental_entries.html.twig', [
+        $editLp = $request->isMethod('POST')
+            ? $request->request->getInt('edit_lp')
+            : $request->query->getInt('lp');
+
+        $response = $this->render('dashboard/mental_entries.html.twig', [
             'entries' => $this->mentalEntryRepository->findForDashboard(),
             'form' => $form,
             'active_section' => 'entries',
             'editing' => null !== $entry->getId(),
             'edit_id' => $entry->getId(),
+            'edit_lp' => $editLp,
         ]);
+        $response->headers->set('Cache-Control', 'private, no-store, must-revalidate');
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
+    }
+
+    #[Route('/line-delete', name: 'app_mental_entry_line_delete', methods: ['POST'])]
+    public function deleteEntryByLine(Request $request): Response
+    {
+        $lp = $request->request->getInt('lp');
+        $token = $request->request->getString('_token');
+        if ($lp < 1 || !$this->isCsrfTokenValid('delete_mental_entry_line_'.$lp, $token)) {
+            return $this->redirectToRoute('app_mental_entry_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        $entry = $this->mentalEntryRepository->findOneByOrderedListOffset($lp - 1);
+        if ($entry instanceof MentalEntry) {
+            $this->persistence->remove($entry);
+            $this->addFlash('success', 'Entrée supprimée.');
+        }
+
+        return $this->redirectToRoute('app_mental_entry_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}', name: 'app_mental_entry_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -129,7 +175,8 @@ final class MentalEntryController extends AbstractController
         if ($result['sent']) {
             $this->addFlash('success', 'Alerte SMS envoyée (Twilio).');
         } else {
-            $this->addFlash('danger', 'Alerte SMS non envoyée: '.$result['message']);
+            // Entrée déjà enregistrée : échec SMS = avertissement, pas une erreur bloquante
+            $this->addFlash('warning', 'Alerte SMS non envoyée : '.$result['message']);
         }
     }
 }

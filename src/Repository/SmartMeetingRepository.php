@@ -31,4 +31,25 @@ class SmartMeetingRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param array<int, mixed> $challenges
+     */
+    public function findScheduledByChallenges(array $challenges): array
+    {
+        if ($challenges === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('s')
+            ->addSelect('c')
+            ->join('s.challenge', 'c')
+            ->andWhere('s.status = :status')
+            ->andWhere('s.challenge IN (:challenges)')
+            ->setParameter('status', 'SCHEDULED')
+            ->setParameter('challenges', $challenges)
+            ->orderBy('s.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

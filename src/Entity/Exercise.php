@@ -45,7 +45,7 @@ class Exercise
     #[ORM\Column]
     #[Assert\NotBlank(message: "Les calories sont obligatoires.")]
     #[Assert\GreaterThanOrEqual(value: 0, message: "Les calories doivent être positives.")]
-    private ?float $calories = null;
+    private ?int $calories = null;
 
     #[ORM\Column(length: 500, nullable: true)]
     #[Assert\Url(message: "L'URL de l'image n'est pas valide.")]
@@ -90,8 +90,8 @@ class Exercise
     public function getDuration(): ?int { return $this->duration; }
     public function setDuration(int $duration): static { $this->duration = $duration; return $this; }
 
-    public function getCalories(): ?float { return $this->calories; }
-    public function setCalories(float $calories): static { $this->calories = $calories; return $this; }
+    public function getCalories(): ?int { return $this->calories; }
+    public function setCalories(int $calories): static { $this->calories = $calories; return $this; }
 
     public function getImageUrl(): ?string { return $this->imageUrl; }
     public function setImageUrl(?string $imageUrl): static { $this->imageUrl = $imageUrl; return $this; }

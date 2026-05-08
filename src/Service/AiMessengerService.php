@@ -16,10 +16,11 @@ use Doctrine\ORM\EntityManagerInterface;
 class AiMessengerService
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly AiConversationRepository $convRepo,
-        private readonly AiUserProfileRepository $profileRepo,
-        private readonly string $geminiApiKey,
+        private readonly EntityManagerInterface    $em,
+        private readonly AiConversationRepository  $convRepo,
+        private readonly AiUserProfileRepository   $profileRepo,
+        private readonly OllamaFallbackService     $ollama,
+        private readonly string                    $geminiApiKey,
     ) {
     }
 
@@ -63,10 +64,10 @@ class AiMessengerService
             $this->updateProfile($conv, $profile, $extracted);
         }
 
-        // 5. Générer la réponse IA via Gemini
-        $history = $this->buildHistory($conv);
+        // 5. Générer la réponse IA via Gemini (avec fallback Ollama local)
+        $history      = $this->buildHistory($conv);
         $systemPrompt = $this->buildSystemPrompt($conv, $profile, $user);
-        $aiResponse = $this->callGemini($systemPrompt, $history, $userText);
+        $aiResponse   = $this->callGeminiWithFallback($systemPrompt, $history, $userText);
 
         // 6. Parser la réponse IA (JSON structuré)
         $parsed = $this->parseAiResponse($aiResponse);
@@ -304,52 +305,76 @@ Crée aussi un insight de type 'recommendation' avec le détail du challenge.
     }
 
     // ════════════════════════════════════════════════════════
-    // APPEL GEMINI API
+    // APPEL GEMINI API  +  FALLBACK OLLAMA LOCAL
     // ════════════════════════════════════════════════════════
 
-    private function callGemini(string $systemPrompt, array $history, string $newMessage): string
+    /**
+     * Tries Gemini first. If unavailable (no key / HTTP error / timeout),
+     * automatically falls back to the local Ollama model.
+     */
+    private function callGeminiWithFallback(string $systemPrompt, array $history, string $newMessage): string
     {
-        if (empty($this->geminiApiKey)) {
-            return $this->getFallbackResponse($newMessage);
+        // ── 1. Try Gemini ────────────────────────────────────
+        if (!empty($this->geminiApiKey)) {
+            $result = $this->callGemini($systemPrompt, $history, $newMessage);
+            // callGemini returns getFallbackResponse() on failure — detect that
+            // by checking whether the result is valid JSON with a 'text' key.
+            $decoded = json_decode($result, true);
+            if (json_last_error() === JSON_ERROR_NONE && isset($decoded['text'])) {
+                return $result; // ✅ Gemini succeeded
+            }
         }
 
+        // ── 2. Fall back to Ollama ───────────────────────────
+        if ($this->ollama->isAvailable()) {
+            // Build messages array in GroqService / Ollama chat format
+            $messages = [['role' => 'system', 'content' => $systemPrompt]];
+            foreach (array_slice($history, -20) as $h) {
+                $messages[] = ['role' => $h['role'] === 'assistant' ? 'assistant' : 'user', 'content' => $h['content']];
+            }
+            $messages[] = ['role' => 'user', 'content' => $newMessage];
+
+            return $this->ollama->generateChatResponse($messages);
+        }
+
+        // ── 3. Both unavailable — canned response ────────────
+        return $this->getFallbackResponse($newMessage);
+    }
+
+    /**
+     * Raw Gemini API call via cURL. Returns raw text or getFallbackResponse() on error.
+     */
+    private function callGemini(string $systemPrompt, array $history, string $newMessage): string
+    {
         $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . $this->geminiApiKey;
 
-        // Construire les contents Gemini (format multi-tour)
         $contents = [];
-
-        // Ajouter l'historique (max 20 derniers messages pour économiser les tokens)
         foreach (array_slice($history, -20) as $h) {
             $contents[] = [
-                'role' => $h['role'] === 'assistant' ? 'model' : 'user',
+                'role'  => $h['role'] === 'assistant' ? 'model' : 'user',
                 'parts' => [['text' => $h['content']]],
             ];
         }
-
-        // Ajouter le nouveau message utilisateur
-        $contents[] = [
-            'role' => 'user',
-            'parts' => [['text' => $newMessage]],
-        ];
+        $contents[] = ['role' => 'user', 'parts' => [['text' => $newMessage]]];
 
         $body = json_encode([
             'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
-            'contents' => $contents,
-            'generationConfig' => [
-                'temperature' => 0.9,
+            'contents'           => $contents,
+            'generationConfig'   => [
+                'temperature'     => 0.9,
                 'maxOutputTokens' => 1024,
-                'topP' => 0.95,
+                'topP'            => 0.95,
             ],
         ]);
 
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
+            CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $body,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $body,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_TIMEOUT        => 30,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
         ]);

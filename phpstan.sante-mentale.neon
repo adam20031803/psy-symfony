@@ -1,0 +1,7 @@
+# Uniquement le module échantillon « santé mentale » → 2 erreurs PHPStan.
+# .\vendor\bin\phpstan.bat analyse -c phpstan.sante-mentale.neon
+
+parameters:
+    level: 8
+    paths:
+        - src/StaticSamples/Module07_SanteMentale

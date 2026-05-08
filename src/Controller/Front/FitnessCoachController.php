@@ -66,7 +66,9 @@ class FitnessCoachController extends AbstractController
             ]);
 
             if (!$program) {
-                return new JsonResponse(['error' => 'Gemini AI est surchargé ou le quota est atteint. Réessayez plus tard.'], 400);
+                return new JsonResponse([
+                    'error' => 'Aucun modèle n’a pu générer un programme valide. Vérifie qu’Ollama est démarré (ollama serve), que les modèles sont installés, puis réessaie. Si le problème continue, les clés Gemini / Groq peuvent être manquantes ou le quota atteint.',
+                ], 400);
             }
         } catch (\Throwable $e) {
             return new JsonResponse(['error' => 'Erreur technique : ' . $e->getMessage()], 500);

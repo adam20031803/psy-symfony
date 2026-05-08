@@ -32,7 +32,7 @@ class ChallengeController extends AbstractController
     #[Route('/dashboard', name: 'app_challenge_dashboard', methods: ['GET'])]
 public function dashboard(EntityManagerInterface $em, \Symfony\UX\Chartjs\Builder\ChartBuilderInterface $chartBuilder): Response
 {
-    $challenges = $em->getRepository(Challenge::class)->findAll();
+    $challenges = $em->getRepository(Challenge::class)->findBy([], ['dateDebut' => 'DESC'], 50);
     
     $actifs = 0;
     $termines = 0;
@@ -55,7 +55,7 @@ public function dashboard(EntityManagerInterface $em, \Symfony\UX\Chartjs\Builde
     $coachesActive = count(array_filter($coaches, function($c) { return $c->isActive(); })); // Adjust based on your User entity
     
     // Get recompenses statistics
-    $recompenses = $em->getRepository(\App\Entity\Recompense::class)->findAll();
+    $recompenses = $em->getRepository(\App\Entity\Recompense::class)->findBy([], ['points' => 'DESC'], 50);
     $recompensesTotal = count($recompenses);
     $recompensesPoints = array_sum(array_map(function($r) { return $r->getPoints(); }, $recompenses));
     
@@ -220,7 +220,7 @@ private function getTimelineData(EntityManagerInterface $em): array
 public function calendar(EntityManagerInterface $em): Response
 {
     // Get all challenges for statistics
-    $challenges = $em->getRepository(Challenge::class)->findAll();
+    $challenges = $em->getRepository(Challenge::class)->findBy([], ['dateDebut' => 'DESC'], 50);
     
     // Calculate statistics
     $total = count($challenges);
@@ -294,7 +294,10 @@ public function calendar(EntityManagerInterface $em): Response
             default:           $qb->orderBy('c.dateDebut', 'DESC'); break;
         }
 
-        $challenges = $qb->getQuery()->getResult();
+        $challenges = $qb
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
         
         $participationsRaw = [];
         $user = $this->getUser();

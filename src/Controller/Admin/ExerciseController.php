@@ -21,7 +21,7 @@ class ExerciseController extends AbstractController
     public function index(ExerciseRepository $repo): Response
     {
         return $this->render('admin/exercise/index.html.twig', [
-            'exercises' => $repo->findAll(),
+            'exercises' => $repo->findBy([], ['createdAt' => 'DESC'], 50),
         ]);
     }
 

@@ -5,6 +5,8 @@ parameters:
     twilio.accountSid: '%env(default:app.env_empty_string:TWILIO_ACCOUNT_SID)%'
     twilio.authToken: '%env(default:app.env_empty_string:TWILIO_AUTH_TOKEN)%'
     twilio.fromNumber: '%env(default:app.env_empty_string:TWILIO_FROM_NUMBER)%'
+    # Alias (même valeur que TWILIO_FROM_NUMBER) — correspond à une config type twilio.phoneNumber=+1...
+    twilio.phoneNumber: '%twilio.fromNumber%'
     twilio.toNumber: '%env(default:app.env_empty_string:TWILIO_TO_NUMBER)%'
     uploads_directory: '%kernel.project_dir%/public/uploads'
 

@@ -259,6 +259,11 @@ class Habitude
         return $this;
     }
 
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
     /**
      * @param mixed $imageFile
      */

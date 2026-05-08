@@ -35,7 +35,7 @@ class ExerciseController extends AbstractController
         $category  = $request->query->get('category');
         $exercises = $category
             ? $repo->findByCategory($category)
-            : $repo->findAll();
+            : $repo->findBy([], null, 50);
 
         $categories = ['Cardio', 'Musculation', 'Yoga', 'HIIT', 'Flexibilité'];
 

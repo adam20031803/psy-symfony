@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ExerciseRepository extends ServiceEntityRepository
 {
+    private const DEFAULT_RESULT_LIMIT = 50;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Exercise::class);
@@ -25,6 +27,7 @@ class ExerciseRepository extends ServiceEntityRepository
             ->where('e.name LIKE :q OR e.category LIKE :q OR e.description LIKE :q')
             ->setParameter('q', '%' . $query . '%')
             ->orderBy('e.createdAt', 'DESC')
+            ->setMaxResults(self::DEFAULT_RESULT_LIMIT)
             ->getQuery()
             ->getResult();
     }
@@ -38,6 +41,7 @@ class ExerciseRepository extends ServiceEntityRepository
             ->where('e.category = :cat')
             ->setParameter('cat', $category)
             ->orderBy('e.name', 'ASC')
+            ->setMaxResults(self::DEFAULT_RESULT_LIMIT)
             ->getQuery()
             ->getResult();
     }

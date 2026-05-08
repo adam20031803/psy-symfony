@@ -30,7 +30,7 @@ class ProgramController extends AbstractController
         
         $programs = $searchQuery
             ? $repo->searchByQuery($searchQuery)
-            : $repo->findAll();
+            : $repo->findBy([], ['createdAt' => 'DESC'], 50);
 
         return $this->render('admin/program/index.html.twig', [
             'programs'    => $programs,

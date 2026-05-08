@@ -1,0 +1,8 @@
+# Analyse uniquement des échantillons volontaires (voir tests/static_samples/).
+# Installation : composer require --dev phpstan/phpstan
+# Exécution    : php vendor/bin/phpstan analyse -c phpstan.neon.dist
+
+parameters:
+    level: 8
+    paths:
+        - tests/static_samples

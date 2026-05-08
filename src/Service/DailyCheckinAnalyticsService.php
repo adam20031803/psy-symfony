@@ -12,9 +12,9 @@ use App\Entity\User;
 class DailyCheckinAnalyticsService
 {
     public function __construct(
-        private readonly GroqService $groq
-    ) {
-    }
+        private readonly GroqService           $groq,
+        private readonly OllamaFallbackService $ollama,
+    ) {}
 
     /**
      * Get AI feedback for a specific check-in's text fields.
@@ -46,6 +46,14 @@ class DailyCheckinAnalyticsService
         }
 
         $aiResponse = $this->groq->generateResponse($promptText);
+
+        // ── Fallback: Ollama if Groq fails ────────────────────
+        $isGroqError = str_starts_with($aiResponse, 'Groq API Key') ||
+                       str_starts_with($aiResponse, 'Erreur Groq') ||
+                       empty(trim($aiResponse));
+        if ($isGroqError && $this->ollama->isAvailable()) {
+            $aiResponse = $this->ollama->generateResponse($promptText);
+        }
         
         // Robust JSON extraction
         $feedback = [];

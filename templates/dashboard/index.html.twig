@@ -160,7 +160,7 @@
         <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center;">
             <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
             <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; font-weight: 600;">Complétées Aujourd'hui</div>
-            <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">{{ habitsToday|length }}</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">{{ habitsTodayCount }}</div>
         </div>
     </div>
 
@@ -256,8 +256,8 @@
                     </div>
                     <p style="font-size: 0.78rem; color: var(--muted); line-height: 1.5; margin-bottom: 8px;">{{ post.contenu|striptags|slice(0, 100) }}...</p>
                     <div style="display: flex; gap: 12px; font-size: 0.7rem; color: var(--muted);">
-                        <span>👍 {{ post.countLikes }}</span>
-                        <span>💬 {{ post.commentaires|length }}</span>
+                        <span>👍 {{ postLikeCounts[post.id]|default(0) }}</span>
+                        <span>💬 {{ postCommentCounts[post.id]|default(0) }}</span>
                         {% if post.categorie %}
                             <span style="margin-left: auto; color: var(--accent2);">#{{ post.categorie.nom }}</span>
                         {% endif %}

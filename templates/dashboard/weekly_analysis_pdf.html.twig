@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyse hebdomadaire — Atomic You</title>
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 11pt; color: #0f172a; margin: 24px; }
+        h1 { font-size: 18pt; margin: 0 0 6px 0; color: #0b1736; }
+        .meta { color: #64748b; font-size: 9pt; margin-bottom: 18px; }
+        table.metrics { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        table.metrics th, table.metrics td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+        table.metrics th { background: #f1f5f9; font-size: 9pt; color: #475569; }
+        table.metrics td.value { font-weight: bold; font-size: 12pt; }
+        h2 { font-size: 12pt; margin: 16px 0 8px 0; color: #0b1736; }
+        table.chart { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 16px; }
+        table.chart th, table.chart td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: center; }
+        table.chart th { background: #f8fafc; }
+        table.chart td:first-child { text-align: left; font-weight: 600; }
+        ul { margin: 0; padding-left: 18px; }
+        li { margin-bottom: 4px; line-height: 1.35; }
+        .footer { margin-top: 24px; font-size: 8pt; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Analyse hebdomadaire</h1>
+    <div class="meta">
+        Semaine : {{ current_week_range }}{% if user_name is defined and user_name %} — {{ user_name }}{% endif %}<br>
+        Généré le {{ generated_at }}
+    </div>
+
+    <table class="metrics">
+        <tr>
+            <th>Moyenne semaine</th>
+            <th>Jour le plus stressant</th>
+            <th>Évolution</th>
+            <th>Index mental</th>
+        </tr>
+        <tr>
+            <td class="value">{{ current_average|number_format(2, ',', ' ') }} / 10</td>
+            <td class="value" style="font-size:10pt;">
+                {{ stressful_day }}
+                {% if stressful_level is not null %}<br><span style="font-weight:normal;font-size:9pt;">Niveau {{ stressful_level }}/10</span>{% endif %}
+            </td>
+            <td class="value">{{ delta >= 0 ? '+' : '' }}{{ delta|number_format(2, ',', ' ') }}</td>
+            <td class="value">{{ mental_index|number_format(2, ',', ' ') }} / 10</td>
+        </tr>
+    </table>
+
+    <h2>Niveaux par jour (0–10)</h2>
+    <table class="chart">
+        <tr>
+            <th>Jour</th>
+            {% for label in chart_labels %}
+                <th>{{ label }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td>Semaine actuelle</td>
+            {% for v in chart_current_values %}
+                <td>{{ v|number_format(2, ',', ' ') }}</td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td>Semaine précédente</td>
+            {% for v in chart_previous_values %}
+                <td>{{ v|number_format(2, ',', ' ') }}</td>
+            {% endfor %}
+        </tr>
+    </table>
+
+    <h2>Conseils personnalisés</h2>
+    <ul>
+        {% for insight in insights %}
+            <li>{{ insight }}</li>
+        {% else %}
+            <li>Aucun conseil disponible.</li>
+        {% endfor %}
+    </ul>
+
+    <div class="footer">Atomic You — export PDF santé mentale (analyse hebdomadaire).</div>
+</body>
+</html>

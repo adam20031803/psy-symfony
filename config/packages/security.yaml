@@ -42,7 +42,7 @@ security:
         - { path: ^/magic-login,        roles: PUBLIC_ACCESS }
         - { path: ^/admin/auth,         roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/admin,              roles: IS_AUTHENTICATED_FULLY }
-        - { path: ^/moods,              roles: ROLE_ADMIN }
+        - { path: ^/moods,              roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/mental-tips,       roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/mental-entries,    roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/chatbot,           roles: IS_AUTHENTICATED_FULLY }

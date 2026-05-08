@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\MentalEntry;
+use App\Entity\User;
 use App\Repository\MentalEntryRepository;
+use App\Service\PdfRenderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,6 +16,7 @@ final class WeeklyAnalysisController extends AbstractController
 {
     public function __construct(
         private readonly MentalEntryRepository $mentalEntryRepository,
+        private readonly PdfRenderService $pdfRenderService,
     ) {
     }
 
@@ -21,6 +24,34 @@ final class WeeklyAnalysisController extends AbstractController
     public function index(): Response
     {
         return $this->render('dashboard/weekly_analysis.html.twig', $this->buildWeeklyAnalysisContext());
+    }
+
+    #[Route('/mental-analysis/weekly/pdf', name: 'app_weekly_analysis_pdf', methods: ['GET'])]
+    public function pdf(): Response
+    {
+        $ctx = $this->buildWeeklyAnalysisContext();
+        $today = new \DateTimeImmutable('today');
+        $weekStart = $today->modify('monday this week');
+        $filename = sprintf('analyse-hebdo-%s.pdf', $weekStart->format('Y-m-d'));
+
+        /** @var User|null $user */
+        $user = $this->getUser();
+        $userName = null;
+        if ($user instanceof User) {
+            $userName = trim(($user->getPrenom() ?? '') . ' ' . ($user->getNom() ?? ''));
+            if ('' === $userName) {
+                $userName = $user->getEmail();
+            }
+        }
+
+        $ctx['generated_at'] = (new \DateTimeImmutable())->format('d/m/Y à H:i');
+        $ctx['user_name'] = $userName;
+
+        return $this->pdfRenderService->renderPdf(
+            'dashboard/weekly_analysis_pdf.html.twig',
+            $ctx,
+            $filename
+        );
     }
 
     /**

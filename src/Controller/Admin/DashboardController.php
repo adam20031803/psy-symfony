@@ -62,8 +62,8 @@ class DashboardController extends AbstractController
         GroqService        $groq
     ): JsonResponse {
         // Gather context about current programs & exercises
-        $programs  = $programRepo->findAll();
-        $exercises = $exerciseRepo->findAll();
+        $programs  = $programRepo->findBy([], null, 50);
+        $exercises = $exerciseRepo->findBy([], null, 50);
 
         $progSummary = [];
         foreach ($programs as $p) {
@@ -169,8 +169,8 @@ class DashboardController extends AbstractController
         $chartData = json_decode($request->request->get('chartData', '{}'), true) ?: [];
 
         // ── Live DB data ──
-        $programs  = $programRepo->findAll();
-        $exercises = $exerciseRepo->findAll();
+        $programs  = $programRepo->findBy([], null, 50);
+        $exercises = $exerciseRepo->findBy([], null, 50);
 
         $catFrequency = [];
         foreach ($exercises as $ex) {

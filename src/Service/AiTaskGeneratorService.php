@@ -10,15 +10,27 @@ use Psr\Log\LoggerInterface;
 class AiTaskGeneratorService
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly LoggerInterface $logger,
-        private readonly string $geminiApiKey,
+        private readonly EntityManagerInterface  $em,
+        private readonly LoggerInterface         $logger,
+        private readonly OllamaFallbackService   $ollama,
+        private readonly string                  $geminiApiKey,
     ) {}
 
     public function generateAndPersist(Challenge $challenge): array
     {
         $prompt = $this->buildPrompt($challenge);
         $result = $this->callGemini($prompt);
+
+        // ── Fallback: Ollama local if Gemini failed ────────────
+        if (isset($result['error']) && $this->ollama->isAvailable()) {
+            $this->logger->warning('Gemini failed for task generation, trying Ollama fallback.');
+            $raw     = $this->ollama->generateResponse($prompt);
+            $jsonStr = $this->extractJson($raw);
+            $data    = json_decode($jsonStr, true);
+            if (is_array($data) && isset($data['tasks'])) {
+                return $this->persistTasks($challenge, $data['tasks']);
+            }
+        }
 
         if (isset($result['error'])) {
             return $this->fallbackTasks($challenge, $result['error']);

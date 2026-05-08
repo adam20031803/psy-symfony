@@ -320,6 +320,8 @@ const STEPS = [
 const state = { goal: '', level: '', days: 3 };
 let currentStep = 0;
 let isGenerating = false;
+let progressTimer = null;
+let progressContentEl = null;
 
 const chat = document.getElementById('chatContainer');
 const input = document.getElementById('userInput');
@@ -412,6 +414,7 @@ function addCoachBubble(text) {
         <div class="chat-bubble bubble-coach" style="white-space:pre-line">${escHtml(text)}</div>`;
     chat.appendChild(div);
     scrollBottom();
+    return div.querySelector('.chat-bubble');
 }
 function addUserBubble(text) {
     const div = document.createElement('div');
@@ -448,16 +451,40 @@ function generateProgram() {
     updateDots(STEPS.length);
 
     showTyping();
-    addCoachBubble("Génération de ton programme avec Gemini AI ✨\nCela prend 10 à 20 secondes...");
+    addCoachBubble("Génération de ton programme personnalisé ✨\nCela peut prendre jusqu'à 2 minutes selon le modèle IA local.");
+    startProgressUpdates();
+    const abortController = new AbortController();
+    const fetchTimeout = setTimeout(() => abortController.abort(), 200000);
 
     fetch('{{ path("fitness_coach_generate") }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(state)   // email/name come from the PHP session on server
+        body: JSON.stringify(state),   // email/name come from the PHP session on server
+        signal: abortController.signal
     })
-    .then(r => r.json())
+    .then(async (r) => {
+        const contentType = r.headers.get('content-type') || '';
+        const isJson = contentType.includes('application/json');
+
+        // If security redirects to login page, backend returns HTML, not JSON.
+        if (!isJson) {
+            if (r.redirected || r.url.includes('/login')) {
+                throw new Error('SESSION_REQUIRED');
+            }
+            throw new Error('INVALID_RESPONSE');
+        }
+
+        const data = await r.json();
+        if (!r.ok) {
+            throw new Error(`API_ERROR:${data.error || 'REQUEST_FAILED'}`);
+        }
+
+        return data;
+    })
     .then(data => {
+        clearTimeout(fetchTimeout);
         hideTyping();
+        stopProgressUpdates();
         if (data.success) {
             showResult(data.program, data.emailSent);
         } else {
@@ -466,12 +493,67 @@ function generateProgram() {
             isGenerating = false; sendBtn.disabled = false;
         }
     })
-    .catch(() => {
+    .catch((err) => {
+        clearTimeout(fetchTimeout);
         hideTyping();
-        addCoachBubble("Erreur de connexion. Réessaie.");
+        stopProgressUpdates();
+        if (err && err.message === 'SESSION_REQUIRED') {
+            addCoachBubble("Tu dois être connecté pour générer un programme.\nJe te redirige vers la page de connexion...");
+            setTimeout(() => { window.location.href = '/login'; }, 1200);
+            return;
+        }
+        if (err && err.name === 'AbortError') {
+            addCoachBubble("La génération prend trop de temps.\nRéessaie maintenant (le fallback rapide sera utilisé).");
+            document.getElementById('inputPanel').style.display = '';
+            isGenerating = false; sendBtn.disabled = false;
+            return;
+        }
+        if (err && typeof err.message === 'string' && err.message.startsWith('API_ERROR:')) {
+            const apiMessage = err.message.replace('API_ERROR:', '').trim();
+            addCoachBubble("Oups : " + (apiMessage || "Réessaie plus tard."));
+            document.getElementById('inputPanel').style.display = '';
+            isGenerating = false; sendBtn.disabled = false;
+            return;
+        }
+        addCoachBubble("Impossible de générer le programme maintenant. Réessaie dans quelques secondes.");
         document.getElementById('inputPanel').style.display = '';
         isGenerating = false; sendBtn.disabled = false;
     });
+}
+
+function startProgressUpdates() {
+    stopProgressUpdates();
+
+    const progressMessages = [
+        "🔄 Analyse de ton objectif...",
+        "🧠 Construction du plan d'entraînement...",
+        "🏋️ Sélection des exercices adaptés...",
+        "📅 Organisation de ton programme hebdomadaire...",
+        "✅ Finalisation et préparation de l'envoi..."
+    ];
+
+    let idx = 0;
+    progressContentEl = addCoachBubble(progressMessages[idx]);
+    idx++;
+    progressTimer = setInterval(() => {
+        if (!isGenerating) return;
+        if (progressContentEl) {
+            if (idx < progressMessages.length) {
+                progressContentEl.textContent = progressMessages[idx];
+            } else {
+                progressContentEl.textContent = "⏳ Traitement en cours... merci de patienter encore quelques secondes.";
+            }
+        }
+        idx++;
+    }, 7000);
+}
+
+function stopProgressUpdates() {
+    if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+    }
+    progressContentEl = null;
 }
 
 function showResult(program, emailSent) {

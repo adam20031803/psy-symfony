@@ -1,0 +1,7 @@
+# 6 « modules » × 2 erreurs = 12 erreurs PHPStan (voir src/StaticSamples).
+# .\vendor\bin\phpstan.bat analyse -c phpstan.modules.neon
+
+parameters:
+    level: 8
+    paths:
+        - src/StaticSamples

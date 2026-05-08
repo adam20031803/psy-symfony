@@ -1,0 +1,21 @@
+# Analyse « src » en ne gardant que les échantillons StaticSamples (12 erreurs au total).
+# Commande : .\vendor\bin\phpstan.bat analyse src
+#
+# Le reste de src/ est exclu pour éviter les centaines d’erreurs du projet réel.
+# Pour analyser toute l’application : utilisez une autre config ou retirez excludePaths.
+
+parameters:
+    level: 8
+    paths:
+        - src
+    excludePaths:
+        - src/Command
+        - src/Controller
+        - src/Entity
+        - src/EventSubscriber
+        - src/Form
+        - src/Repository
+        - src/Security
+        - src/Service
+        - src/Validator
+        - src/Kernel.php

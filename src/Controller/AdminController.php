@@ -19,6 +19,7 @@ use App\Repository\MentalTipRepository;
 use App\Repository\MoodRepository;
 use App\Repository\RecompenseRepository;
 use App\Repository\PostRepository;
+use App\Repository\PostLikeRepository;
 use App\Repository\CommentaireRepository;
 use App\Repository\HabitudeRepository;
 use App\Form\AdminUserType;
@@ -52,16 +53,14 @@ class AdminController extends AbstractController
         \App\Repository\WorkoutProgressRepository $workoutProgressRepo
     ): Response
     {
-        $users = $userRepository->findAll();
-        $reclamations = $reclamationRepo->findAll();
         $clients = $userRepository->findClientsWithFitnessStats();
 
         $stats = [
-            'users_total'  => count($users),
-            'users_active' => count(array_filter($users, fn(User $u) => $u->isActive())),
-            'users_admins' => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach']))),
-            'rec_total'    => count($reclamations),
-            'rec_ouvert'   => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
+            'users_total'  => $userRepository->count([]),
+            'users_active' => $userRepository->count(['isActive' => true]),
+            'users_admins' => $userRepository->countByRoles(['admin', 'coach']),
+            'rec_total'    => $reclamationRepo->count([]),
+            'rec_ouvert'   => $reclamationRepo->count(['statut' => 'ouvert']),
             'challenges'   => $challengeRepo->count([]),
             'posts'        => $postRepo->count([]),
             'habitudes'    => $habitudeRepo->count([]),
@@ -185,9 +184,9 @@ class AdminController extends AbstractController
     {
         $users = $userRepository->findAll();
         $stats = [
-            'total'  => count($users),
-            'admins' => count(array_filter($users, fn(User $u) => in_array($u->getRole(), ['admin', 'coach'], true))),
-            'active' => count(array_filter($users, fn(User $u) => $u->isActive())),
+            'total'  => $userRepository->count([]),
+            'admins' => $userRepository->countByRoles(['admin', 'coach']),
+            'active' => $userRepository->count(['isActive' => true]),
         ];
 
         return $this->render('admin/users.html.twig', [
@@ -200,10 +199,11 @@ class AdminController extends AbstractController
     public function reclamations(ReclamationRepository $reclamationRepo): Response
     {
         $reclamations = $reclamationRepo->findBy([], ['createdAt' => 'DESC']);
+        $byStatus = $reclamationRepo->countByStatus();
         $stats = [
-            'total'   => count($reclamations),
-            'ouvert'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'ouvert')),
-            'resolu'  => count(array_filter($reclamations, fn(Reclamation $r) => $r->getStatut() === 'resolu')),
+            'total'   => $reclamationRepo->count([]),
+            'ouvert'  => $byStatus['ouvert'] ?? 0,
+            'resolu'  => $byStatus['resolu'] ?? 0,
         ];
 
         return $this->render('admin/reclamations.html.twig', [
@@ -421,7 +421,7 @@ class AdminController extends AbstractController
         MentalEntryRepository $mentalEntryRepository,
     ): Response {
         $entries = $mentalEntryRepository->findForDashboard();
-        $tips = $mentalTipRepository->findForDashboard();
+        $tipsRows = $mentalTipRepository->findForDashboardList();
 
         $stats = [
             'moods' => $moodRepository->count([]),
@@ -437,8 +437,8 @@ class AdminController extends AbstractController
         }
 
         $tipsByMood = [];
-        foreach ($tips as $tip) {
-            $name = $tip->getMood()?->getMoodName() ?? '—';
+        foreach ($tipsRows as $row) {
+            $name = $row['mood_name'] ?? '—';
             $tipsByMood[$name] = ($tipsByMood[$name] ?? 0) + 1;
         }
 
@@ -460,15 +460,16 @@ class AdminController extends AbstractController
     $challenges  = $challengeRepo->findAll();
     $coaches     = $userRepo->findBy(['role' => 'coach']);
     $recompenses = $recompenseRepo->findAll();
+    $challengeByStatus = $challengeRepo->countByStatus();
 
     // ── Stats de base ──
     $stats = [
-        'ch_total'    => count($challenges),
-        'ch_active'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'actif')),
-        'ch_done'     => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'termine')),
-        'ch_annule'   => count(array_filter($challenges, fn(Challenge $c) => $c->getStatut() === 'annule')),
-        'co_total'    => count($coaches),
-        'co_active'   => count(array_filter($coaches, fn(User $u) => $u->isActive())),
+        'ch_total'    => $challengeRepo->count([]),
+        'ch_active'   => $challengeByStatus['actif'] ?? 0,
+        'ch_done'     => $challengeByStatus['termine'] ?? 0,
+        'ch_annule'   => $challengeByStatus['annule'] ?? 0,
+        'co_total'    => $userRepo->count(['role' => 'coach']),
+        'co_active'   => $userRepo->count(['role' => 'coach', 'isActive' => true]),
         'rec_total'   => count($recompenses),
         'rec_points'  => array_reduce($recompenses, fn($carry, Recompense $r) => $carry + $r->getPoints(), 0),
         'rec_ouvert'  => $em->getRepository(\App\Entity\Reclamation::class)->count(['statut' => 'ouvert']),
@@ -544,16 +545,16 @@ class AdminController extends AbstractController
     public function postsDashboard(
         PostRepository $postRepo,
         CommentaireRepository $commentRepo,
+        PostLikeRepository $postLikeRepo,
         EntityManagerInterface $em
     ): Response {
         $posts = $postRepo->findBy([], ['createdAt' => 'DESC']);
-        $comments = $commentRepo->findAll();
 
         $stats = [
-            'total_posts'    => count($posts),
-            'total_comments' => count($comments),
-            'anonymous'      => count(array_filter($posts, fn(Post $p) => $p->isIsAnonymous())),
-            'total_likes'    => array_reduce($posts, fn($carry, Post $p) => $carry + $p->countLikes(), 0),
+            'total_posts'    => $postRepo->count([]),
+            'total_comments' => $commentRepo->count([]),
+            'anonymous'      => $postRepo->count(['isAnonymous' => true]),
+            'total_likes'    => $postLikeRepo->countAllLikes(),
         ];
 
         return $this->render('admin/posts.html.twig', [
@@ -590,9 +591,9 @@ class AdminController extends AbstractController
         $habitudes = $habitudeRepo->findBy([], ['startDate' => 'DESC']);
 
         $stats = [
-            'total' => count($habitudes),
-            'active' => count(array_filter($habitudes, fn(Habitude $h) => $h->isActive())),
-            'completed' => count(array_filter($habitudes, fn(Habitude $h) => !$h->isActive())),
+            'total' => $habitudeRepo->count([]),
+            'active' => $habitudeRepo->count(['active' => true]),
+            'completed' => $habitudeRepo->count(['active' => false]),
         ];
 
         return $this->render('admin/habitudes.html.twig', [
@@ -680,12 +681,13 @@ class AdminController extends AbstractController
         ]);
 
         // ── 3. Réclamations par statut ─ Bar chart ─────────────────────
-        $allRec    = $recRepo->findAll();
-        $recStatuts = ['ouvert' => 0, 'en_cours' => 0, 'resolu' => 0, 'ferme' => 0];
-        foreach ($allRec as $r) {
-            $s = $r->getStatut();
-            if (isset($recStatuts[$s])) $recStatuts[$s]++;
-        }
+        $recByStatus = $recRepo->countByStatus();
+        $recStatuts = [
+            'ouvert' => $recByStatus['ouvert'] ?? 0,
+            'en_cours' => $recByStatus['en_cours'] ?? 0,
+            'resolu' => $recByStatus['resolu'] ?? 0,
+            'ferme' => $recByStatus['ferme'] ?? 0,
+        ];
 
         $chartReclamations = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chartReclamations->setData([
@@ -742,8 +744,8 @@ class AdminController extends AbstractController
         $totalPosts      = $postRepo->count([]);
         $totalChallenges = $challengeRepo->count([]);
         $totalHabitudes  = $habitudeRepo->count([]);
-        $totalUsers      = count($userRepo->findAll());
-        $totalRec        = count($allRec);
+        $totalUsers      = $userRepo->count([]);
+        $totalRec        = $recRepo->count([]);
 
         $chartOverview = $chartBuilder->createChart(Chart::TYPE_BAR);
         $chartOverview->setData([

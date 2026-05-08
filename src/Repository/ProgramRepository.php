@@ -11,6 +11,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ProgramRepository extends ServiceEntityRepository
 {
+    private const DEFAULT_RESULT_LIMIT = 50;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Program::class);
@@ -24,6 +26,7 @@ class ProgramRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('p')
             ->where('p.isPublished = true')
             ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults(self::DEFAULT_RESULT_LIMIT)
             ->getQuery()
             ->getResult();
     }
@@ -37,6 +40,7 @@ class ProgramRepository extends ServiceEntityRepository
             ->where('p.title LIKE :q OR p.goal LIKE :q')
             ->setParameter('q', '%' . $query . '%')
             ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults(self::DEFAULT_RESULT_LIMIT)
             ->getQuery()
             ->getResult();
     }

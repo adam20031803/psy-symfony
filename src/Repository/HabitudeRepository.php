@@ -70,6 +70,29 @@ class HabitudeRepository extends ServiceEntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    public function countCompletedToday(?int $userId = null): int
+    {
+        $today = new \DateTime();
+        $today->setTime(0, 0, 0);
+        $tomorrow = clone $today;
+        $tomorrow->modify('+1 day');
+
+        $qb = $this->createQueryBuilder('h')
+            ->select('COUNT(DISTINCT h.id)')
+            ->leftJoin('h.completions', 'c')
+            ->andWhere('c.completedAt >= :today')
+            ->andWhere('c.completedAt < :tomorrow')
+            ->setParameter('today', $today)
+            ->setParameter('tomorrow', $tomorrow);
+
+        if ($userId !== null) {
+            $qb->andWhere('h.user = :userId')
+               ->setParameter('userId', $userId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
     /**
      * Get global statistics
      */

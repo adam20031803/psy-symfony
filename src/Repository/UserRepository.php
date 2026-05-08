@@ -48,7 +48,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('role', 'user')
             ->groupBy('u.id')
             ->orderBy('last_workout_date', 'DESC')
-            ->addOrderBy('total_workouts', 'DESC');
+            ->addOrderBy('total_workouts', 'DESC')
+            ->setMaxResults(50);
 
         $results = $qb->getQuery()->getArrayResult();
         
@@ -60,6 +61,16 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
         
         return $results;
+    }
+
+    public function countByRoles(array $roles): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.role IN (:roles)')
+            ->setParameter('roles', $roles)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

@@ -1,0 +1,18 @@
+doctrine_doctor:
+    
+    analyzers:
+        n_plus_one:
+            threshold: 3
+        slow_query:
+            threshold: 100
+        # Disabled analyzers below are environment/opinionated checks.
+        bidirectional_consistency:
+            enabled: false
+        cascade_configuration:
+            enabled: false
+        ondelete_mismatch:
+            enabled: false
+        strict_mode:
+            enabled: false
+        inno_db_engine:
+            enabled: false

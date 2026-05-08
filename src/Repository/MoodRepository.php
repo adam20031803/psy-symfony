@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Mood;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -23,6 +24,26 @@ class MoodRepository extends ServiceEntityRepository
             ->orderBy('m.moodName', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /** Même ordre que findAllOrderedByName() : mood_name ASC puis id. */
+    public function findOneByOrderedListOffset(int $zeroBasedOffset): ?Mood
+    {
+        $offset = max(0, $zeroBasedOffset);
+        $em = $this->getEntityManager();
+        $rsm = new ResultSetMappingBuilder($em);
+        $rsm->addRootEntityFromClassMetadata(Mood::class, 'm');
+        $select = $rsm->generateSelectClause(['m' => 'm']);
+        $sql = sprintf(
+            'SELECT %s FROM mood m ORDER BY m.mood_name ASC, m.id ASC LIMIT 1 OFFSET %d',
+            $select,
+            $offset
+        );
+
+        $query = $em->createNativeQuery($sql, $rsm);
+        $rows = $query->getResult();
+
+        return ($rows[0] ?? null) instanceof Mood ? $rows[0] : null;
     }
 
     /** @return Mood[] */

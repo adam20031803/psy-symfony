@@ -8,19 +8,13 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class FitnessProgramGeneratorService
 {
-    private GeminiService $geminiService;
-    private GroqService $groqService;
-    private EntityManagerInterface $em;
-
     public function __construct(
-        GeminiService $geminiService,
-        GroqService $groqService,
-        EntityManagerInterface $em
-    ) {
-        $this->geminiService = $geminiService;
-        $this->groqService = $groqService;
-        $this->em = $em;
-    }
+        private readonly GeminiService          $geminiService,
+        private readonly GroqService            $groqService,
+        private readonly OllamaFallbackService  $ollama,
+        private readonly EntityManagerInterface $em,
+    ) {}
+
 
     public function generateProgram(array $data): ?Program
     {
@@ -54,27 +48,34 @@ Le JSON doit avoir la structure suivante:
   ]
 }";
 
-        // Try Gemini first
-        $response = $this->geminiService->generateResponse($prompt);
-        
-        $cleanResponse = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($response));
-        $json = json_decode($cleanResponse, true);
+        $json = null;
 
-        $isGeminiError = str_starts_with($response, 'Erreur') || 
-                         str_starts_with($response, "L'IA a") || 
-                         str_starts_with($response, "Je n'ai pas pu") || 
-                         str_contains($response, 'API Key') || 
-                         empty(trim($response));
-
-        // Fallback to Groq if Gemini fails or JSON is invalid
-        if ($isGeminiError || !$json || !isset($json['exercises'])) {
-            $response = $this->groqService->generateResponse($prompt);
-            $cleanResponse = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($response));
-            $json = json_decode($cleanResponse, true);
+        // ── 1) Ollama local first (avoids cloud quota; uses format=json + long timeout) ──
+        if ($this->ollama->isAvailable()) {
+            $response = $this->ollama->generateResponse($prompt, true);
+            $json     = $this->decodeAiJson($response);
         }
 
+        // ── 2) Gemini ──
         if (!$json || !isset($json['exercises'])) {
-            return null; // Failed to parse from both providers
+            $response = $this->geminiService->generateResponse($prompt);
+            $json     = $this->decodeAiJson($response);
+        }
+
+        // ── 3) Groq ──
+        if (!$json || !isset($json['exercises'])) {
+            $response = $this->groqService->generateResponse($prompt);
+            $json     = $this->decodeAiJson($response);
+        }
+
+        // ── 4) Ollama again without format=json (older Ollama / model quirks) ──
+        if ((!$json || !isset($json['exercises'])) && $this->ollama->isAvailable()) {
+            $response = $this->ollama->generateResponse($prompt, false);
+            $json     = $this->decodeAiJson($response);
+        }
+
+        if (!$json || !isset($json['exercises']) || !is_array($json['exercises']) || $json['exercises'] === []) {
+            return null;
         }
 
         $program = new Program();
@@ -93,7 +94,7 @@ Le JSON doit avoir la structure suivante:
             $ex = new Exercise();
             $ex->setName(substr($exData['name'] ?? 'Exercice', 0, 100));
             $ex->setDescription($exData['description'] ?? 'Faites de votre mieux.');
-            
+
             $allowedCats = ['Cardio', 'Musculation', 'Yoga', 'HIIT', 'Flexibilité'];
             $c = in_array($exData['category'] ?? '', $allowedCats) ? $exData['category'] : 'Cardio';
             $ex->setCategory($c);
@@ -110,5 +111,31 @@ Le JSON doit avoir la structure suivante:
         $this->em->flush();
 
         return $program;
+    }
+
+    /**
+     * @return array<string,mixed>|null
+     */
+    private function decodeAiJson(string $response): ?array
+    {
+        $clean = preg_replace('/^```(?:json)?\s*|\s*```$/im', '', trim($response));
+        $clean = trim((string) $clean);
+
+        $decoded = json_decode($clean, true);
+        if (is_array($decoded) && isset($decoded['exercises'])) {
+            return $decoded;
+        }
+
+        $start = strpos($clean, '{');
+        $end   = strrpos($clean, '}');
+        if ($start !== false && $end !== false && $end > $start) {
+            $slice = substr($clean, $start, $end - $start + 1);
+            $decoded = json_decode($slice, true);
+            if (is_array($decoded) && isset($decoded['exercises'])) {
+                return $decoded;
+            }
+        }
+
+        return null;
     }
 }
